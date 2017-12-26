@@ -1,23 +1,24 @@
-import { Dependency } from "./Dependency";
-import { Utils } from "./Utils";
 import { QuickPickItem } from "vscode";
+import { IDependency } from "./Dependency";
+import { Utils } from "./Utils";
 
 const PLACEHOLDER: string = "";
 export class DependencyManager {
 
-    static recommended: DependencyQuickPickItem = {
-        type: "command",
+    private static recommended: IDependencyQuickPickItem = {
+        itemType: "command",
         id: "web,security,azure-active-directory",
         label: "$(thumbsup) Recommended",
         description: "",
         detail: "Web,Security,Azure Active Directory"
-    }
-    static lastselected: DependencyQuickPickItem = null;
-    public dependencies: Dependency[] = [];
-    public dict: { [key: string]: Dependency } = {}
+    };
+
+    private static lastselected: IDependencyQuickPickItem = null;
+    public dependencies: IDependency[] = [];
+    public dict: { [key: string]: IDependency } = {};
     public selectedIds: string[] = [];
 
-    public static updateLastSelectedDependencies(v: DependencyQuickPickItem): void {
+    public static UPDATE_LAST_USED_DEPENDENCIES(v: IDependencyQuickPickItem): void {
         DependencyManager.lastselected = Object.assign({}, v, {
             label: "$(clock) Last used"
         });
@@ -25,18 +26,18 @@ export class DependencyManager {
 
     public async initialize(): Promise<void> {
         const DEPENDENCY_URL: string = "https://start.spring.io/ui/dependencies.json?version=1.5.9.RELEASE";
-        const depsJSON = JSON.parse(await Utils.downloadFile(DEPENDENCY_URL, true));
-        this.dependencies = depsJSON["dependencies"];
+        const depsJSON: { dependencies: IDependency[] } = JSON.parse(await Utils.downloadFile(DEPENDENCY_URL, true));
+        this.dependencies = depsJSON.dependencies;
         for (const dep of this.dependencies) {
             this.dict[dep.id] = dep;
         }
     }
 
-    public async getQuickPickItems(): Promise<DependencyQuickPickItem[]> {
+    public async getQuickPickItems(): Promise<IDependencyQuickPickItem[]> {
         if (this.dependencies.length === 0) {
             await this.initialize();
         }
-        const ret: DependencyQuickPickItem[] = [];
+        const ret: IDependencyQuickPickItem[] = [];
         if (this.selectedIds.length === 0) {
             if (DependencyManager.lastselected) {
                 ret.push(DependencyManager.lastselected);
@@ -44,17 +45,17 @@ export class DependencyManager {
             ret.push(DependencyManager.recommended);
         } else {
             ret.push({
-                type: "command",
+                itemType: "command",
                 id: this.selectedIds.join(","),
                 label: "$(checklist) Selected dependencies",
-                description: this.getSelectedDependencies().map((dep) => dep.id).join(","),
-                detail: this.getSelectedDependencies().map((dep) => dep.name).join(",")
+                description: "",
+                detail: this.getSelectedDependencies().map((dep: IDependency) => dep.name).join(",")
             });
         }
 
-        return ret.concat(this.getSelectedDependencies().concat(this.getUnselectedDependencies()).map((dep: Dependency) => {
+        return ret.concat(this.getSelectedDependencies().concat(this.getUnselectedDependencies()).map((dep: IDependency) => {
             return {
-                type: "dependency",
+                itemType: "dependency",
                 id: dep.id,
                 label: `${this.selectedIds.indexOf(dep.id) >= 0 ? "$(check)" : PLACEHOLDER} ${dep.name}`,
                 description: dep.group,
@@ -63,29 +64,26 @@ export class DependencyManager {
         }));
     }
 
-    public getSelectedDependencies() {
-        return this.selectedIds.map(id => this.dict[id]);
+    public getSelectedDependencies(): IDependency[] {
+        return this.selectedIds.map((id: string) => this.dict[id]);
     }
 
-    public getUnselectedDependencies() {
-        return this.dependencies.filter(dep => this.selectedIds.indexOf(dep.id) < 0);
+    public getUnselectedDependencies(): IDependency[] {
+        return this.dependencies.filter((dep: IDependency) => this.selectedIds.indexOf(dep.id) < 0);
     }
 
-    public toggleDependency(id: string) {
-        const index = this.selectedIds.indexOf(id);
+    public toggleDependency(id: string): void {
+        const index: number = this.selectedIds.indexOf(id);
         if (index >= 0) {
-            this.selectedIds = this.selectedIds.filter((x) => x !== id);
+            this.selectedIds = this.selectedIds.filter((x: string) => x !== id);
         } else {
             this.selectedIds.push(id);
         }
     }
 
-    constructor() {
-    }
 }
 
-
-export interface DependencyQuickPickItem extends QuickPickItem {
-    type: string
+export interface IDependencyQuickPickItem extends QuickPickItem {
+    itemType: string;
     id: string;
 }

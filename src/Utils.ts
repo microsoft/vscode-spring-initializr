@@ -1,8 +1,9 @@
-import * as path from "path";
-import * as os from "os";
-import * as md5 from "md5";
 import * as fse from "fs-extra";
+import { IncomingMessage } from "http";
 import * as https from "https";
+import * as md5 from "md5";
+import * as os from "os";
+import * as path from "path";
 import * as url from "url";
 const EXTENSION_ID: string = "vscode-spring-initializr";
 
@@ -20,15 +21,15 @@ export namespace Utils {
         }
 
         return await new Promise((resolve: (res: string) => void, reject: (e: Error) => void): void => {
-            https.get(url.parse(targetUrl), (res) => {
+            https.get(url.parse(targetUrl), (res: IncomingMessage) => {
                 let rawData: string;
                 let ws: fse.WriteStream;
                 if (readContent) {
-                    rawData = ''
+                    rawData = "";
                 } else {
                     ws = fse.createWriteStream(tempFilePath);
                 }
-                res.on('data', (chunk) => {
+                res.on('data', (chunk: string|Buffer) => {
                     if (readContent) {
                         rawData += chunk;
                     } else {
@@ -43,7 +44,7 @@ export namespace Utils {
                         resolve(tempFilePath);
                     }
                 });
-            }).on("error", (err) => {
+            }).on("error", (err: Error) => {
                 reject(err);
             });
         });
