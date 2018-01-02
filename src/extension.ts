@@ -53,7 +53,8 @@ export function activate(context: vscode.ExtensionContext): void {
             //Open in new window
             const choice: string = await vscode.window.showInformationMessage(`Successfully generated. Location: ${outputUri.fsPath}`, "Open it");
             if (choice === "Open it") {
-                vscode.commands.executeCommand("vscode.openFolder", outputUri, true);
+                const hasOpenFolder: boolean = (vscode.workspace.workspaceFolders !== undefined);
+                vscode.commands.executeCommand("vscode.openFolder", outputUri, hasOpenFolder);
             }
         }
     }));
