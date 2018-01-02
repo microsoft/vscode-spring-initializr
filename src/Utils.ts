@@ -13,8 +13,7 @@ export namespace Utils {
     }
 
     export async function downloadFile(targetUrl: string, readContent?: boolean): Promise<string> {
-        const tempFilePath: string = path.
-            join(getTempFolder(), md5(targetUrl));
+        const tempFilePath: string = path.join(getTempFolder(), md5(targetUrl));
         await fse.ensureDir(getTempFolder());
         if (await fse.pathExists(tempFilePath)) {
             await fse.remove(tempFilePath);
