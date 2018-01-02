@@ -47,9 +47,9 @@ export class DependencyManager {
             ret.push({
                 itemType: "command",
                 id: this.selectedIds.join(","),
-                label: "$(checklist) Selected dependencies",
+                label: `$(checklist) Selected ${this.selectedIds.length} dependenc${this.selectedIds.length === 1 ? "y" : "ies"}`,
                 description: "",
-                detail: this.getSelectedDependencies().map((dep: IDependency) => dep.name).join(",")
+                detail: "Finish ?"
             });
         }
 
@@ -57,7 +57,7 @@ export class DependencyManager {
             return {
                 itemType: "dependency",
                 id: dep.id,
-                label: `${this.selectedIds.indexOf(dep.id) >= 0 ? "$(check)" : PLACEHOLDER} ${dep.name}`,
+                label: `${this.selectedIds.indexOf(dep.id) >= 0 ? "$(check) " : PLACEHOLDER}${dep.name}`,
                 description: dep.group,
                 detail: dep.description
             };
