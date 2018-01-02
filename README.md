@@ -26,7 +26,7 @@ ext install vscode-spring-initializr
 ## Use
 
 - Launch VS Code
-- Press `Ctrl + Shift + P` to open command palett
+- Press `Ctrl + Shift + P` to open command palette
 - Type `Spring Initializr` to start generating a project
 - Complete the basic information and choose dependencies from:
     - Search dependencies
