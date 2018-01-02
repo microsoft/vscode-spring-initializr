@@ -4,6 +4,11 @@
   "description": "",
   "version": "0.0.1",
   "publisher": "microsoft",
+  "homepage": "https://github.com/Microsoft/vscode-spring-initializr/develop/README.md",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Microsoft/vscode-spring-initializr.git"
+  },
   "engines": {
     "vscode": "^1.19.1"
   },
