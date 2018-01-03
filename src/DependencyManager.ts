@@ -3,6 +3,7 @@ import { IDependency } from "./Dependency";
 import { Utils } from "./Utils";
 
 const PLACEHOLDER: string = "";
+const HINT_CONFIRM: string = "Press <Enter> to continue.";
 export class DependencyManager {
 
     private static recommended: IDependencyQuickPickItem = {
@@ -10,7 +11,7 @@ export class DependencyManager {
         id: "web,security,azure-active-directory",
         label: "$(thumbsup) Recommended",
         description: "",
-        detail: "Web,Security,Azure Active Directory"
+        detail: "Web, Security, Azure Active Directory"
     };
 
     private static lastselected: IDependencyQuickPickItem = null;
@@ -18,10 +19,9 @@ export class DependencyManager {
     public dict: { [key: string]: IDependency } = {};
     public selectedIds: string[] = [];
 
-    public static UPDATE_LAST_USED_DEPENDENCIES(v: IDependencyQuickPickItem): void {
-        DependencyManager.lastselected = Object.assign({}, v, {
-            label: "$(clock) Last used"
-        });
+    public updateLastUsedDependencies(v: IDependencyQuickPickItem): void {
+        Utils.writeFileToExtensionRoot("last_used_dependencies", v.id);
+        DependencyManager.lastselected = this.genLastSelectedItem(v.id);
     }
 
     public async initialize(): Promise<void> {
@@ -31,6 +31,8 @@ export class DependencyManager {
         for (const dep of this.dependencies) {
             this.dict[dep.id] = dep;
         }
+        const idList: string = await Utils.readFileFromExtensionRoot("last_used_dependencies");
+        DependencyManager.lastselected = this.genLastSelectedItem(idList);
     }
 
     public async getQuickPickItems(): Promise<IDependencyQuickPickItem[]> {
@@ -49,7 +51,7 @@ export class DependencyManager {
                 id: this.selectedIds.join(","),
                 label: `$(checklist) Selected ${this.selectedIds.length} dependenc${this.selectedIds.length === 1 ? "y" : "ies"}`,
                 description: "",
-                detail: "Finish ?"
+                detail: HINT_CONFIRM
             });
         }
 
@@ -81,6 +83,20 @@ export class DependencyManager {
         }
     }
 
+    private genLastSelectedItem(idList: string): IDependencyQuickPickItem {
+        const nameList: string[] = idList && idList.split(",").map((id: string) => this.dict[id].name).filter(Boolean);
+        if (nameList && nameList.length) {
+            return {
+                itemType: "command",
+                id: idList,
+                label: "$(clock) Last used",
+                description: "",
+                detail: nameList.join(", ")
+            };
+        } else {
+            return null;
+        }
+    }
 }
 
 export interface IDependencyQuickPickItem extends QuickPickItem {

@@ -7,6 +7,7 @@ import { Utils } from "./Utils";
 import { VSCodeUI } from "./VSCodeUI";
 
 export function activate(context: vscode.ExtensionContext): void {
+    Utils.loadPackageInfo(context);
 
     const STEP1_MESSAGE: string = "Input Group Id for your project. (Step 1/3)\t";
     const STEP2_MESSAGE: string = "Input Artifact Id for your project. (Step 2/3)\t";
@@ -42,7 +43,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
                         p.report({ message: "Starting to unzip..." });
                         fs.createReadStream(filepath).pipe(unzip.Extract({ path: outputUri.fsPath })).on("close", () => {
-                            DependencyManager.UPDATE_LAST_USED_DEPENDENCIES(current);
+                            manager.updateLastUsedDependencies(current);
                             resolve();
                         }).on("error", (err: Error) => {
                             vscode.window.showErrorMessage(err.message);
