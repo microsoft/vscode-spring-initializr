@@ -16,14 +16,20 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:spring.initializr.generate"
+    "onCommand:spring.initializr.maven",
+    "onCommand:spring.initializr.gradle"
   ],
   "main": "./out/extension",
   "contributes": {
     "commands": [
       {
-        "command": "spring.initializr.generate",
+        "command": "spring.initializr.maven",
         "title": "Generate a Maven Project",
+        "category": "Spring Initializr"
+      },
+      {
+        "command": "spring.initializr.gradle",
+        "title": "Generate a Gradle Project",
         "category": "Spring Initializr"
       }
     ]
