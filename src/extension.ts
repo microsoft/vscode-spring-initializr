@@ -96,10 +96,10 @@ export function deactivate(): void {
     // this method is called when your extension is deactivated
 }
 
-function groupIdValidation(_value: string): string {
-    return null;
+function groupIdValidation(value: string): string {
+    return (value === "" || /^[a-z_][a-z0-9_]*(\.[a-z_][a-z0-9_]*)*$/.test(value)) ? null : "Invalid Group Id";
 }
 
-function artifactIdValidation(_value: string): string {
-    return null;
+function artifactIdValidation(value: string): string {
+    return (value === "" || /^[a-z]+(-[a-z]+)*$/.test(value)) ? null : "Invalid Artifact Id";
 }
