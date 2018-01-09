@@ -30,12 +30,12 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 async function generateProjectRoutine(projectType: string, transaction?: Transaction): Promise<void> {
     transaction.customProperties.finishedSteps = [];
     // Step: Group Id
-    const groupId: string = await VSCodeUI.getFromInputBox({ prompt: STEP1_MESSAGE, placeHolder: "e.g. com.example" });
+    const groupId: string = await VSCodeUI.getFromInputBox({ prompt: STEP1_MESSAGE, placeHolder: "e.g. com.example", validateInput: groupIdValidation });
     if (groupId === undefined) { return; }
     transaction.customProperties.finishedSteps.push("GroupId");
 
     // Step: Artifact Id
-    const artifactId: string = await VSCodeUI.getFromInputBox({ prompt: STEP2_MESSAGE, placeHolder: "e.g. demo" });
+    const artifactId: string = await VSCodeUI.getFromInputBox({ prompt: STEP2_MESSAGE, placeHolder: "e.g. demo", validateInput: artifactIdValidation });
     if (artifactId === undefined) { return; }
     transaction.customProperties.finishedSteps.push("ArtifactId");
 
@@ -64,7 +64,13 @@ async function generateProjectRoutine(projectType: string, transaction?: Transac
     await vscode.window.withProgress({ location: vscode.ProgressLocation.Window }, (p: vscode.Progress<{ message?: string }>) => new Promise<void>(
         async (resolve: () => void, _reject: (e: Error) => void): Promise<void> => {
             p.report({ message: "Downloading zip package..." });
-            const targetUrl: string = `https://start.spring.io/starter.zip?type=${projectType}-project&groupId=${groupId}&artifactId=${artifactId}&style=${current.id}`;
+            let targetUrl: string = `https://start.spring.io/starter.zip?type=${projectType}-project&style=${current.id}`;
+            if (groupId) {
+                targetUrl += `&groupId=${groupId}`;
+            }
+            if (artifactId) {
+                targetUrl += `&artifactId=${artifactId}`;
+            }
             const filepath: string = await Utils.downloadFile(targetUrl);
 
             p.report({ message: "Starting to unzip..." });
@@ -88,4 +94,12 @@ async function generateProjectRoutine(projectType: string, transaction?: Transac
 
 export function deactivate(): void {
     // this method is called when your extension is deactivated
+}
+
+function groupIdValidation(_value: string): string {
+    return null;
+}
+
+function artifactIdValidation(_value: string): string {
+    return null;
 }
