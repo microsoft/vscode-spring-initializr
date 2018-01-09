@@ -7,10 +7,12 @@ import { Utils } from "./Utils";
 
 const PLACEHOLDER: string = "";
 const HINT_CONFIRM: string = "Press <Enter> to continue.";
+const DEPENDENCIES_HISTORY_FILENAME: string = ".last_used_dependencies";
+
 export class DependencyManager {
 
     private static recommended: IDependencyQuickPickItem = {
-        itemType: "command",
+        itemType: "recommendation",
         id: "web,security,azure-active-directory",
         label: "$(thumbsup) Recommended",
         description: "",
@@ -23,7 +25,7 @@ export class DependencyManager {
     public selectedIds: string[] = [];
 
     public updateLastUsedDependencies(v: IDependencyQuickPickItem): void {
-        Utils.writeFileToExtensionRoot("last_used_dependencies", v.id);
+        Utils.writeFileToExtensionRoot(DEPENDENCIES_HISTORY_FILENAME, v.id);
         DependencyManager.lastselected = this.genLastSelectedItem(v.id);
     }
 
@@ -34,7 +36,7 @@ export class DependencyManager {
         for (const dep of this.dependencies) {
             this.dict[dep.id] = dep;
         }
-        const idList: string = await Utils.readFileFromExtensionRoot("last_used_dependencies");
+        const idList: string = await Utils.readFileFromExtensionRoot(DEPENDENCIES_HISTORY_FILENAME);
         DependencyManager.lastselected = this.genLastSelectedItem(idList);
     }
 
@@ -50,7 +52,7 @@ export class DependencyManager {
             ret.push(DependencyManager.recommended);
         } else {
             ret.push({
-                itemType: "command",
+                itemType: "selection",
                 id: this.selectedIds.join(","),
                 label: `$(checklist) Selected ${this.selectedIds.length} dependenc${this.selectedIds.length === 1 ? "y" : "ies"}`,
                 description: "",
@@ -90,7 +92,7 @@ export class DependencyManager {
         const nameList: string[] = idList && idList.split(",").map((id: string) => this.dict[id].name).filter(Boolean);
         if (nameList && nameList.length) {
             return {
-                itemType: "command",
+                itemType: "lastUsed",
                 id: idList,
                 label: "$(clock) Last used",
                 description: "",

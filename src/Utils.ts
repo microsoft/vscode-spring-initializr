@@ -15,8 +15,8 @@ let EXTENSION_VERSION: string;
 let EXTENSION_AI_KEY: string;
 
 export namespace Utils {
-    export function loadPackageInfo(context: ExtensionContext): void {
-        const { publisher, name, version, aiKey } = fse.readJSONSync(context.asAbsolutePath("./package.json"));
+    export async function loadPackageInfo(context: ExtensionContext): Promise<void> {
+        const { publisher, name, version, aiKey } = await fse.readJSON(context.asAbsolutePath("./package.json"));
         EXTENSION_AI_KEY = aiKey;
         EXTENSION_PUBLISHER = publisher;
         EXTENSION_NAME = name;
