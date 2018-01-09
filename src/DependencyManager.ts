@@ -23,7 +23,7 @@ export class DependencyManager {
     public selectedIds: string[] = [];
 
     public updateLastUsedDependencies(v: IDependencyQuickPickItem): void {
-        Utils.writeFileToExtensionRoot("last_used_dependencies", v.id);
+        Utils.writeFileToExtensionRoot(".last_used_dependencies", v.id);
         DependencyManager.lastselected = this.genLastSelectedItem(v.id);
     }
 
