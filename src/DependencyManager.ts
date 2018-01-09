@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license.
+
 import { QuickPickItem } from "vscode";
 import { IDependency } from "./Dependency";
 import { Utils } from "./Utils";
