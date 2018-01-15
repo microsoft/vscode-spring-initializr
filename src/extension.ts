@@ -5,7 +5,7 @@
 import * as fs from "fs";
 import * as unzip from "unzip";
 import * as vscode from "vscode";
-import { TelemetryWrapper, Transaction } from "vscode-extension-telemetry-wrapper";
+import { Session, TelemetryWrapper } from "vscode-extension-telemetry-wrapper";
 import { DependencyManager, IDependencyQuickPickItem } from "./DependencyManager";
 import { Utils } from "./Utils";
 import { VSCodeUI } from "./VSCodeUI";
@@ -20,25 +20,25 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
     ["maven", "gradle"].forEach((projectType: string) => {
         context.subscriptions.push(
-            TelemetryWrapper.registerCommand(`spring.initializr.${projectType}`, (t: Transaction) => {
+            TelemetryWrapper.registerCommand(`spring.initializr.${projectType}`, (t: Session) => {
                 return async () => await generateProjectRoutine(projectType, t);
             })
         );
     });
 }
 
-async function generateProjectRoutine(projectType: string, transaction?: Transaction): Promise<void> {
-    transaction.customProperties.finishedSteps = [];
+async function generateProjectRoutine(projectType: string, session?: Session): Promise<void> {
+    session.extraProperties().finishedSteps = [];
     // Step: Group Id
     const groupId: string = await VSCodeUI.getFromInputBox({ prompt: STEP1_MESSAGE, placeHolder: "e.g. com.example", validateInput: groupIdValidation });
     if (groupId === undefined) { return; }
-    transaction.customProperties.finishedSteps.push("GroupId");
-
+    session.extraProperties().finishedSteps.push("GroupId");
+    session.info("GroupId inputed.");
     // Step: Artifact Id
     const artifactId: string = await VSCodeUI.getFromInputBox({ prompt: STEP2_MESSAGE, placeHolder: "e.g. demo", validateInput: artifactIdValidation });
     if (artifactId === undefined) { return; }
-    transaction.customProperties.finishedSteps.push("ArtifactId");
-
+    session.customProperties.finishedSteps.push("ArtifactId");
+    session.info("ArtifactId inputed.");
     // Step: Dependencies
     let current: IDependencyQuickPickItem = null;
     const manager: DependencyManager = new DependencyManager();
@@ -51,14 +51,15 @@ async function generateProjectRoutine(projectType: string, transaction?: Transac
         }
     } while (current && current.itemType === "dependency");
     if (!current) { return; }
-    transaction.customProperties.finishedSteps.push("Dependencies");
-    transaction.customProperties.depsType = current.itemType;
-    transaction.customProperties.dependencies = current.id;
-
+    session.extraProperties().finishedSteps.push("Dependencies");
+    session.info("Dependencies selected.");
+    session.extraProperties().depsType = current.itemType;
+    session.extraProperties().dependencies = current.id;
     // Step: Choose target folder
     const outputUri: vscode.Uri = await VSCodeUI.openDialogForFolder({ openLabel: "Generate into this folder" });
     if (!outputUri) { return; }
-    transaction.customProperties.finishedSteps.push("TargetFolder");
+    session.extraProperties().finishedSteps.push("TargetFolder");
+    session.info("TargetFolder selected.");
 
     // Step: Download & Unzip
     await vscode.window.withProgress({ location: vscode.ProgressLocation.Window }, (p: vscode.Progress<{ message?: string }>) => new Promise<void>(
@@ -83,7 +84,8 @@ async function generateProjectRoutine(projectType: string, transaction?: Transac
             });
         }
     ));
-    transaction.customProperties.finishedSteps.push("DownloadUnzip");
+    session.extraProperties().finishedSteps.push("DownloadUnzip");
+    session.info("Package unzipped");
     //Open in new window
     const choice: string = await vscode.window.showInformationMessage(`Successfully generated. Location: ${outputUri.fsPath}`, "Open it");
     if (choice === "Open it") {
