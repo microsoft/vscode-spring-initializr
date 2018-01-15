@@ -8,7 +8,6 @@ A lightweight extension based on Spring Initializr to generate quickstart Spring
 
 - Search for dependencies
 - Quickstart with last settings
-- Quickstart with recommended settings
 
 ## Requirements
 - VS Code (version 1.19.0 or later)
@@ -27,11 +26,10 @@ ext install vscode-spring-initializr
 
 - Launch VS Code
 - Press `Ctrl + Shift + P` to open command palette
-- Type `Spring Initializr` to start generating a project
+- Type `Spring Initializr` to start generating a Maven or Gradle project
 - Complete the basic information and choose dependencies from:
     - Search dependencies
     - Last settings
-    - Recommended settings
 - Press F5
 
 ## Feedback and Questions
