@@ -37,7 +37,7 @@ async function generateProjectRoutine(projectType: string, session?: Session): P
     // Step: Artifact Id
     const artifactId: string = await VSCodeUI.getFromInputBox({ prompt: STEP2_MESSAGE, placeHolder: "e.g. demo", validateInput: artifactIdValidation });
     if (artifactId === undefined) { return; }
-    session.customProperties.finishedSteps.push("ArtifactId");
+    session.extraProperties().finishedSteps.push("ArtifactId");
     session.info("ArtifactId inputed.");
     // Step: Dependencies
     let current: IDependencyQuickPickItem = null;
@@ -103,5 +103,5 @@ function groupIdValidation(value: string): string {
 }
 
 function artifactIdValidation(value: string): string {
-    return (value === "" || /^[a-z]+(-[a-z]+)*$/.test(value)) ? null : "Invalid Artifact Id";
+    return (value === "" || /^[a-z_][a-z0-9_]*(-[a-z_][a-z0-9_]*)*$/.test(value)) ? null : "Invalid Artifact Id";
 }
