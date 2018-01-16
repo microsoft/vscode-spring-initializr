@@ -103,5 +103,5 @@ function groupIdValidation(value: string): string {
 }
 
 function artifactIdValidation(value: string): string {
-    return (value === "" || /^[a-z][a-z0-9]*(-[a-z][a-z0-9]*)*$/.test(value)) ? null : "Invalid Artifact Id";
+    return (value === "" || /^[a-z_][a-z0-9_]*(-[a-z_][a-z0-9_]*)*$/.test(value)) ? null : "Invalid Artifact Id";
 }
