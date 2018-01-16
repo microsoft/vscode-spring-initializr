@@ -37,7 +37,7 @@ async function generateProjectRoutine(projectType: string, session?: Session): P
     // Step: Artifact Id
     const artifactId: string = await VSCodeUI.getFromInputBox({ prompt: STEP2_MESSAGE, placeHolder: "e.g. demo", validateInput: artifactIdValidation });
     if (artifactId === undefined) { return; }
-    session.customProperties.finishedSteps.push("ArtifactId");
+    session.extraProperties().finishedSteps.push("ArtifactId");
     session.info("ArtifactId inputed.");
     // Step: Dependencies
     let current: IDependencyQuickPickItem = null;
