@@ -59,7 +59,7 @@ async function generateProjectRoutine(projectType: string, session?: Session): P
     const outputUri: vscode.Uri = await VSCodeUI.openDialogForFolder({ openLabel: "Generate into this folder" });
     if (!outputUri) { return; }
     session.extraProperties().finishedSteps.push("TargetFolder");
-    session.info("TargetFolder selected.");
+    session.info("Target folder selected.");
 
     // Step: Download & Unzip
     await vscode.window.withProgress({ location: vscode.ProgressLocation.Window }, (p: vscode.Progress<{ message?: string }>) => new Promise<void>(
@@ -85,7 +85,7 @@ async function generateProjectRoutine(projectType: string, session?: Session): P
         }
     ));
     session.extraProperties().finishedSteps.push("DownloadUnzip");
-    session.info("Package unzipped");
+    session.info("Package unzipped.");
     //Open in new window
     const choice: string = await vscode.window.showInformationMessage(`Successfully generated. Location: ${outputUri.fsPath}`, "Open it");
     if (choice === "Open it") {
