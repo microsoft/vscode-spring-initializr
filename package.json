@@ -1,6 +1,6 @@
 {
   "name": "vscode-spring-initializr",
-  "displayName": "Spring Initializr",
+  "displayName": "Spring Initializr Java Support",
   "description": "A lightweight extension based on Spring Initializr to generate quickstart Spring Boot Java projects.",
   "version": "0.1.0",
   "icon": "resources/logo.png",
