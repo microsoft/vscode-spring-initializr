@@ -35,7 +35,7 @@ ext install vscode-spring-initializr
 - Press F5
 
 ## Feedback and Questions
-You can find the full list of issues at [Issue Tracker](https://github.com/Microsoft/vscode-spring-initializr/issues). You can submit a [bug or feature suggestion](https://github.com/Microsoft/vscode-spring-initializr/issues/new), and participate community driven [![Gitter](https://badges.gitter.im/Microsoft/vscode-java-debug.svg)](https://gitter.im/DevDivSpring/Lobby?source=orgpage)
+You can find the full list of issues at [Issue Tracker](https://github.com/Microsoft/vscode-spring-initializr/issues). You can submit a [bug or feature suggestion](https://github.com/Microsoft/vscode-spring-initializr/issues/new), and participate community driven [![Gitter](https://badges.gitter.im/DevDivSpring/Lobby.svg)](https://gitter.im/DevDivSpring/Lobby?source=orgpage)
 
 ## License
 This extension is licensed under [MIT License](./LICENSE.txt).
