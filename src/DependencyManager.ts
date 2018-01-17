@@ -11,13 +11,13 @@ const DEPENDENCIES_HISTORY_FILENAME: string = ".last_used_dependencies";
 
 export class DependencyManager {
 
-    private static recommended: IDependencyQuickPickItem = {
-        itemType: "recommendation",
-        id: "web,security,azure-active-directory",
-        label: "$(thumbsup) Recommended",
-        description: "",
-        detail: "Web, Security, Azure Active Directory"
-    };
+    // private static recommended: IDependencyQuickPickItem = {
+    //     itemType: "recommendation",
+    //     id: "web,security,azure-active-directory",
+    //     label: "$(thumbsup) Recommended",
+    //     description: "",
+    //     detail: "Web, Security, Azure Active Directory"
+    // };
 
     private static lastselected: IDependencyQuickPickItem = null;
     public dependencies: IDependency[] = [];
@@ -49,7 +49,7 @@ export class DependencyManager {
             if (DependencyManager.lastselected) {
                 ret.push(DependencyManager.lastselected);
             }
-            ret.push(DependencyManager.recommended);
+            // ret.push(DependencyManager.recommended);
         } else {
             ret.push({
                 itemType: "selection",

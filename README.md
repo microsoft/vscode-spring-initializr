@@ -1,14 +1,15 @@
 
 # Spring Initializr Java Support
-
-[![Gitter](https://badges.gitter.im/Microsoft/vscode-java-debug.svg)](https://gitter.im/DevDivSpring/Lobby?source=orgpage)
+[![Marketplace Version](https://vsmarketplacebadge.apphb.com/version-short/vscjava.vscode-spring-initializr.svg)](https://marketplace.visualstudio.com/items?itemName=vscjava.vscode-spring-initializr)
+[![Installs](https://vsmarketplacebadge.apphb.com/installs-short/vscjava.vscode-spring-initializr.svg)](https://marketplace.visualstudio.com/items?itemName=vscjava.vscode-spring-initializr)
+[![Rating](https://vsmarketplacebadge.apphb.com/rating-short/vscjava.vscode-spring-initializr.svg)](https://marketplace.visualstudio.com/items?itemName=vscjava.vscode-spring-initializr)
+[![Gitter](https://badges.gitter.im/DevDivSpring/Lobby.svg)](https://gitter.im/DevDivSpring/Lobby)
 
 ## Overview
 A lightweight extension based on Spring Initializr to generate quickstart Spring Boot Java projects using Visual Studio Code (VS Code). Here's a list of features:
 
 - Search for dependencies
 - Quickstart with last settings
-- Quickstart with recommended settings
 
 ## Requirements
 - VS Code (version 1.19.0 or later)
@@ -27,15 +28,14 @@ ext install vscode-spring-initializr
 
 - Launch VS Code
 - Press `Ctrl + Shift + P` to open command palette
-- Type `Spring Initializr` to start generating a project
+- Type `Spring Initializr` to start generating a Maven or Gradle project
 - Complete the basic information and choose dependencies from:
     - Search dependencies
     - Last settings
-    - Recommended settings
 - Press F5
 
 ## Feedback and Questions
-You can find the full list of issues at [Issue Tracker](https://github.com/Microsoft/vscode-spring-initializr/issues). You can submit a [bug or feature suggestion](https://github.com/Microsoft/vscode-spring-initializr/issues/new), and participate community driven [![Gitter](https://badges.gitter.im/Microsoft/vscode-java-debug.svg)](https://gitter.im/DevDivSpring/Lobby?source=orgpage)
+You can find the full list of issues at [Issue Tracker](https://github.com/Microsoft/vscode-spring-initializr/issues). You can submit a [bug or feature suggestion](https://github.com/Microsoft/vscode-spring-initializr/issues/new), and participate community driven [![Gitter](https://badges.gitter.im/DevDivSpring/Lobby.svg)](https://gitter.im/DevDivSpring/Lobby?source=orgpage)
 
 ## License
 This extension is licensed under [MIT License](./LICENSE.txt).
