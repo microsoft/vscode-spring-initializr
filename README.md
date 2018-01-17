@@ -1,7 +1,9 @@
 
 # Spring Initializr Java Support
-
-[![Gitter](https://badges.gitter.im/Microsoft/vscode-java-debug.svg)](https://gitter.im/DevDivSpring/Lobby?source=orgpage)
+[![Marketplace Version](https://vsmarketplacebadge.apphb.com/version-short/vscjava.vscode-spring-initializr.svg)](https://marketplace.visualstudio.com/items?itemName=vscjava.vscode-spring-initializr)
+[![Installs](https://vsmarketplacebadge.apphb.com/installs-short/vscjava.vscode-spring-initializr.svg)](https://marketplace.visualstudio.com/items?itemName=vscjava.vscode-spring-initializr)
+[![Rating](https://vsmarketplacebadge.apphb.com/rating-short/vscjava.vscode-spring-initializr.svg)](https://marketplace.visualstudio.com/items?itemName=vscjava.vscode-spring-initializr)
+[![Gitter](https://badges.gitter.im/DevDivSpring/Lobby.svg)](https://gitter.im/DevDivSpring/Lobby)
 
 ## Overview
 A lightweight extension based on Spring Initializr to generate quickstart Spring Boot Java projects using Visual Studio Code (VS Code). Here's a list of features:
