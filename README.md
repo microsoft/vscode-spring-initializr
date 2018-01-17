@@ -6,6 +6,9 @@
 [![Gitter](https://badges.gitter.im/DevDivSpring/Lobby.svg)](https://gitter.im/DevDivSpring/Lobby)
 
 ## Overview
+
+<p align="center"><img width="700" src="https://github.com/Microsoft/vscode-spring-initializr/blob/develop/spring-initializr-vsc.gif"></p>
+
 A lightweight extension based on Spring Initializr to generate quickstart Spring Boot Java projects using Visual Studio Code (VS Code). Here's a list of features:
 
 - Search for dependencies
