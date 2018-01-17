@@ -28,16 +28,16 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 }
 
 async function generateProjectRoutine(projectType: string, session?: Session): Promise<void> {
-    session.extraProperties().finishedSteps = [];
+    session.extraProperties.finishedSteps = [];
     // Step: Group Id
     const groupId: string = await VSCodeUI.getFromInputBox({ prompt: STEP1_MESSAGE, placeHolder: "e.g. com.example", validateInput: groupIdValidation });
     if (groupId === undefined) { return; }
-    session.extraProperties().finishedSteps.push("GroupId");
+    session.extraProperties.finishedSteps.push("GroupId");
     session.info("GroupId inputed.");
     // Step: Artifact Id
     const artifactId: string = await VSCodeUI.getFromInputBox({ prompt: STEP2_MESSAGE, placeHolder: "e.g. demo", validateInput: artifactIdValidation });
     if (artifactId === undefined) { return; }
-    session.extraProperties().finishedSteps.push("ArtifactId");
+    session.extraProperties.finishedSteps.push("ArtifactId");
     session.info("ArtifactId inputed.");
     // Step: Dependencies
     let current: IDependencyQuickPickItem = null;
@@ -51,14 +51,14 @@ async function generateProjectRoutine(projectType: string, session?: Session): P
         }
     } while (current && current.itemType === "dependency");
     if (!current) { return; }
-    session.extraProperties().finishedSteps.push("Dependencies");
+    session.extraProperties.finishedSteps.push("Dependencies");
     session.info("Dependencies selected.");
-    session.extraProperties().depsType = current.itemType;
-    session.extraProperties().dependencies = current.id;
+    session.extraProperties.depsType = current.itemType;
+    session.extraProperties.dependencies = current.id;
     // Step: Choose target folder
     const outputUri: vscode.Uri = await VSCodeUI.openDialogForFolder({ openLabel: "Generate into this folder" });
     if (!outputUri) { return; }
-    session.extraProperties().finishedSteps.push("TargetFolder");
+    session.extraProperties.finishedSteps.push("TargetFolder");
     session.info("Target folder selected.");
 
     // Step: Download & Unzip
@@ -84,7 +84,7 @@ async function generateProjectRoutine(projectType: string, session?: Session): P
             });
         }
     ));
-    session.extraProperties().finishedSteps.push("DownloadUnzip");
+    session.extraProperties.finishedSteps.push("DownloadUnzip");
     session.info("Package unzipped.");
     //Open in new window
     const choice: string = await vscode.window.showInformationMessage(`Successfully generated. Location: ${outputUri.fsPath}`, "Open it");
