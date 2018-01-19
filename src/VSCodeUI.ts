@@ -9,7 +9,7 @@ export namespace VSCodeUI {
     const terminals: { [id: string]: Terminal } = {};
 
     export function runInTerminal(command: string, options?: ITerminalOptions): void {
-        const defaultOptions: ITerminalOptions = { addNewLine: true, name: "Maven" };
+        const defaultOptions: ITerminalOptions = { addNewLine: true, name: "default" };
         const { addNewLine, name, cwd } = Object.assign(defaultOptions, options);
         if (terminals[name] === undefined) {
             terminals[name] = window.createTerminal({ name });
