@@ -45,7 +45,7 @@ export namespace Utils {
 
         return await new Promise((resolve: (res: string) => void, reject: (e: Error) => void): void => {
             const urlObj: url.Url = url.parse(targetUrl);
-            const options: Object = Object.assign({ headers: { 'User-Agent': `${getExtensionId()}/${getVersion()}` } }, urlObj);
+            const options: Object = Object.assign({ headers: { 'User-Agent': `vscode/${getVersion()}` } }, urlObj);
             https.get(options, (res: http.IncomingMessage) => {
                 let rawData: string;
                 let ws: fse.WriteStream;
