@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import * as fse from "fs-extra";
-import { IncomingMessage } from "http";
+import * as http from "http";
 import * as https from "https";
 import * as md5 from "md5";
 import * as os from "os";
@@ -44,7 +44,9 @@ export namespace Utils {
         }
 
         return await new Promise((resolve: (res: string) => void, reject: (e: Error) => void): void => {
-            https.get(url.parse(targetUrl), (res: IncomingMessage) => {
+            const urlObj: url.Url = url.parse(targetUrl);
+            const options: Object = Object.assign({ headers: { 'User-Agent': `${getExtensionId()}/${getVersion()}` } }, urlObj);
+            https.get(options, (res: http.IncomingMessage) => {
                 let rawData: string;
                 let ws: fse.WriteStream;
                 if (readContent) {
