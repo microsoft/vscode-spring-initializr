@@ -36,7 +36,7 @@ export namespace Utils {
         return path.join(os.tmpdir(), getExtensionId());
     }
 
-    export async function downloadFile(targetUrl: string, readContent?: boolean): Promise<string> {
+    export async function downloadFile(targetUrl: string, readContent?: boolean, customHeaders?: {}): Promise<string> {
         const tempFilePath: string = path.join(getTempFolder(), md5(targetUrl));
         await fse.ensureDir(getTempFolder());
         if (await fse.pathExists(tempFilePath)) {
@@ -45,7 +45,7 @@ export namespace Utils {
 
         return await new Promise((resolve: (res: string) => void, reject: (e: Error) => void): void => {
             const urlObj: url.Url = url.parse(targetUrl);
-            const options: Object = Object.assign({ headers: { 'User-Agent': `vscode/${getVersion()}` } }, urlObj);
+            const options: Object = Object.assign({ headers: Object.assign({}, customHeaders, { 'User-Agent': `vscode/${getVersion()}` }) }, urlObj);
             https.get(options, (res: http.IncomingMessage) => {
                 let rawData: string;
                 let ws: fse.WriteStream;

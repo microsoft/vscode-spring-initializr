@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { QuickPickItem } from "vscode";
-import { IDependency } from "./Dependency";
+import { IDependency } from "./Model";
 import { Utils } from "./Utils";
 
 const PLACEHOLDER: string = "";
@@ -29,8 +29,8 @@ export class DependencyManager {
         DependencyManager.lastselected = this.genLastSelectedItem(v.id);
     }
 
-    public async initialize(): Promise<void> {
-        const DEPENDENCY_URL: string = "https://start.spring.io/ui/dependencies.json?version=1.5.9.RELEASE";
+    public async initialize(serviceUrl: string, bootVersion: string): Promise<void> {
+        const DEPENDENCY_URL: string = `${serviceUrl}/ui/dependencies.json?version=${bootVersion}`;
         const depsJSON: { dependencies: IDependency[] } = JSON.parse(await Utils.downloadFile(DEPENDENCY_URL, true));
         this.dependencies = depsJSON.dependencies;
         for (const dep of this.dependencies) {
@@ -40,9 +40,9 @@ export class DependencyManager {
         DependencyManager.lastselected = this.genLastSelectedItem(idList);
     }
 
-    public async getQuickPickItems(): Promise<IDependencyQuickPickItem[]> {
+    public async getQuickPickItems(serviceUrl: string, bootVersion: string): Promise<IDependencyQuickPickItem[]> {
         if (this.dependencies.length === 0) {
-            await this.initialize();
+            await this.initialize(serviceUrl, bootVersion);
         }
         const ret: IDependencyQuickPickItem[] = [];
         if (this.selectedIds.length === 0) {

@@ -7,6 +7,8 @@ import * as unzip from "unzip";
 import * as vscode from "vscode";
 import { Session, TelemetryWrapper } from "vscode-extension-telemetry-wrapper";
 import { DependencyManager, IDependencyQuickPickItem } from "./DependencyManager";
+import { Metadata } from "./Metadata";
+import { IValue } from "./Model";
 import { Utils } from "./Utils";
 import { VSCodeUI } from "./VSCodeUI";
 
@@ -18,7 +20,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     await Utils.loadPackageInfo(context);
     await TelemetryWrapper.initilizeFromJsonFile(context.asAbsolutePath("package.json"));
 
-    ["maven", "gradle"].forEach((projectType: string) => {
+    ["maven-project", "gradle-project"].forEach((projectType: string) => {
         context.subscriptions.push(
             TelemetryWrapper.registerCommand(`spring.initializr.${projectType}`, (t: Session) => {
                 return async () => await generateProjectRoutine(projectType, t);
@@ -29,6 +31,17 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
 async function generateProjectRoutine(projectType: string, session?: Session): Promise<void> {
     session.extraProperties.finishedSteps = [];
+    const metadata: Metadata = new Metadata(vscode.workspace.getConfiguration("spring.initializr").get<string>("serviceUrl"));
+
+    // Step: bootVersion
+    const bootVersion: IValue = await VSCodeUI.getQuickPick<IValue>(
+        metadata.getBootVersion(),
+        version => version.name,
+        version => version.description,
+        null
+    );
+    session.extraProperties.finishedSteps.push("BootVersion");
+    session.info("BootVersion selected.");
     // Step: Group Id
     const groupId: string = await VSCodeUI.getFromInputBox({ prompt: STEP1_MESSAGE, placeHolder: "e.g. com.example", validateInput: groupIdValidation });
     if (groupId === undefined) { return; }
@@ -44,7 +57,7 @@ async function generateProjectRoutine(projectType: string, session?: Session): P
     const manager: DependencyManager = new DependencyManager();
     do {
         current = await vscode.window.showQuickPick(
-            manager.getQuickPickItems(), { ignoreFocusOut: true, placeHolder: STEP3_MESSAGE, matchOnDetail: true, matchOnDescription: true }
+            manager.getQuickPickItems(metadata.serviceUrl, bootVersion.id), { ignoreFocusOut: true, placeHolder: STEP3_MESSAGE, matchOnDetail: true, matchOnDescription: true }
         );
         if (current && current.itemType === "dependency") {
             manager.toggleDependency(current.id);
@@ -65,7 +78,7 @@ async function generateProjectRoutine(projectType: string, session?: Session): P
     await vscode.window.withProgress({ location: vscode.ProgressLocation.Window }, (p: vscode.Progress<{ message?: string }>) => new Promise<void>(
         async (resolve: () => void, _reject: (e: Error) => void): Promise<void> => {
             p.report({ message: "Downloading zip package..." });
-            let targetUrl: string = `https://start.spring.io/starter.zip?type=${projectType}-project&style=${current.id}`;
+            let targetUrl: string = `${metadata.serviceUrl}/starter.zip?type=${projectType}&dependencies=${current.id}`;
             if (groupId) {
                 targetUrl += `&groupId=${groupId}`;
             }

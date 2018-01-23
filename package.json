@@ -18,23 +18,34 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:spring.initializr.maven",
-    "onCommand:spring.initializr.gradle"
+    "onCommand:spring.initializr.maven-project",
+    "onCommand:spring.initializr.gradle-project"
   ],
   "main": "./out/extension",
   "contributes": {
     "commands": [
       {
-        "command": "spring.initializr.maven",
+        "command": "spring.initializr.maven-project",
         "title": "Generate a Maven Project",
         "category": "Spring Initializr"
       },
       {
-        "command": "spring.initializr.gradle",
+        "command": "spring.initializr.gradle-project",
         "title": "Generate a Gradle Project",
         "category": "Spring Initializr"
       }
-    ]
+    ],
+    "configuration":{
+      "title": "Spring Initializr",
+      "properties": {
+        "spring.initializr.serviceUrl": {
+          "default": "https://start.spring.io/",
+          "type":"string",
+          "scope": "window",
+          "title": "Spring Initializr Service URL."
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
