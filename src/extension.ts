@@ -44,7 +44,7 @@ async function generateProjectRoutine(projectType: string, session?: Session): P
     const manager: DependencyManager = new DependencyManager();
     do {
         current = await vscode.window.showQuickPick(
-            manager.getQuickPickItems(), { ignoreFocusOut: true, placeHolder: STEP3_MESSAGE }
+            manager.getQuickPickItems(), { ignoreFocusOut: true, placeHolder: STEP3_MESSAGE, matchOnDetail: true, matchOnDescription: true }
         );
         if (current && current.itemType === "dependency") {
             manager.toggleDependency(current.id);
