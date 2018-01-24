@@ -1,4 +1,7 @@
-import { ITopLevelAttribute } from "./Model";
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license.
+
+import { IDependency, ITopLevelAttribute } from "./Model";
 import { Utils } from "./Utils";
 
 export class Metadata {
@@ -26,6 +29,27 @@ export class Metadata {
         } else {
             return this.content.bootVersion.values;
         }
+    }
+
+    public async getAvailableDependencies(bootVersion: string): Promise<IDependency[]> {
+        if (!this.content) {
+            await this.update();
+        }
+        if (!this.content.dependencies) {
+            return [];
+        } else {
+            const ret: IDependency[] = [];
+            for (const grp of this.content.dependencies.values) {
+                const group: string = grp.name;
+                ret.push(...grp.values.filter(dep => this.isCompatible(dep, bootVersion)).map(dep => Object.assign({ group }, dep)));
+            }
+            return ret;
+        }
+    }
+
+    private isCompatible(dep: IDependency, bootVersion: string): boolean {
+        // dep.versionRange;
+        return true;
     }
 
     private async update(): Promise<void> {

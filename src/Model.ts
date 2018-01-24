@@ -1,11 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 
-export interface IDependency {
-    id: string;
-    name?: string;
+export interface IDependency extends IValue {
     group?: string;
-    description?: string;
+    versionRange?: string;
 }
 
 export interface ITopLevelAttribute {
@@ -20,6 +18,7 @@ export interface IValue {
     id?: string;
     name?: string;
     description?: string;
+    values?: IValue[];
 }
 
 export enum AttributeType {

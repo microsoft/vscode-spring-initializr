@@ -33,15 +33,6 @@ async function generateProjectRoutine(projectType: string, session?: Session): P
     session.extraProperties.finishedSteps = [];
     const metadata: Metadata = new Metadata(vscode.workspace.getConfiguration("spring.initializr").get<string>("serviceUrl"));
 
-    // Step: bootVersion
-    const bootVersion: IValue = await VSCodeUI.getQuickPick<IValue>(
-        metadata.getBootVersion(),
-        version => version.name,
-        version => version.description,
-        null
-    );
-    session.extraProperties.finishedSteps.push("BootVersion");
-    session.info("BootVersion selected.");
     // Step: Group Id
     const groupId: string = await VSCodeUI.getFromInputBox({ prompt: STEP1_MESSAGE, placeHolder: "e.g. com.example", validateInput: groupIdValidation });
     if (groupId === undefined) { return; }
@@ -52,12 +43,21 @@ async function generateProjectRoutine(projectType: string, session?: Session): P
     if (artifactId === undefined) { return; }
     session.extraProperties.finishedSteps.push("ArtifactId");
     session.info("ArtifactId inputed.");
+    // Step: bootVersion
+    const bootVersion: IValue = await VSCodeUI.getQuickPick<IValue>(
+        metadata.getBootVersion(),
+        version => version.name,
+        version => version.description,
+        null
+    );
+    session.extraProperties.finishedSteps.push("BootVersion");
+    session.info("BootVersion selected.");
     // Step: Dependencies
     let current: IDependencyQuickPickItem = null;
     const manager: DependencyManager = new DependencyManager();
     do {
         current = await vscode.window.showQuickPick(
-            manager.getQuickPickItems(metadata.serviceUrl, bootVersion.id), { ignoreFocusOut: true, placeHolder: STEP3_MESSAGE, matchOnDetail: true, matchOnDescription: true }
+            manager.getQuickPickItems(metadata, bootVersion.id), { ignoreFocusOut: true, placeHolder: STEP3_MESSAGE, matchOnDetail: true, matchOnDescription: true }
         );
         if (current && current.itemType === "dependency") {
             manager.toggleDependency(current.id);

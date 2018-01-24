@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import { QuickPickItem } from "vscode";
+import { Metadata } from "./Metadata";
 import { IDependency } from "./Model";
 import { Utils } from "./Utils";
 
@@ -29,10 +30,8 @@ export class DependencyManager {
         DependencyManager.lastselected = this.genLastSelectedItem(v.id);
     }
 
-    public async initialize(serviceUrl: string, bootVersion: string): Promise<void> {
-        const DEPENDENCY_URL: string = `${serviceUrl}/ui/dependencies.json?version=${bootVersion}`;
-        const depsJSON: { dependencies: IDependency[] } = JSON.parse(await Utils.downloadFile(DEPENDENCY_URL, true));
-        this.dependencies = depsJSON.dependencies;
+    public async initialize(dependencies: IDependency[]): Promise<void> {
+        this.dependencies = dependencies;
         for (const dep of this.dependencies) {
             this.dict[dep.id] = dep;
         }
@@ -40,9 +39,9 @@ export class DependencyManager {
         DependencyManager.lastselected = this.genLastSelectedItem(idList);
     }
 
-    public async getQuickPickItems(serviceUrl: string, bootVersion: string): Promise<IDependencyQuickPickItem[]> {
+    public async getQuickPickItems(metadata: Metadata, bootVersion: string): Promise<IDependencyQuickPickItem[]> {
         if (this.dependencies.length === 0) {
-            await this.initialize(serviceUrl, bootVersion);
+            await this.initialize(await metadata.getAvailableDependencies(bootVersion));
         }
         const ret: IDependencyQuickPickItem[] = [];
         if (this.selectedIds.length === 0) {
