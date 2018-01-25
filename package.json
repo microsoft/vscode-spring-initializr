@@ -42,7 +42,19 @@
           "default": "https://start.spring.io/",
           "type":"string",
           "scope": "window",
-          "title": "Spring Initializr Service URL."
+          "description": "Spring Initializr Service URL."
+        },
+        "spring.initializr.defaultGroupId": {
+          "default": "com.example",
+          "type":"string",
+          "scope": "window",
+          "description": "Default value for Group Id."
+        },
+        "spring.initializr.defaultArtifactId": {
+          "default": "demo",
+          "type":"string",
+          "scope": "window",
+          "description": "Default value for Artifact Id."
         }
       }
     }

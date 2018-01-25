@@ -34,12 +34,24 @@ async function generateProjectRoutine(projectType: string, session?: Session): P
     const metadata: Metadata = new Metadata(vscode.workspace.getConfiguration("spring.initializr").get<string>("serviceUrl"));
 
     // Step: Group Id
-    const groupId: string = await VSCodeUI.getFromInputBox({ prompt: STEP1_MESSAGE, placeHolder: "e.g. com.example", validateInput: groupIdValidation });
+    const defaultGroupId: string = vscode.workspace.getConfiguration("spring.initializr").get<string>("defaultGroupId");
+    const groupId: string = await VSCodeUI.getFromInputBox({
+        prompt: STEP1_MESSAGE,
+        placeHolder: "e.g. com.example",
+        value: defaultGroupId,
+        validateInput: groupIdValidation
+    });
     if (groupId === undefined) { return; }
     session.extraProperties.finishedSteps.push("GroupId");
     session.info("GroupId inputed.");
     // Step: Artifact Id
-    const artifactId: string = await VSCodeUI.getFromInputBox({ prompt: STEP2_MESSAGE, placeHolder: "e.g. demo", validateInput: artifactIdValidation });
+    const defaultArtifactId: string = vscode.workspace.getConfiguration("spring.initializr").get<string>("defaultArtifactId");
+    const artifactId: string = await VSCodeUI.getFromInputBox({
+        prompt: STEP2_MESSAGE,
+        placeHolder: "e.g. demo",
+        value: defaultArtifactId,
+        validateInput: artifactIdValidation
+    });
     if (artifactId === undefined) { return; }
     session.extraProperties.finishedSteps.push("ArtifactId");
     session.info("ArtifactId inputed.");
@@ -112,9 +124,9 @@ export function deactivate(): void {
 }
 
 function groupIdValidation(value: string): string {
-    return (value === "" || /^[a-z_][a-z0-9_]*(\.[a-z_][a-z0-9_]*)*$/.test(value)) ? null : "Invalid Group Id";
+    return (/^[a-z_][a-z0-9_]*(\.[a-z_][a-z0-9_]*)*$/.test(value)) ? null : "Invalid Group Id";
 }
 
 function artifactIdValidation(value: string): string {
-    return (value === "" || /^[a-z_][a-z0-9_]*(-[a-z_][a-z0-9_]*)*$/.test(value)) ? null : "Invalid Artifact Id";
+    return (/^[a-z_][a-z0-9_]*(-[a-z_][a-z0-9_]*)*$/.test(value)) ? null : "Invalid Artifact Id";
 }
