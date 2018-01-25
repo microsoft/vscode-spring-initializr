@@ -1,7 +1,3 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT license.
-
-import * as semver from "semver";
 import { IDependency, ITopLevelAttribute } from "./Model";
 import { Utils } from "./Utils";
 
@@ -48,7 +44,7 @@ export class Metadata {
         }
     }
 
-    private isCompatible(dep: IDependency, bootVersion: string): boolean {
+    private isCompatible(_dep: IDependency, _bootVersion: string): boolean {
         // currently show all dependencies. Need discussion on the way of hiding incompatible ones.
         return true;
     }
