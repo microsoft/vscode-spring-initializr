@@ -35,24 +35,24 @@
         "category": "Spring Initializr"
       }
     ],
-    "configuration":{
+    "configuration": {
       "title": "Spring Initializr",
       "properties": {
         "spring.initializr.serviceUrl": {
           "default": "https://start.spring.io/",
-          "type":"string",
+          "type": "string",
           "scope": "window",
           "description": "Spring Initializr Service URL."
         },
         "spring.initializr.defaultGroupId": {
           "default": "com.example",
-          "type":"string",
+          "type": "string",
           "scope": "window",
           "description": "Default value for Group Id."
         },
         "spring.initializr.defaultArtifactId": {
           "default": "demo",
-          "type":"string",
+          "type": "string",
           "scope": "window",
           "description": "Default value for Artifact Id."
         }
@@ -72,6 +72,7 @@
     "@types/md5": "^2.1.32",
     "@types/mocha": "^2.2.42",
     "@types/node": "^7.0.43",
+    "@types/semver": "^5.4.0",
     "@types/unzip": "^0.1.0",
     "tslint": "^5.8.0",
     "tslint-microsoft-contrib": "^5.0.1",
@@ -81,6 +82,7 @@
   "dependencies": {
     "fs-extra": "^5.0.0",
     "md5": "^2.2.1",
+    "semver": "^5.5.0",
     "unzip": "^0.1.11",
     "vscode-extension-telemetry-wrapper": "0.1.2"
   }
