@@ -9,6 +9,7 @@ are grateful to these developers for their contribution to open source.
 2. unzip (https://github.com/EvanOxfeld/node-unzip)
 3. fs-extra (https://github.com/jprichardson/node-fs-extra)
 4. vscode-extension-telemetry-wrapper (https://github.com/Eskibear/vscode-extension-telemetry-wrapper)
+5. semver (https://github.com/npm/node-semver)
 
 md5 NOTICES BEGIN HERE
 =============================

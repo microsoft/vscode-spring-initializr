@@ -2,7 +2,8 @@
 // Licensed under the MIT license.
 
 import { QuickPickItem } from "vscode";
-import { IDependency } from "./Dependency";
+import { Metadata } from "./Metadata";
+import { IDependency } from "./Model";
 import { Utils } from "./Utils";
 
 const PLACEHOLDER: string = "";
@@ -29,10 +30,8 @@ export class DependencyManager {
         DependencyManager.lastselected = this.genLastSelectedItem(v.id);
     }
 
-    public async initialize(): Promise<void> {
-        const DEPENDENCY_URL: string = "https://start.spring.io/ui/dependencies.json?version=1.5.9.RELEASE";
-        const depsJSON: { dependencies: IDependency[] } = JSON.parse(await Utils.downloadFile(DEPENDENCY_URL, true));
-        this.dependencies = depsJSON.dependencies;
+    public async initialize(dependencies: IDependency[]): Promise<void> {
+        this.dependencies = dependencies;
         for (const dep of this.dependencies) {
             this.dict[dep.id] = dep;
         }
@@ -40,9 +39,9 @@ export class DependencyManager {
         DependencyManager.lastselected = this.genLastSelectedItem(idList);
     }
 
-    public async getQuickPickItems(): Promise<IDependencyQuickPickItem[]> {
+    public async getQuickPickItems(metadata: Metadata, bootVersion: string): Promise<IDependencyQuickPickItem[]> {
         if (this.dependencies.length === 0) {
-            await this.initialize();
+            await this.initialize(await metadata.getAvailableDependencies(bootVersion));
         }
         const ret: IDependencyQuickPickItem[] = [];
         if (this.selectedIds.length === 0) {
@@ -89,14 +88,15 @@ export class DependencyManager {
     }
 
     private genLastSelectedItem(idList: string): IDependencyQuickPickItem {
-        const nameList: string[] = idList && idList.split(",").map((id: string) => this.dict[id].name).filter(Boolean);
-        if (nameList && nameList.length) {
+        const availIdList: string[] = idList.split(",").filter((id: string) => this.dict[id]);
+        const availNameList: string[] = idList && availIdList.map((id: string) => this.dict[id].name).filter(Boolean);
+        if (availNameList && availNameList.length) {
             return {
                 itemType: "lastUsed",
-                id: idList,
+                id: availIdList.join(","),
                 label: "$(clock) Last used",
                 description: "",
-                detail: nameList.join(", ")
+                detail: availNameList.join(", ")
             };
         } else {
             return null;

@@ -36,7 +36,7 @@
         "match-default-export-name": true,
         "mocha-avoid-only": true,
         "mocha-no-side-effect-code": true,
-        "no-any": true,
+        "no-any": false,
         "no-arg": true,
         "no-backbone-get-set-outside-model": false, 
         "no-bitwise": true,
@@ -188,7 +188,6 @@
             true,
             "call-signature",
             "parameter",
-            "arrow-parameter",
             "property-declaration",
             "variable-declaration",
             "member-variable-declaration"
