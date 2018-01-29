@@ -1,5 +1,9 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license.
+
 import { IDependency, ITopLevelAttribute } from "./Model";
 import { Utils } from "./Utils";
+import { Versions } from "./Versions";
 
 export class Metadata {
     public serviceUrl: string;
@@ -44,9 +48,12 @@ export class Metadata {
         }
     }
 
-    private isCompatible(_dep: IDependency, _bootVersion: string): boolean {
-        // currently show all dependencies. Need discussion on the way of hiding incompatible ones.
-        return true;
+    private isCompatible(dep: IDependency, bootVersion: string): boolean {
+        if (bootVersion && dep && dep.versionRange) {
+            return Versions.matchRange(bootVersion, dep.versionRange);
+        } else {
+            return true;
+        }
     }
 
     private async update(): Promise<void> {
