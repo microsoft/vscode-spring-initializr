@@ -91,13 +91,7 @@ async function generateProjectRoutine(projectType: string, session?: Session): P
     await vscode.window.withProgress({ location: vscode.ProgressLocation.Window }, (p: vscode.Progress<{ message?: string }>) => new Promise<void>(
         async (resolve: () => void, _reject: (e: Error) => void): Promise<void> => {
             p.report({ message: "Downloading zip package..." });
-            let targetUrl: string = `${metadata.serviceUrl}/starter.zip?type=${projectType}&dependencies=${current.id}`;
-            if (groupId) {
-                targetUrl += `&groupId=${groupId}`;
-            }
-            if (artifactId) {
-                targetUrl += `&artifactId=${artifactId}`;
-            }
+            const targetUrl: string = `${metadata.serviceUrl}/starter.zip?type=${projectType}&groupId=${groupId}&artifactId=${artifactId}&bootVersion=${bootVersion.id}&dependencies=${current.id}`;
             const filepath: string = await Utils.downloadFile(targetUrl);
 
             p.report({ message: "Starting to unzip..." });
