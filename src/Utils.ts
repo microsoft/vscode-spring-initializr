@@ -46,7 +46,16 @@ export namespace Utils {
         return await new Promise((resolve: (res: string) => void, reject: (e: Error) => void): void => {
             const urlObj: url.Url = url.parse(targetUrl);
             const options: Object = Object.assign({ headers: Object.assign({}, customHeaders, { 'User-Agent': `vscode/${getVersion()}` }) }, urlObj);
-            https.get(options, (res: http.IncomingMessage) => {
+            let client: any;
+            if (urlObj.protocol === "https:") {
+                client = https;
+            // tslint:disable-next-line:no-http-string
+            } else if (urlObj.protocol === "http:") {
+                client = http;
+            } else {
+                return reject(new Error("Unsupported protocol."));
+            }
+            client.get(options, (res: http.IncomingMessage) => {
                 let rawData: string;
                 let ws: fse.WriteStream;
                 if (readContent) {

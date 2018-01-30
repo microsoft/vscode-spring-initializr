@@ -41,6 +41,7 @@
         "spring.initializr.serviceUrl": {
           "default": "https://start.spring.io/",
           "type": "string",
+          "pattern": "https?://.*",
           "scope": "window",
           "description": "Spring Initializr Service URL."
         },
