@@ -12,6 +12,21 @@ import { IValue } from "./Model";
 import { Utils } from "./Utils";
 import { VSCodeUI } from "./VSCodeUI";
 
+class Step {
+    public readonly name: string;
+    public readonly info: string;
+    constructor(name: string, info: string) {
+        this.name = name;
+        this.info = info;
+    }
+}
+const stepGroupId: Step = new Step("GroupId", "GroupId inputed.");
+const stepArtifactId: Step = new Step("ArtifactId", "ArtifactId inputed.");
+const stepBootVersion: Step = new Step("BootVersion", "BootVersion selected.");
+const stepDependencies: Step = new Step("Dependencies", "Dependencies selected.");
+const stepTargetFolder: Step = new Step("TargetFolder", "Target folder selected.");
+const stepDownloadUnzip: Step = new Step("DownloadUnzip", "Package unzipped.");
+
 const STEP1_MESSAGE: string = "Input Group Id for your project. (Step 1/3)\t";
 const STEP2_MESSAGE: string = "Input Artifact Id for your project. (Step 2/3)\t";
 const STEP3_MESSAGE: string = "Search for dependencies. (Step 3/3)";
@@ -22,15 +37,14 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
     ["maven-project", "gradle-project"].forEach((projectType: string) => {
         context.subscriptions.push(
-            TelemetryWrapper.registerCommand(`spring.initializr.${projectType}`, (t: Session) => {
-                return async () => await generateProjectRoutine(projectType, t);
-            })
+            TelemetryWrapper.registerCommand(`spring.initializr.${projectType}`, async () => await generateProjectRoutine(projectType))
         );
     });
 }
 
-async function generateProjectRoutine(projectType: string, session?: Session): Promise<void> {
-    session.extraProperties.finishedSteps = [];
+async function generateProjectRoutine(projectType: string): Promise<void> {
+    const session: Session = TelemetryWrapper.currentSession();
+    if (session && session.extraProperties) { session.extraProperties.finishedSteps = []; }
     const metadata: Metadata = new Metadata(vscode.workspace.getConfiguration("spring.initializr").get<string>("serviceUrl"));
 
     // Step: Group Id
@@ -42,8 +56,8 @@ async function generateProjectRoutine(projectType: string, session?: Session): P
         validateInput: groupIdValidation
     });
     if (groupId === undefined) { return; }
-    session.extraProperties.finishedSteps.push("GroupId");
-    session.info("GroupId inputed.");
+    finishStep(stepGroupId);
+
     // Step: Artifact Id
     const defaultArtifactId: string = vscode.workspace.getConfiguration("spring.initializr").get<string>("defaultArtifactId");
     const artifactId: string = await VSCodeUI.getFromInputBox({
@@ -53,8 +67,8 @@ async function generateProjectRoutine(projectType: string, session?: Session): P
         validateInput: artifactIdValidation
     });
     if (artifactId === undefined) { return; }
-    session.extraProperties.finishedSteps.push("ArtifactId");
-    session.info("ArtifactId inputed.");
+    finishStep(stepArtifactId);
+
     // Step: bootVersion
     const bootVersion: IValue = await VSCodeUI.getQuickPick<IValue>(
         metadata.getBootVersion(),
@@ -62,8 +76,8 @@ async function generateProjectRoutine(projectType: string, session?: Session): P
         version => version.description,
         null
     );
-    session.extraProperties.finishedSteps.push("BootVersion");
-    session.info("BootVersion selected.");
+    finishStep(stepBootVersion);
+
     // Step: Dependencies
     let current: IDependencyQuickPickItem = null;
     const manager: DependencyManager = new DependencyManager();
@@ -76,15 +90,16 @@ async function generateProjectRoutine(projectType: string, session?: Session): P
         }
     } while (current && current.itemType === "dependency");
     if (!current) { return; }
-    session.extraProperties.finishedSteps.push("Dependencies");
-    session.info("Dependencies selected.");
-    session.extraProperties.depsType = current.itemType;
-    session.extraProperties.dependencies = current.id;
+    if (session && session.extraProperties) {
+        session.extraProperties.depsType = current.itemType;
+        session.extraProperties.dependencies = current.id;
+    }
+    finishStep(stepDependencies);
+
     // Step: Choose target folder
     const outputUri: vscode.Uri = await VSCodeUI.openDialogForFolder({ openLabel: "Generate into this folder" });
     if (!outputUri) { return; }
-    session.extraProperties.finishedSteps.push("TargetFolder");
-    session.info("Target folder selected.");
+    finishStep(stepTargetFolder);
 
     // Step: Download & Unzip
     await vscode.window.withProgress({ location: vscode.ProgressLocation.Window }, (p: vscode.Progress<{ message?: string }>) => new Promise<void>(
@@ -109,8 +124,8 @@ async function generateProjectRoutine(projectType: string, session?: Session): P
             });
         }
     ));
-    session.extraProperties.finishedSteps.push("DownloadUnzip");
-    session.info("Package unzipped.");
+    finishStep(stepDownloadUnzip);
+
     //Open in new window
     const choice: string = await vscode.window.showInformationMessage(`Successfully generated. Location: ${outputUri.fsPath}`, "Open it");
     if (choice === "Open it") {
@@ -129,4 +144,10 @@ function groupIdValidation(value: string): string {
 
 function artifactIdValidation(value: string): string {
     return (/^[a-z_][a-z0-9_]*(-[a-z_][a-z0-9_]*)*$/.test(value)) ? null : "Invalid Artifact Id";
+}
+
+function finishStep(step: Step): void {
+    const session: Session = TelemetryWrapper.currentSession();
+    if (session && session.extraProperties) { session.extraProperties.finishedSteps.push(step.name); }
+    TelemetryWrapper.info(step.info);
 }
