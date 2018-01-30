@@ -62,6 +62,7 @@ async function generateProjectRoutine(projectType: string, session?: Session): P
         version => version.description,
         null
     );
+    if (bootVersion === undefined) { return; }
     session.extraProperties.finishedSteps.push("BootVersion");
     session.info("BootVersion selected.");
     // Step: Dependencies
