@@ -88,8 +88,8 @@ export class DependencyManager {
     }
 
     private genLastSelectedItem(idList: string): IDependencyQuickPickItem {
-        const availIdList: string[] = idList.split(",").filter((id: string) => this.dict[id]);
-        const availNameList: string[] = idList && availIdList.map((id: string) => this.dict[id].name).filter(Boolean);
+        const availIdList: string[] = idList && idList.split(",").filter((id: string) => this.dict[id]);
+        const availNameList: string[] = availIdList && availIdList.map((id: string) => this.dict[id].name).filter(Boolean);
         if (availNameList && availNameList.length) {
             return {
                 itemType: "lastUsed",
