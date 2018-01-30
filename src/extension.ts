@@ -12,9 +12,10 @@ import { IValue } from "./Model";
 import { Utils } from "./Utils";
 import { VSCodeUI } from "./VSCodeUI";
 
-const STEP1_MESSAGE: string = "Input Group Id for your project. (Step 1/3)\t";
-const STEP2_MESSAGE: string = "Input Artifact Id for your project. (Step 2/3)\t";
-const STEP3_MESSAGE: string = "Search for dependencies. (Step 3/3)";
+const STEP1_MESSAGE: string = "Input Group Id for your project. (Step 1/4)\t";
+const STEP2_MESSAGE: string = "Input Artifact Id for your project. (Step 2/4)\t";
+const STEP3_MESSAGE: string = "Specify Spring Boot version. (Step 3/4)";
+const STEP4_MESSAGE: string = "Search for dependencies. (Step 4/4)";
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
     await Utils.loadPackageInfo(context);
@@ -60,7 +61,8 @@ async function generateProjectRoutine(projectType: string, session?: Session): P
         metadata.getBootVersion(),
         version => version.name,
         version => version.description,
-        null
+        null,
+        { placeHolder: STEP3_MESSAGE }
     );
     if (bootVersion === undefined) { return; }
     session.extraProperties.finishedSteps.push("BootVersion");
@@ -70,7 +72,7 @@ async function generateProjectRoutine(projectType: string, session?: Session): P
     const manager: DependencyManager = new DependencyManager();
     do {
         current = await vscode.window.showQuickPick(
-            manager.getQuickPickItems(metadata, bootVersion.id), { ignoreFocusOut: true, placeHolder: STEP3_MESSAGE, matchOnDetail: true, matchOnDescription: true }
+            manager.getQuickPickItems(metadata, bootVersion.id), { ignoreFocusOut: true, placeHolder: STEP4_MESSAGE, matchOnDetail: true, matchOnDescription: true }
         );
         if (current && current.itemType === "dependency") {
             manager.toggleDependency(current.id);
