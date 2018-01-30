@@ -53,7 +53,7 @@ export namespace Utils {
             } else if (urlObj.protocol === "http:") {
                 client = http;
             } else {
-                throw new Error("Unsupported protocol.");
+                return reject(new Error("Unsupported protocol."));
             }
             client.get(options, (res: http.IncomingMessage) => {
                 let rawData: string;
