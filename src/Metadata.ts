@@ -28,7 +28,8 @@ export class Metadata {
         if (!this.content.bootVersion) {
             return [];
         } else {
-            return this.content.bootVersion.values;
+            return this.content.bootVersion.values.filter(x => x.id === this.content.bootVersion.default)
+                .concat(this.content.bootVersion.values.filter(x => x.id !== this.content.bootVersion.default));
         }
     }
 
