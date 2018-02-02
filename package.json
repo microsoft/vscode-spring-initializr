@@ -83,6 +83,6 @@
     "fs-extra": "^5.0.0",
     "md5": "^2.2.1",
     "unzip": "^0.1.11",
-    "vscode-extension-telemetry-wrapper": "0.1.2"
+    "vscode-extension-telemetry-wrapper": "0.2.0"
   }
 }
