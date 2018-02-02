@@ -30,12 +30,21 @@ ext install vscode-spring-initializr
 ## Use
 
 - Launch VS Code
-- Press `Ctrl + Shift + P` to open command palette
-- Type `Spring Initializr` to start generating a Maven or Gradle project
-- Complete the basic information and choose dependencies from:
-    - Search dependencies
-    - Last settings
-- Press F5
+- Press `Ctrl + Shift + P` to open command palette.
+- Type `Spring Initializr` to start generating a Maven or Gradle project.
+- Follow the wizard.
+
+## Configuration
+```
+  // Default value for Artifact Id.
+  "spring.initializr.defaultArtifactId": "demo",
+
+  // Default value for Group Id.
+  "spring.initializr.defaultGroupId": "com.example",
+
+  // Spring Initializr Service URL.
+  "spring.initializr.serviceUrl": "https://start.spring.io/",
+```
 
 ## Feedback and Questions
 You can find the full list of issues at [Issue Tracker](https://github.com/Microsoft/vscode-spring-initializr/issues). You can submit a [bug or feature suggestion](https://github.com/Microsoft/vscode-spring-initializr/issues/new), and participate community driven [![Gitter](https://badges.gitter.im/DevDivSpring/Lobby.svg)](https://gitter.im/DevDivSpring/Lobby?source=orgpage)
