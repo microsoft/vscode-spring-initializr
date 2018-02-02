@@ -27,9 +27,10 @@ const stepDependencies: Step = new Step("Dependencies", "Dependencies selected."
 const stepTargetFolder: Step = new Step("TargetFolder", "Target folder selected.");
 const stepDownloadUnzip: Step = new Step("DownloadUnzip", "Package unzipped.");
 
-const STEP1_MESSAGE: string = "Input Group Id for your project. (Step 1/3)\t";
-const STEP2_MESSAGE: string = "Input Artifact Id for your project. (Step 2/3)\t";
-const STEP3_MESSAGE: string = "Search for dependencies. (Step 3/3)";
+const STEP1_MESSAGE: string = "Input Group Id for your project. (Step 1/4)\t";
+const STEP2_MESSAGE: string = "Input Artifact Id for your project. (Step 2/4)\t";
+const STEP3_MESSAGE: string = "Specify Spring Boot version. (Step 3/4)";
+const STEP4_MESSAGE: string = "Search for dependencies. (Step 4/4)";
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
     await Utils.loadPackageInfo(context);
@@ -74,8 +75,10 @@ async function generateProjectRoutine(projectType: string): Promise<void> {
         metadata.getBootVersion(),
         version => version.name,
         version => version.description,
-        null
+        null,
+        { placeHolder: STEP3_MESSAGE }
     );
+    if (bootVersion === undefined) { return; }
     finishStep(stepBootVersion);
 
     // Step: Dependencies
@@ -83,7 +86,7 @@ async function generateProjectRoutine(projectType: string): Promise<void> {
     const manager: DependencyManager = new DependencyManager();
     do {
         current = await vscode.window.showQuickPick(
-            manager.getQuickPickItems(metadata, bootVersion.id), { ignoreFocusOut: true, placeHolder: STEP3_MESSAGE, matchOnDetail: true, matchOnDescription: true }
+            manager.getQuickPickItems(metadata, bootVersion.id), { ignoreFocusOut: true, placeHolder: STEP4_MESSAGE, matchOnDetail: true, matchOnDescription: true }
         );
         if (current && current.itemType === "dependency") {
             manager.toggleDependency(current.id);
@@ -105,13 +108,7 @@ async function generateProjectRoutine(projectType: string): Promise<void> {
     await vscode.window.withProgress({ location: vscode.ProgressLocation.Window }, (p: vscode.Progress<{ message?: string }>) => new Promise<void>(
         async (resolve: () => void, _reject: (e: Error) => void): Promise<void> => {
             p.report({ message: "Downloading zip package..." });
-            let targetUrl: string = `${metadata.serviceUrl}/starter.zip?type=${projectType}&dependencies=${current.id}`;
-            if (groupId) {
-                targetUrl += `&groupId=${groupId}`;
-            }
-            if (artifactId) {
-                targetUrl += `&artifactId=${artifactId}`;
-            }
+            const targetUrl: string = `${metadata.serviceUrl}/starter.zip?type=${projectType}&groupId=${groupId}&artifactId=${artifactId}&bootVersion=${bootVersion.id}&dependencies=${current.id}`;
             const filepath: string = await Utils.downloadFile(targetUrl);
 
             p.report({ message: "Starting to unzip..." });
