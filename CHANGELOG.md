@@ -3,7 +3,7 @@ All notable changes to the "vscode-spring-initializr" extension will be document
 
 ## Unreleased
 
-### 0.2.0-dev
+### 0.2.0
 - Supported to specify Spring Initializr service URL.
 - Supported to specify Spring Boot version.
 - Supported to specify default Group/Artifact Id.
