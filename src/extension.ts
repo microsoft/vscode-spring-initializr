@@ -3,7 +3,7 @@
 
 "use strict";
 import * as fs from "fs";
-import * as unzip from "unzip";
+import * as unzip from "unzip-stream";
 import * as vscode from "vscode";
 import { Session, TelemetryWrapper } from "vscode-extension-telemetry-wrapper";
 import { DependencyManager, IDependencyQuickPickItem } from "./DependencyManager";
