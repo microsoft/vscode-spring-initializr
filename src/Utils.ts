@@ -49,7 +49,7 @@ export namespace Utils {
             let client: any;
             if (urlObj.protocol === "https:") {
                 client = https;
-            // tslint:disable-next-line:no-http-string
+                // tslint:disable-next-line:no-http-string
             } else if (urlObj.protocol === "http:") {
                 client = http;
             } else {
@@ -101,4 +101,13 @@ export namespace Utils {
             return null;
         }
     }
+
+    export function groupIdValidation(value: string): string {
+        return (/^[a-z_][a-z0-9_]*(\.[a-z_][a-z0-9_]*)*$/.test(value)) ? null : "Invalid Group Id";
+    }
+
+    export function artifactIdValidation(value: string): string {
+        return (/^[a-z_][a-z0-9_]*(-[a-z_][a-z0-9_]*)*$/.test(value)) ? null : "Invalid Artifact Id";
+    }
+
 }
