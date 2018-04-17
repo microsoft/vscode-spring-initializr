@@ -5,9 +5,8 @@ import { IDependency, ITopLevelAttribute } from "./Model";
 import { Utils } from "./Utils";
 import { Versions } from "./Versions";
 
-export class Metadata {
-    public serviceUrl: string;
-    private content: {
+export module Metadata {
+    let overview: {
         dependencies: ITopLevelAttribute,
         // tslint:disable-next-line:no-reserved-keywords
         type: ITopLevelAttribute,
@@ -16,40 +15,45 @@ export class Metadata {
         language: ITopLevelAttribute,
         bootVersion: ITopLevelAttribute
     };
+    const starters: {} = {};
 
-    constructor(serviceUrl: string) {
-        this.serviceUrl = serviceUrl;
-    }
-
-    public async getBootVersion(): Promise<any[]> {
-        if (!this.content) {
-            await this.update();
+    export async function getBootVersions(): Promise<any[]> {
+        if (!overview) {
+            await update();
         }
-        if (!this.content.bootVersion) {
+        if (!overview.bootVersion) {
             return [];
         } else {
-            return this.content.bootVersion.values.filter(x => x.id === this.content.bootVersion.default)
-                .concat(this.content.bootVersion.values.filter(x => x.id !== this.content.bootVersion.default));
+            return overview.bootVersion.values.filter(x => x.id === overview.bootVersion.default)
+                .concat(overview.bootVersion.values.filter(x => x.id !== overview.bootVersion.default));
         }
     }
 
-    public async getAvailableDependencies(bootVersion: string): Promise<IDependency[]> {
-        if (!this.content) {
-            await this.update();
+    export async function getAvailableDependencies(bootVersion: string): Promise<IDependency[]> {
+        if (!overview) {
+            await update();
         }
-        if (!this.content.dependencies) {
+        if (!overview.dependencies) {
             return [];
         } else {
             const ret: IDependency[] = [];
-            for (const grp of this.content.dependencies.values) {
+            for (const grp of overview.dependencies.values) {
                 const group: string = grp.name;
-                ret.push(...grp.values.filter(dep => this.isCompatible(dep, bootVersion)).map(dep => Object.assign({ group }, dep)));
+                ret.push(...grp.values.filter(dep => isCompatible(dep, bootVersion)).map(dep => Object.assign({ group }, dep)));
             }
             return ret;
         }
     }
 
-    private isCompatible(dep: IDependency, bootVersion: string): boolean {
+    export async function getStarters(bootVersion: string): Promise<any> {
+        if (!starters[bootVersion]) {
+            const rawJSONString: string = await Utils.downloadFile(`${Utils.settings.getServiceUrl()}dependencies?bootVersion=${bootVersion}`, true, { Accept: "application/vnd.initializr.v2.1+json" });
+            starters[bootVersion] = JSON.parse(rawJSONString);
+        }
+        return starters[bootVersion];
+    }
+
+    function isCompatible(dep: IDependency, bootVersion: string): boolean {
         if (bootVersion && dep && dep.versionRange) {
             return Versions.matchRange(bootVersion, dep.versionRange);
         } else {
@@ -57,8 +61,8 @@ export class Metadata {
         }
     }
 
-    private async update(): Promise<void> {
-        const rawJSONString: string = await Utils.downloadFile(this.serviceUrl, true, { Accept: "application/vnd.initializr.v2.1+json" });
-        this.content = JSON.parse(rawJSONString);
+    async function update(): Promise<void> {
+        const rawJSONString: string = await Utils.downloadFile(Utils.settings.getServiceUrl(), true, { Accept: "application/vnd.initializr.v2.1+json" });
+        overview = JSON.parse(rawJSONString);
     }
 }

@@ -19,7 +19,8 @@
   ],
   "activationEvents": [
     "onCommand:spring.initializr.maven-project",
-    "onCommand:spring.initializr.gradle-project"
+    "onCommand:spring.initializr.gradle-project",
+    "onCommand:spring.initializr.editStarters"
   ],
   "main": "./out/extension",
   "contributes": {
@@ -33,8 +34,22 @@
         "command": "spring.initializr.gradle-project",
         "title": "Generate a Gradle Project",
         "category": "Spring Initializr"
+      },
+      {
+        "command": "spring.initializr.editStarters",
+        "title": "Edit starters",
+        "category": "Spring Initializr"
       }
     ],
+    "menus": {
+      "editor/context": [
+        {
+          "when": "resourceFilename == pom.xml",
+          "command": "spring.initializr.editStarters",
+          "group": "SpringInitializr"
+        }
+      ]
+    },
     "configuration": {
       "title": "Spring Initializr",
       "properties": {
@@ -73,6 +88,7 @@
     "@types/md5": "^2.1.32",
     "@types/mocha": "^2.2.42",
     "@types/node": "^7.0.43",
+    "@types/xml2js": "^0.4.2",
     "tslint": "^5.8.0",
     "tslint-microsoft-contrib": "^5.0.1",
     "typescript": "^2.6.1",
@@ -82,6 +98,7 @@
     "fs-extra": "^5.0.0",
     "md5": "^2.2.1",
     "unzip-stream": "^0.3.0",
-    "vscode-extension-telemetry-wrapper": "0.2.0"
+    "vscode-extension-telemetry-wrapper": "0.2.0",
+    "xml2js": "^0.4.19"
   }
 }

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 
-import * as fs from "fs";
+import * as fse from "fs-extra";
 import * as unzip from "unzip-stream";
 import * as vscode from "vscode";
 import { Session, TelemetryWrapper } from "vscode-extension-telemetry-wrapper";
@@ -29,7 +29,6 @@ export module Routines {
         export async function run(projectType: string): Promise<void> {
             const session: Session = TelemetryWrapper.currentSession();
             if (session && session.extraProperties) { session.extraProperties.finishedSteps = []; }
-            const metadata: Metadata = new Metadata(vscode.workspace.getConfiguration("spring.initializr").get<string>("serviceUrl"));
 
             // Step: Group Id
             const defaultGroupId: string = vscode.workspace.getConfiguration("spring.initializr").get<string>("defaultGroupId");
@@ -55,7 +54,7 @@ export module Routines {
 
             // Step: bootVersion
             const bootVersion: IValue = await VSCodeUI.getQuickPick<IValue>(
-                metadata.getBootVersion(),
+                Metadata.getBootVersions(),
                 version => version.name,
                 version => version.description,
                 null,
@@ -69,7 +68,7 @@ export module Routines {
             const manager: DependencyManager = new DependencyManager();
             do {
                 current = await vscode.window.showQuickPick(
-                    manager.getQuickPickItems(metadata, bootVersion.id), { ignoreFocusOut: true, placeHolder: STEP4_MESSAGE, matchOnDetail: true, matchOnDescription: true }
+                    manager.getQuickPickItems(bootVersion.id, {hasLastSelected: true}), { ignoreFocusOut: true, placeHolder: STEP4_MESSAGE, matchOnDetail: true, matchOnDescription: true }
                 );
                 if (current && current.itemType === "dependency") {
                     manager.toggleDependency(current.id);
@@ -91,11 +90,11 @@ export module Routines {
             await vscode.window.withProgress({ location: vscode.ProgressLocation.Window }, (p: vscode.Progress<{ message?: string }>) => new Promise<void>(
                 async (resolve: () => void, _reject: (e: Error) => void): Promise<void> => {
                     p.report({ message: "Downloading zip package..." });
-                    const targetUrl: string = `${metadata.serviceUrl}/starter.zip?type=${projectType}&groupId=${groupId}&artifactId=${artifactId}&bootVersion=${bootVersion.id}&dependencies=${current.id}`;
+                    const targetUrl: string = `${Utils.settings.getServiceUrl()}/starter.zip?type=${projectType}&groupId=${groupId}&artifactId=${artifactId}&bootVersion=${bootVersion.id}&dependencies=${current.id}`;
                     const filepath: string = await Utils.downloadFile(targetUrl);
 
                     p.report({ message: "Starting to unzip..." });
-                    fs.createReadStream(filepath).pipe(unzip.Extract({ path: outputUri.fsPath })).on("close", () => {
+                    fse.createReadStream(filepath).pipe(unzip.Extract({ path: outputUri.fsPath })).on("close", () => {
                         manager.updateLastUsedDependencies(current);
                         resolve();
                     }).on("error", (err: Error) => {
@@ -116,14 +115,124 @@ export module Routines {
     }
 
     export namespace EditStarters {
-        export async function run(projectType: string): Promise<void> {
-            if (projectType !== "maven-project") {
+        // tslint:disable-next-line:max-func-body-length
+        export async function run(entry: vscode.Uri): Promise<void> {
+            let bootVersion: string;
+            const deps: string[] = []; // gid:aid
+            // Read pom.xml for $bootVersion, $dependencies(gid, aid)
+            const content: Buffer = await fse.readFile(entry.fsPath);
+            const xml: any = await Utils.readXmlContent(content.toString());
+            const parentNode: any = xml.project.parent;
+
+            if (parentNode[0].artifactId[0] === "spring-boot-starter-parent" && parentNode[0].groupId[0] === "org.springframework.boot") {
+                bootVersion = parentNode[0].version[0];
+            }
+
+            xml.project.dependencies[0].dependency.forEach(elem => {
+                deps.push(`${elem.groupId[0]}:${elem.artifactId[0]}`);
+            });
+
+            // [interaction] Step: Dependencies, with pre-selected deps
+            const starters: any = await Metadata.getStarters(bootVersion);
+            const oldStarterIds: string[] = [];
+            Object.keys(starters.dependencies).forEach(key => {
+                const elem: any = starters.dependencies[key];
+                if (deps.indexOf(`${elem.groupId}:${elem.artifactId}`) >= 0) {
+                    oldStarterIds.push(key);
+                }
+            });
+            const manager: DependencyManager = new DependencyManager();
+
+            manager.selectedIds = [].concat(oldStarterIds);
+            let current: IDependencyQuickPickItem = null;
+            do {
+                current = await vscode.window.showQuickPick(
+                    manager.getQuickPickItems(bootVersion), { ignoreFocusOut: true, placeHolder: "Select dependencies.", matchOnDetail: true, matchOnDescription: true }
+                );
+                if (current && current.itemType === "dependency") {
+                    manager.toggleDependency(current.id);
+                }
+            } while (current && current.itemType === "dependency");
+            if (!current) { return; }
+            // Diff deps for add/remove
+            const toRemove: string[] = oldStarterIds.filter(elem => manager.selectedIds.indexOf(elem) < 0);
+            const toAdd: string[] = manager.selectedIds.filter(elem => oldStarterIds.indexOf(elem) < 0);
+            if (toRemove.length + toAdd.length === 0) {
+                vscode.window.showInformationMessage("No changes.");
                 return;
             }
-            // Read pom.xml for $bootVersion, $dependencies(gid, aid)
-            // [interaction] Step: Dependencies, with pre-selected deps
-            // Diff deps for add/remove
+            const choice: string = await vscode.window.showWarningMessage(`[EditStarters] Remove: [${toRemove.join(", ")}]. Add: [${toAdd.join(", ")}]. Proceed?`, "Proceed", "Cancel");
+            if (choice !== "Proceed") {
+                return;
+            }
+            // modify xml object
+            const newXml: any = Object.assign({}, xml);
+
+            const toRemoveMavenIds: string[] = toRemove.map(elem => `${starters.dependencies[elem].groupId}:${starters.dependencies[elem].artifactId}`);
+            const depNode: any = newXml.project.dependencies[0].dependency;
+            newXml.project.dependencies[0].dependency = depNode.filter(elem => toRemoveMavenIds.indexOf(`${elem.groupId[0]}:${elem.artifactId[0]}`) < 0);
+
+            toAdd.forEach(elem => {
+                const dep: any = starters.dependencies[elem];
+                const newDepNode: any = { artifactId: [dep.artifactId], groupId: [dep.groupId] };
+                if (dep.version) {
+                    newDepNode.version = [dep.version];
+                }
+                if (dep.scope) {
+                    newDepNode.scope = [dep.scope];
+                }
+                newXml.project.dependencies[0].dependency.push(newDepNode);
+
+                if (dep.bom) {
+                    const bom: any = starters.boms[dep.bom];
+                    const newBomNode: any = {
+                        id: [dep.bom],
+                        groupId: [bom.groupId],
+                        artifactId: [bom.artifactId],
+                        version: [bom.version],
+                        type: ["pom"],
+                        scope: ["import"]
+                    };
+                    if (!newXml.project.dependencyManagement) {
+                        newXml.project.dependencyManagement = [{}];
+                    }
+                    if (!newXml.project.dependencyManagement[0].dependencies) {
+                        newXml.project.dependencyManagement[0].dependencies = [{}];
+                    }
+                    if (!newXml.project.dependencyManagement[0].dependencies[0].dependency) {
+                        newXml.project.dependencyManagement[0].dependencies[0].dependency = [newBomNode];
+                    } else {
+                        newXml.project.dependencyManagement[0].dependencies[0].dependency.push(newBomNode);
+                    }
+                }
+
+                if (dep.repository) {
+                    const repo: any = starters.repositories[dep.repository];
+                    const newRepoNode: any = {
+                        id: [dep.repository],
+                        name: [repo.name],
+                        url: [repo.url],
+                        snapshots: [
+                            {
+                                enabled: [repo.snapshotEnabled.toString()]
+                            }
+                        ]
+                    };
+                    if (!newXml.project.repositories) {
+                        newXml.project.repositories = [{}];
+                    }
+                    if (!newXml.project.repositories[0].repository) {
+                        newXml.project.repositories[0].repository = [newRepoNode];
+                    } else {
+                        newXml.project.repositories[0].repository.push(newRepoNode);
+                    }
+                }
+
+            });
+
             // re-generate a pom.xml
+            const output: string = Utils.buildXmlContent(newXml);
+            await fse.writeFile(entry.fsPath, output);
             return;
         }
     }

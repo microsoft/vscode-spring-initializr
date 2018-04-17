@@ -17,6 +17,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
             TelemetryWrapper.registerCommand(`spring.initializr.${projectType}`, async () => await Routines.GenerateProject.run(projectType))
         );
     });
+
+    context.subscriptions.push(TelemetryWrapper.registerCommand("spring.initializr.editStarters", async (entry: vscode.Uri) => await Routines.EditStarters.run(entry)));
 }
 
 export function deactivate(): void {

@@ -8,14 +8,15 @@ import * as md5 from "md5";
 import * as os from "os";
 import * as path from "path";
 import * as url from "url";
-import { ExtensionContext, extensions } from 'vscode';
+import * as vscode from 'vscode';
+import * as xml2js from "xml2js";
 let EXTENSION_PUBLISHER: string;
 let EXTENSION_NAME: string;
 let EXTENSION_VERSION: string;
 let EXTENSION_AI_KEY: string;
 
-export namespace Utils {
-    export async function loadPackageInfo(context: ExtensionContext): Promise<void> {
+export module Utils {
+    export async function loadPackageInfo(context: vscode.ExtensionContext): Promise<void> {
         const { publisher, name, version, aiKey } = await fse.readJSON(context.asAbsolutePath("./package.json"));
         EXTENSION_AI_KEY = aiKey;
         EXTENSION_PUBLISHER = publisher;
@@ -85,14 +86,14 @@ export namespace Utils {
     }
 
     export async function writeFileToExtensionRoot(relateivePath: string, data: string | Buffer): Promise<void> {
-        const extensionRootPath: string = extensions.getExtension(getExtensionId()).extensionPath;
+        const extensionRootPath: string = vscode.extensions.getExtension(getExtensionId()).extensionPath;
         const filepath: string = path.join(extensionRootPath, relateivePath);
         await fse.ensureFile(filepath);
         await fse.writeFile(filepath, data);
     }
 
     export async function readFileFromExtensionRoot(relateivePath: string): Promise<string> {
-        const extensionRootPath: string = extensions.getExtension(getExtensionId()).extensionPath;
+        const extensionRootPath: string = vscode.extensions.getExtension(getExtensionId()).extensionPath;
         const filepath: string = path.join(extensionRootPath, relateivePath);
         if (await fse.pathExists(filepath)) {
             const buf: Buffer = await fse.readFile(filepath);
@@ -110,4 +111,29 @@ export namespace Utils {
         return (/^[a-z_][a-z0-9_]*(-[a-z_][a-z0-9_]*)*$/.test(value)) ? null : "Invalid Artifact Id";
     }
 
+    export async function readXmlContent(xml: string, options?: {}): Promise<any> {
+        const opts: {} = Object.assign({ explicitArray: true }, options);
+        return new Promise<{}>(
+            (resolve: (value: {}) => void, reject: (e: Error) => void): void => {
+                xml2js.parseString(xml, opts, (err: Error, res: any) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(res);
+                    }
+                });
+            }
+        );
+    }
+
+    export  function buildXmlContent(obj: any, options?: {}): string {
+        const opts: {} = Object.assign({ explicitArray: true }, options);
+        return new xml2js.Builder(opts).buildObject(obj);
+    }
+
+    export namespace settings {
+        export function getServiceUrl(): string {
+            return vscode.workspace.getConfiguration("spring.initializr").get<string>("serviceUrl");
+        }
+    }
 }
