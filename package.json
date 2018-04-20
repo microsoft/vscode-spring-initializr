@@ -42,6 +42,12 @@
       }
     ],
     "menus": {
+      "commandPalette": [
+        {
+          "command": "spring.initializr.editStarters",
+          "when": "never"
+        }
+      ],
       "editor/context": [
         {
           "when": "resourceFilename == pom.xml",

@@ -186,7 +186,6 @@ export module Routines {
                 if (dep.bom) {
                     const bom: any = starters.boms[dep.bom];
                     const newBomNode: any = {
-                        id: [dep.bom],
                         groupId: [bom.groupId],
                         artifactId: [bom.artifactId],
                         version: [bom.version],
