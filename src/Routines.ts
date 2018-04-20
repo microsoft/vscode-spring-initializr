@@ -6,8 +6,12 @@ import * as unzip from "unzip-stream";
 import * as vscode from "vscode";
 import { Session, TelemetryWrapper } from "vscode-extension-telemetry-wrapper";
 import { DependencyManager, IDependencyQuickPickItem } from "./DependencyManager";
-import { Metadata } from "./Metadata";
-import { IValue } from "./Model";
+import { IBom, IMavenId, IRepository, IStarters, IValue } from "./Interfaces";
+import * as Metadata from "./Metadata";
+import { BomNode } from "./pomxml/BomNode";
+import { DependencyNode } from "./pomxml/DependencyNode";
+import { addBomNode, addDependencyNode, addRepositoryNode, removeDependencyNode } from "./pomxml/PomXml";
+import { RepositoryNode } from "./pomxml/RepositoryNode";
 import { TelemetryHelper } from "./TelemetryHelper";
 import { Utils } from "./Utils";
 import { VSCodeUI } from "./VSCodeUI";
@@ -68,7 +72,7 @@ export module Routines {
             const manager: DependencyManager = new DependencyManager();
             do {
                 current = await vscode.window.showQuickPick(
-                    manager.getQuickPickItems(bootVersion.id, {hasLastSelected: true}), { ignoreFocusOut: true, placeHolder: STEP4_MESSAGE, matchOnDetail: true, matchOnDescription: true }
+                    manager.getQuickPickItems(bootVersion.id, { hasLastSelected: true }), { ignoreFocusOut: true, placeHolder: STEP4_MESSAGE, matchOnDetail: true, matchOnDescription: true }
                 );
                 if (current && current.itemType === "dependency") {
                     manager.toggleDependency(current.id);
@@ -115,7 +119,6 @@ export module Routines {
     }
 
     export namespace EditStarters {
-        // tslint:disable-next-line:max-func-body-length
         export async function run(entry: vscode.Uri): Promise<void> {
             let bootVersion: string;
             const deps: string[] = []; // gid:aid
@@ -133,10 +136,10 @@ export module Routines {
             });
 
             // [interaction] Step: Dependencies, with pre-selected deps
-            const starters: any = await Metadata.getStarters(bootVersion);
+            const starters: IStarters = await Metadata.dependencies.getStarters(bootVersion);
             const oldStarterIds: string[] = [];
             Object.keys(starters.dependencies).forEach(key => {
-                const elem: any = starters.dependencies[key];
+                const elem: IMavenId = starters.dependencies[key];
                 if (deps.indexOf(`${elem.groupId}:${elem.artifactId}`) >= 0) {
                     oldStarterIds.push(key);
                 }
@@ -154,6 +157,7 @@ export module Routines {
                 }
             } while (current && current.itemType === "dependency");
             if (!current) { return; }
+
             // Diff deps for add/remove
             const toRemove: string[] = oldStarterIds.filter(elem => manager.selectedIds.indexOf(elem) < 0);
             const toAdd: string[] = manager.selectedIds.filter(elem => oldStarterIds.indexOf(elem) < 0);
@@ -167,64 +171,25 @@ export module Routines {
             }
             // modify xml object
             const newXml: any = Object.assign({}, xml);
-
-            const toRemoveMavenIds: string[] = toRemove.map(elem => `${starters.dependencies[elem].groupId}:${starters.dependencies[elem].artifactId}`);
-            const depNode: any = newXml.project.dependencies[0].dependency;
-            newXml.project.dependencies[0].dependency = depNode.filter(elem => toRemoveMavenIds.indexOf(`${elem.groupId[0]}:${elem.artifactId[0]}`) < 0);
-
+            toRemove.forEach(elem => {
+                removeDependencyNode(newXml, starters.dependencies[elem].groupId, starters.dependencies[elem].artifactId);
+            });
             toAdd.forEach(elem => {
-                const dep: any = starters.dependencies[elem];
-                const newDepNode: any = { artifactId: [dep.artifactId], groupId: [dep.groupId] };
-                if (dep.version) {
-                    newDepNode.version = [dep.version];
-                }
-                if (dep.scope) {
-                    newDepNode.scope = [dep.scope];
-                }
-                newXml.project.dependencies[0].dependency.push(newDepNode);
+                const dep: IMavenId = starters.dependencies[elem];
+                const newDepNode: DependencyNode = new DependencyNode(dep.groupId, dep.artifactId, dep.version, dep.scope);
+
+                addDependencyNode(newXml, newDepNode.node);
 
                 if (dep.bom) {
-                    const bom: any = starters.boms[dep.bom];
-                    const newBomNode: any = {
-                        groupId: [bom.groupId],
-                        artifactId: [bom.artifactId],
-                        version: [bom.version],
-                        type: ["pom"],
-                        scope: ["import"]
-                    };
-                    if (!newXml.project.dependencyManagement) {
-                        newXml.project.dependencyManagement = [{}];
-                    }
-                    if (!newXml.project.dependencyManagement[0].dependencies) {
-                        newXml.project.dependencyManagement[0].dependencies = [{}];
-                    }
-                    if (!newXml.project.dependencyManagement[0].dependencies[0].dependency) {
-                        newXml.project.dependencyManagement[0].dependencies[0].dependency = [newBomNode];
-                    } else {
-                        newXml.project.dependencyManagement[0].dependencies[0].dependency.push(newBomNode);
-                    }
+                    const bom: IBom = starters.boms[dep.bom];
+                    const newBomNode: BomNode = new BomNode(bom.groupId, bom.artifactId, bom.version);
+                    addBomNode(newXml, newBomNode.node);
                 }
 
                 if (dep.repository) {
-                    const repo: any = starters.repositories[dep.repository];
-                    const newRepoNode: any = {
-                        id: [dep.repository],
-                        name: [repo.name],
-                        url: [repo.url],
-                        snapshots: [
-                            {
-                                enabled: [repo.snapshotEnabled.toString()]
-                            }
-                        ]
-                    };
-                    if (!newXml.project.repositories) {
-                        newXml.project.repositories = [{}];
-                    }
-                    if (!newXml.project.repositories[0].repository) {
-                        newXml.project.repositories[0].repository = [newRepoNode];
-                    } else {
-                        newXml.project.repositories[0].repository.push(newRepoNode);
-                    }
+                    const repo: IRepository = starters.repositories[dep.repository];
+                    const newRepoNode: RepositoryNode = new RepositoryNode(dep.repository, repo.name, repo.url, repo.snapshotEnabled);
+                    addRepositoryNode(newXml, newRepoNode.node);
                 }
 
             });

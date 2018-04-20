@@ -2,8 +2,8 @@
 // Licensed under the MIT license.
 
 import { QuickPickItem } from "vscode";
-import { Metadata } from "./Metadata";
-import { IDependency } from "./Model";
+import { IDependency } from "./Interfaces";
+import * as Metadata from "./Metadata";
 import { Utils } from "./Utils";
 
 const PLACEHOLDER: string = "";
@@ -11,14 +11,6 @@ const HINT_CONFIRM: string = "Press <Enter> to continue.";
 const DEPENDENCIES_HISTORY_FILENAME: string = ".last_used_dependencies";
 
 export class DependencyManager {
-
-    // private static recommended: IDependencyQuickPickItem = {
-    //     itemType: "recommendation",
-    //     id: "web,security,azure-active-directory",
-    //     label: "$(thumbsup) Recommended",
-    //     description: "",
-    //     detail: "Web, Security, Azure Active Directory"
-    // };
 
     public lastselected: IDependencyQuickPickItem = null;
     public dependencies: IDependency[] = [];
@@ -48,7 +40,6 @@ export class DependencyManager {
             if (options && options.hasLastSelected && this.lastselected) {
                 ret.push(this.lastselected);
             }
-            // ret.push(DependencyManager.recommended);
         } else {
             ret.push({
                 itemType: "selection",
