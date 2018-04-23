@@ -91,7 +91,3 @@ export enum BooleanString {
     TRUE = "true",
     FALSE = "false"
 }
-
-export function hehe(): void {
-    return;
-}
