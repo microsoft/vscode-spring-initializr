@@ -40,15 +40,15 @@ export class DependencyManager {
             if (options && options.hasLastSelected && this.lastselected) {
                 ret.push(this.lastselected);
             }
-        } else {
-            ret.push({
-                itemType: "selection",
-                id: this.selectedIds.join(","),
-                label: `$(checklist) Selected ${this.selectedIds.length} dependenc${this.selectedIds.length === 1 ? "y" : "ies"}`,
-                description: "",
-                detail: HINT_CONFIRM
-            });
-        }
+        } 
+        ret.push({
+            itemType: "selection",
+            id: this.selectedIds.join(","),
+            label: `$(checklist) Selected ${this.selectedIds.length} dependenc${this.selectedIds.length === 1 ? "y" : "ies"}`,
+            description: "",
+            detail: HINT_CONFIRM
+        });
+    
 
         return ret.concat(this.getSelectedDependencies().concat(this.getUnselectedDependencies()).map((dep: IDependency) => {
             return {
