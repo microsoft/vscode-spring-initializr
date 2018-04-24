@@ -31,7 +31,7 @@ export class DependencyManager {
         this.lastselected = this.genLastSelectedItem(idList);
     }
 
-    public async getQuickPickItems(bootVersion: string, options?: {hasLastSelected: boolean}): Promise<IDependencyQuickPickItem[]> {
+    public async getQuickPickItems(bootVersion: string, options?: { hasLastSelected: boolean }): Promise<IDependencyQuickPickItem[]> {
         if (this.dependencies.length === 0) {
             await this.initialize(await Metadata.getAvailableDependencies(bootVersion));
         }
@@ -40,7 +40,7 @@ export class DependencyManager {
             if (options && options.hasLastSelected && this.lastselected) {
                 ret.push(this.lastselected);
             }
-        } 
+        }
         ret.push({
             itemType: "selection",
             id: this.selectedIds.join(","),
@@ -48,7 +48,6 @@ export class DependencyManager {
             description: "",
             detail: HINT_CONFIRM
         });
-    
 
         return ret.concat(this.getSelectedDependencies().concat(this.getUnselectedDependencies()).map((dep: IDependency) => {
             return {

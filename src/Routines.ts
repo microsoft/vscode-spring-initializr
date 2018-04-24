@@ -10,7 +10,7 @@ import { IBom, IMavenId, IRepository, IStarters, IValue } from "./Interfaces";
 import * as Metadata from "./Metadata";
 import { BomNode } from "./pomxml/BomNode";
 import { DependencyNode } from "./pomxml/DependencyNode";
-import { addBomNode, addDependencyNode, addRepositoryNode, removeDependencyNode, getBootVersion, getDependencyNodes } from "./pomxml/PomXml";
+import { addBomNode, addDependencyNode, addRepositoryNode, getBootVersion, getDependencyNodes, removeDependencyNode } from "./pomxml/PomXml";
 import { RepositoryNode } from "./pomxml/RepositoryNode";
 import { TelemetryHelper } from "./TelemetryHelper";
 import { Utils } from "./Utils";
@@ -167,7 +167,7 @@ export module Routines {
             }
             const msgRemove: string = (toRemove && toRemove.length) ? `Removing: [${toRemove.map(d => manager.dict[d].name).join(", ")}].` : "";
             const msgAdd: string = (toAdd && toAdd.length) ? `Adding: [${toAdd.map(d => manager.dict[d].name).join(", ")}].` : "";
-            const choice: string = await vscode.window.showWarningMessage( `${msgRemove} ${msgAdd} Proceed?`, "Proceed", "Cancel");
+            const choice: string = await vscode.window.showWarningMessage(`${msgRemove} ${msgAdd} Proceed?`, "Proceed", "Cancel");
             if (choice !== "Proceed") {
                 return;
             }
