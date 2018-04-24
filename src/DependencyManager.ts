@@ -2,8 +2,8 @@
 // Licensed under the MIT license.
 
 import { QuickPickItem } from "vscode";
-import { Metadata } from "./Metadata";
-import { IDependency } from "./Model";
+import { IDependency } from "./Interfaces";
+import * as Metadata from "./Metadata";
 import { Utils } from "./Utils";
 
 const PLACEHOLDER: string = "";
@@ -12,22 +12,14 @@ const DEPENDENCIES_HISTORY_FILENAME: string = ".last_used_dependencies";
 
 export class DependencyManager {
 
-    // private static recommended: IDependencyQuickPickItem = {
-    //     itemType: "recommendation",
-    //     id: "web,security,azure-active-directory",
-    //     label: "$(thumbsup) Recommended",
-    //     description: "",
-    //     detail: "Web, Security, Azure Active Directory"
-    // };
-
-    private static lastselected: IDependencyQuickPickItem = null;
+    public lastselected: IDependencyQuickPickItem = null;
     public dependencies: IDependency[] = [];
     public dict: { [key: string]: IDependency } = {};
     public selectedIds: string[] = [];
 
     public updateLastUsedDependencies(v: IDependencyQuickPickItem): void {
         Utils.writeFileToExtensionRoot(DEPENDENCIES_HISTORY_FILENAME, v.id);
-        DependencyManager.lastselected = this.genLastSelectedItem(v.id);
+        this.lastselected = this.genLastSelectedItem(v.id);
     }
 
     public async initialize(dependencies: IDependency[]): Promise<void> {
@@ -36,28 +28,26 @@ export class DependencyManager {
             this.dict[dep.id] = dep;
         }
         const idList: string = await Utils.readFileFromExtensionRoot(DEPENDENCIES_HISTORY_FILENAME);
-        DependencyManager.lastselected = this.genLastSelectedItem(idList);
+        this.lastselected = this.genLastSelectedItem(idList);
     }
 
-    public async getQuickPickItems(metadata: Metadata, bootVersion: string): Promise<IDependencyQuickPickItem[]> {
+    public async getQuickPickItems(bootVersion: string, options?: { hasLastSelected: boolean }): Promise<IDependencyQuickPickItem[]> {
         if (this.dependencies.length === 0) {
-            await this.initialize(await metadata.getAvailableDependencies(bootVersion));
+            await this.initialize(await Metadata.getAvailableDependencies(bootVersion));
         }
         const ret: IDependencyQuickPickItem[] = [];
         if (this.selectedIds.length === 0) {
-            if (DependencyManager.lastselected) {
-                ret.push(DependencyManager.lastselected);
+            if (options && options.hasLastSelected && this.lastselected) {
+                ret.push(this.lastselected);
             }
-            // ret.push(DependencyManager.recommended);
-        } else {
-            ret.push({
-                itemType: "selection",
-                id: this.selectedIds.join(","),
-                label: `$(checklist) Selected ${this.selectedIds.length} dependenc${this.selectedIds.length === 1 ? "y" : "ies"}`,
-                description: "",
-                detail: HINT_CONFIRM
-            });
         }
+        ret.push({
+            itemType: "selection",
+            id: this.selectedIds.join(","),
+            label: `$(checklist) Selected ${this.selectedIds.length} dependenc${this.selectedIds.length === 1 ? "y" : "ies"}`,
+            description: "",
+            detail: HINT_CONFIRM
+        });
 
         return ret.concat(this.getSelectedDependencies().concat(this.getUnselectedDependencies()).map((dep: IDependency) => {
             return {
