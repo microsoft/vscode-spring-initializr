@@ -60,14 +60,16 @@ export interface IStarters {
 }
 
 // xml2js.explicitArray: true
-export interface IDependencyNode {
+export type XmlNode = { [key: string]: XmlNode[] | string[] };
+
+export interface IDependencyNode extends XmlNode {
     groupId: string[];
     artifactId: string[];
     version?: string[];
     scope?: string[];
 }
 
-export interface IBomNode {
+export interface IBomNode extends XmlNode {
     groupId: string[];
     artifactId: string[];
     version: string[];
@@ -76,7 +78,7 @@ export interface IBomNode {
     scope: ["import"];
 }
 
-export interface IRepositoryNode {
+export interface IRepositoryNode extends XmlNode {
     id: string[];
     name: string[];
     url: string[];
