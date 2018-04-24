@@ -149,7 +149,11 @@ export module Routines {
             TelemetryHelper.finishStep(stepBootVersion);
 
             // [interaction] Step: Dependencies, with pre-selected deps
-            const starters: IStarters = await Metadata.dependencies.getStarters(bootVersion);
+            const starters: IStarters = await vscode.window.withProgress<IStarters>({ location: vscode.ProgressLocation.Window }, async (p) => {
+                p.report({ message: `Fetching metadata for version ${bootVersion} ...` });
+                return await Metadata.dependencies.getStarters(bootVersion);
+            });
+
             const oldStarterIds: string[] = [];
             Object.keys(starters.dependencies).forEach(key => {
                 const elem: IMavenId = starters.dependencies[key];
@@ -193,35 +197,41 @@ export module Routines {
             }
 
             // modify xml object
-            const newXml: { project: XmlNode } = Object.assign({}, xml);
-            toRemove.forEach(elem => {
-                removeDependencyNode(newXml.project, starters.dependencies[elem].groupId, starters.dependencies[elem].artifactId);
-            });
-            toAdd.forEach(elem => {
-                const dep: IMavenId = starters.dependencies[elem];
-                const newDepNode: DependencyNode = new DependencyNode(dep.groupId, dep.artifactId, dep.version, dep.scope);
+            const newXml: { project: XmlNode } = getUpdatedPomXml(xml, starters, toRemove, toAdd);
 
-                addDependencyNode(newXml.project, newDepNode.node);
-
-                if (dep.bom) {
-                    const bom: IBom = starters.boms[dep.bom];
-                    const newBomNode: BomNode = new BomNode(bom.groupId, bom.artifactId, bom.version);
-                    addBomNode(newXml.project, newBomNode.node);
-                }
-
-                if (dep.repository) {
-                    const repo: IRepository = starters.repositories[dep.repository];
-                    const newRepoNode: RepositoryNode = new RepositoryNode(dep.repository, repo.name, repo.url, repo.snapshotEnabled);
-                    addRepositoryNode(newXml.project, newRepoNode.node);
-                }
-
-            });
             // re-generate a pom.xml
             const output: string = Utils.buildXmlContent(newXml);
             await fse.writeFile(entry.fsPath, output);
             vscode.window.showInformationMessage("Successfully updated.");
             TelemetryHelper.finishStep(stepWriteFile);
             return;
+        }
+
+        function getUpdatedPomXml(xml: any, starters: IStarters, toRemove: string[], toAdd: string[]): { project: XmlNode } {
+            const ret: { project: XmlNode } = Object.assign({}, xml);
+            toRemove.forEach(elem => {
+                removeDependencyNode(ret.project, starters.dependencies[elem].groupId, starters.dependencies[elem].artifactId);
+            });
+            toAdd.forEach(elem => {
+                const dep: IMavenId = starters.dependencies[elem];
+                const newDepNode: DependencyNode = new DependencyNode(dep.groupId, dep.artifactId, dep.version, dep.scope);
+
+                addDependencyNode(ret.project, newDepNode.node);
+
+                if (dep.bom) {
+                    const bom: IBom = starters.boms[dep.bom];
+                    const newBomNode: BomNode = new BomNode(bom.groupId, bom.artifactId, bom.version);
+                    addBomNode(ret.project, newBomNode.node);
+                }
+
+                if (dep.repository) {
+                    const repo: IRepository = starters.repositories[dep.repository];
+                    const newRepoNode: RepositoryNode = new RepositoryNode(dep.repository, repo.name, repo.url, repo.snapshotEnabled);
+                    addRepositoryNode(ret.project, newRepoNode.node);
+                }
+
+            });
+            return ret;
         }
     }
 }
