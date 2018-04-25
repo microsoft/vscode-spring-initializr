@@ -91,6 +91,7 @@
   },
   "devDependencies": {
     "@types/fs-extra": "^5.0.0",
+    "@types/lodash": "^4.14.107",
     "@types/md5": "^2.1.32",
     "@types/mocha": "^2.2.42",
     "@types/node": "^7.0.43",
@@ -102,6 +103,7 @@
   },
   "dependencies": {
     "fs-extra": "^5.0.0",
+    "lodash": "^4.17.5",
     "md5": "^2.2.1",
     "unzip-stream": "^0.3.0",
     "vscode-extension-telemetry-wrapper": "0.2.0",
