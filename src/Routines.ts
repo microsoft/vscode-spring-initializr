@@ -202,7 +202,7 @@ export module Routines {
             // re-generate a pom.xml
             const output: string = Utils.buildXmlContent(newXml);
             await fse.writeFile(entry.fsPath, output);
-            vscode.window.showInformationMessage("Successfully updated.");
+            vscode.window.showInformationMessage("Pom file successfully updated.");
             TelemetryHelper.finishStep(stepWriteFile);
             return;
         }
