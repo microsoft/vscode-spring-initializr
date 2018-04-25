@@ -5,7 +5,7 @@ import * as _ from "lodash";
 import { IBomNode, IDependencyNode, IRepositoryNode, XmlNode } from "../Interfaces";
 
 function isNullOrEmptyNode(node: any): boolean {
-    return !node || _.isEmpty(node) || _.isEqual(node, [""]);
+    return _.isEmpty(node) || _.isEqual(node, [""]);
 }
 
 function ensureNode(parentNode: XmlNode, nodeName: string, defaultValue: any): any {
