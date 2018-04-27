@@ -61,7 +61,7 @@ export class DependencyManager {
     }
 
     public getSelectedDependencies(): IDependency[] {
-        return this.selectedIds.map((id: string) => this.dict[id]);
+        return this.selectedIds.map((id: string) => this.dict[id]).filter(Boolean);
     }
 
     public getUnselectedDependencies(): IDependency[] {

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 
+import * as _ from "lodash";
 import { IDependency, IStarters, ITopLevelAttribute } from "./Interfaces";
 import { Utils } from "./Utils";
 import { Versions } from "./Versions";
@@ -26,7 +27,7 @@ export namespace dependencies {
             const rawJSONString: string = await Utils.downloadFile(`${Utils.settings.getServiceUrl()}dependencies?bootVersion=${bootVersion}`, true, { Accept: "application/vnd.initializr.v2.1+json" });
             starters[bootVersion] = JSON.parse(rawJSONString);
         }
-        return starters[bootVersion];
+        return _.cloneDeep(starters[bootVersion]);
     }
 }
 
