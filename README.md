@@ -36,6 +36,9 @@ ext install vscode-spring-initializr
 
 ## Configuration
 ```
+  // Default language.
+  "spring.initializr.defaultLanguage": "Java",
+
   // Default value for Artifact Id.
   "spring.initializr.defaultArtifactId": "demo",
 

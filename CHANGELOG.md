@@ -2,6 +2,10 @@
 All notable changes to the "vscode-spring-initializr" extension will be documented in this file.
 
 ## Unreleased
+- Supported to edit starters of an existing Spring Boot Maven project.
+- Supported to generate Kotlin and Groovy projects. 
+- Supported to specify default language of projects.
+- Fixed some bugs.
 
 ## Released
 
