@@ -186,8 +186,8 @@ export module Routines {
                 vscode.window.showInformationMessage("No changes.");
                 return;
             }
-            const msgRemove: string = (toRemove && toRemove.length) ? `Removing: [${toRemove.map(d => manager.dict[d].name).join(", ")}].` : "";
-            const msgAdd: string = (toAdd && toAdd.length) ? `Adding: [${toAdd.map(d => manager.dict[d].name).join(", ")}].` : "";
+            const msgRemove: string = (toRemove && toRemove.length) ? `Removing: [${toRemove.map(d => manager.dict[d] && manager.dict[d].name).filter(Boolean).join(", ")}].` : "";
+            const msgAdd: string = (toAdd && toAdd.length) ? `Adding: [${toAdd.map(d => manager.dict[d] && manager.dict[d].name).filter(Boolean).join(", ")}].` : "";
             const choice: string = await vscode.window.showWarningMessage(`${msgRemove} ${msgAdd} Proceed?`, "Proceed", "Cancel");
             if (choice !== "Proceed") {
                 TelemetryHelper.finishStep(stepCancel);
@@ -196,6 +196,14 @@ export module Routines {
                 TelemetryHelper.finishStep(stepProceed);
             }
 
+            // add spring-boot-starter if no selected starters
+            if (manager.selectedIds.length === 0) {
+                toAdd.push("spring-boot-starter");
+                starters.dependencies["spring-boot-starter"] = {
+                    groupId: "org.springframework.boot",
+                    artifactId: "spring-boot-starter"
+                };
+            }
             // modify xml object
             const newXml: { project: XmlNode } = getUpdatedPomXml(xml, starters, toRemove, toAdd);
 
