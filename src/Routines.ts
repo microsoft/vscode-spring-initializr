@@ -12,49 +12,70 @@ import { BomNode } from "./pomxml/BomNode";
 import { DependencyNode } from "./pomxml/DependencyNode";
 import { addBomNode, addDependencyNode, addRepositoryNode, getBootVersion, getDependencyNodes, removeDependencyNode } from "./pomxml/PomXml";
 import { RepositoryNode } from "./pomxml/RepositoryNode";
-import { TelemetryHelper } from "./TelemetryHelper";
 import { Utils } from "./Utils";
 import { VSCodeUI } from "./VSCodeUI";
 
 export module Routines {
-    export namespace GenerateProject {
-        const STEP1_MESSAGE: string = "Input Group Id for your project. (Step 1/4)\t";
-        const STEP2_MESSAGE: string = "Input Artifact Id for your project. (Step 2/4)\t";
-        const STEP3_MESSAGE: string = "Specify Spring Boot version. (Step 3/4)";
-        const STEP4_MESSAGE: string = "Search for dependencies. (Step 4/4)";
+    interface IStep {
+        name: string;
+        info: string;
+    }
 
-        const stepGroupId: TelemetryHelper.IStep = { name: "GroupId", info: "GroupId inputed." };
-        const stepArtifactId: TelemetryHelper.IStep = { name: "ArtifactId", info: "ArtifactId inputed." };
-        const stepBootVersion: TelemetryHelper.IStep = { name: "BootVersion", info: "BootVersion selected." };
-        const stepDependencies: TelemetryHelper.IStep = { name: "Dependencies", info: "Dependencies selected." };
-        const stepTargetFolder: TelemetryHelper.IStep = { name: "TargetFolder", info: "Target folder selected." };
-        const stepDownloadUnzip: TelemetryHelper.IStep = { name: "DownloadUnzip", info: "Package unzipped." };
+    function finishStep(session: Session, step: IStep): void {
+        if (session && session.extraProperties) { session.extraProperties.finishedSteps.push(step.name); }
+        TelemetryWrapper.info(step.info);
+    }
+
+    export namespace GenerateProject {
+        const STEP_LANGUAGE_MESSAGE: string = "Specify project language.";
+        const STEP_GROUPID_MESSAGE: string = "Input Group Id for your project. (Step 1/4)\t";
+        const STEP_ARTIFACTID_MESSAGE: string = "Input Artifact Id for your project. (Step 2/4)\t";
+        const STEP_BOOTVERSION_MESSAGE: string = "Specify Spring Boot version. (Step 3/4)";
+        const STEP_DEPENDENCY_MESSAGE: string = "Search for dependencies. (Step 4/4)";
+
+        const stepLanguage: IStep = { name: "Language", info: "Language selected." };
+        const stepGroupId: IStep = { name: "GroupId", info: "GroupId inputed." };
+        const stepArtifactId: IStep = { name: "ArtifactId", info: "ArtifactId inputed." };
+        const stepBootVersion: IStep = { name: "BootVersion", info: "BootVersion selected." };
+        const stepDependencies: IStep = { name: "Dependencies", info: "Dependencies selected." };
+        const stepTargetFolder: IStep = { name: "TargetFolder", info: "Target folder selected." };
+        const stepDownloadUnzip: IStep = { name: "DownloadUnzip", info: "Package unzipped." };
 
         export async function run(projectType: string): Promise<void> {
             const session: Session = TelemetryWrapper.currentSession();
             if (session && session.extraProperties) { session.extraProperties.finishedSteps = []; }
+            // Step: language
+            let language: string = vscode.workspace.getConfiguration("spring.initializr").get<string>("defaultLanguage");
+            if (!language) {
+                language = await vscode.window.showQuickPick(
+                    ["Java", "Kotlin", "Groovy"],
+                    { ignoreFocusOut: true, placeHolder: STEP_LANGUAGE_MESSAGE }
+                );
+            }
+            if (language === undefined) { return; }
+            finishStep(session, stepLanguage);
 
             // Step: Group Id
             const defaultGroupId: string = vscode.workspace.getConfiguration("spring.initializr").get<string>("defaultGroupId");
             const groupId: string = await VSCodeUI.getFromInputBox({
-                prompt: STEP1_MESSAGE,
+                prompt: STEP_GROUPID_MESSAGE,
                 placeHolder: "e.g. com.example",
                 value: defaultGroupId,
                 validateInput: Utils.groupIdValidation
             });
             if (groupId === undefined) { return; }
-            TelemetryHelper.finishStep(stepGroupId);
+            finishStep(session, stepGroupId);
 
             // Step: Artifact Id
             const defaultArtifactId: string = vscode.workspace.getConfiguration("spring.initializr").get<string>("defaultArtifactId");
             const artifactId: string = await VSCodeUI.getFromInputBox({
-                prompt: STEP2_MESSAGE,
+                prompt: STEP_ARTIFACTID_MESSAGE,
                 placeHolder: "e.g. demo",
                 value: defaultArtifactId,
                 validateInput: Utils.artifactIdValidation
             });
             if (artifactId === undefined) { return; }
-            TelemetryHelper.finishStep(stepArtifactId);
+            finishStep(session, stepArtifactId);
 
             // Step: bootVersion
             const bootVersion: IValue = await VSCodeUI.getQuickPick<IValue>(
@@ -62,17 +83,17 @@ export module Routines {
                 version => version.name,
                 version => version.description,
                 null,
-                { placeHolder: STEP3_MESSAGE }
+                { placeHolder: STEP_BOOTVERSION_MESSAGE }
             );
             if (bootVersion === undefined) { return; }
-            TelemetryHelper.finishStep(stepBootVersion);
+            finishStep(session, stepBootVersion);
 
             // Step: Dependencies
             let current: IDependencyQuickPickItem = null;
             const manager: DependencyManager = new DependencyManager();
             do {
                 current = await vscode.window.showQuickPick(
-                    manager.getQuickPickItems(bootVersion.id, { hasLastSelected: true }), { ignoreFocusOut: true, placeHolder: STEP4_MESSAGE, matchOnDetail: true, matchOnDescription: true }
+                    manager.getQuickPickItems(bootVersion.id, { hasLastSelected: true }), { ignoreFocusOut: true, placeHolder: STEP_DEPENDENCY_MESSAGE, matchOnDetail: true, matchOnDescription: true }
                 );
                 if (current && current.itemType === "dependency") {
                     manager.toggleDependency(current.id);
@@ -83,18 +104,18 @@ export module Routines {
                 session.extraProperties.depsType = current.itemType;
                 session.extraProperties.dependencies = current.id;
             }
-            TelemetryHelper.finishStep(stepDependencies);
+            finishStep(session, stepDependencies);
 
             // Step: Choose target folder
             const outputUri: vscode.Uri = await VSCodeUI.openDialogForFolder({ openLabel: "Generate into this folder" });
             if (!outputUri) { return; }
-            TelemetryHelper.finishStep(stepTargetFolder);
+            finishStep(session, stepTargetFolder);
 
             // Step: Download & Unzip
             await vscode.window.withProgress({ location: vscode.ProgressLocation.Window }, (p: vscode.Progress<{ message?: string }>) => new Promise<void>(
                 async (resolve: () => void, _reject: (e: Error) => void): Promise<void> => {
                     p.report({ message: "Downloading zip package..." });
-                    const targetUrl: string = `${Utils.settings.getServiceUrl()}/starter.zip?type=${projectType}&groupId=${groupId}&artifactId=${artifactId}&bootVersion=${bootVersion.id}&dependencies=${current.id}`;
+                    const targetUrl: string = `${Utils.settings.getServiceUrl()}/starter.zip?type=${projectType}&language=${language.toLowerCase()}&groupId=${groupId}&artifactId=${artifactId}&bootVersion=${bootVersion.id}&dependencies=${current.id}`;
                     const filepath: string = await Utils.downloadFile(targetUrl);
 
                     p.report({ message: "Starting to unzip..." });
@@ -107,7 +128,7 @@ export module Routines {
                     });
                 }
             ));
-            TelemetryHelper.finishStep(stepDownloadUnzip);
+            finishStep(session, stepDownloadUnzip);
 
             //Open in new window
             const choice: string = await vscode.window.showInformationMessage(`Successfully generated. Location: ${outputUri.fsPath}`, "Open it");
@@ -119,11 +140,11 @@ export module Routines {
     }
 
     export namespace EditStarters {
-        const stepBootVersion: TelemetryHelper.IStep = { name: "BootVersion", info: "BootVersion identified." };
-        const stepDependencies: TelemetryHelper.IStep = { name: "Dependencies", info: "Dependencies selected." };
-        const stepCancel: TelemetryHelper.IStep = { name: "Cancel", info: "Canceled by user." };
-        const stepProceed: TelemetryHelper.IStep = { name: "Proceed", info: "Confirmed by user." };
-        const stepWriteFile: TelemetryHelper.IStep = { name: "WriteFile", info: "Pom file updated." };
+        const stepBootVersion: IStep = { name: "BootVersion", info: "BootVersion identified." };
+        const stepDependencies: IStep = { name: "Dependencies", info: "Dependencies selected." };
+        const stepCancel: IStep = { name: "Cancel", info: "Canceled by user." };
+        const stepProceed: IStep = { name: "Proceed", info: "Confirmed by user." };
+        const stepWriteFile: IStep = { name: "WriteFile", info: "Pom file updated." };
 
         export async function run(entry: vscode.Uri): Promise<void> {
             const session: Session = TelemetryWrapper.currentSession();
@@ -146,7 +167,7 @@ export module Routines {
             getDependencyNodes(xml.project).forEach(elem => {
                 deps.push(`${elem.groupId[0]}:${elem.artifactId[0]}`);
             });
-            TelemetryHelper.finishStep(stepBootVersion);
+            finishStep(session, stepBootVersion);
 
             // [interaction] Step: Dependencies, with pre-selected deps
             const starters: IStarters = await vscode.window.withProgress<IStarters>({ location: vscode.ProgressLocation.Window }, async (p) => {
@@ -177,7 +198,7 @@ export module Routines {
             if (session && session.extraProperties) {
                 session.extraProperties.dependencies = current.id;
             }
-            TelemetryHelper.finishStep(stepDependencies);
+            finishStep(session, stepDependencies);
 
             // Diff deps for add/remove
             const toRemove: string[] = oldStarterIds.filter(elem => manager.selectedIds.indexOf(elem) < 0);
@@ -190,10 +211,10 @@ export module Routines {
             const msgAdd: string = (toAdd && toAdd.length) ? `Adding: [${toAdd.map(d => manager.dict[d] && manager.dict[d].name).filter(Boolean).join(", ")}].` : "";
             const choice: string = await vscode.window.showWarningMessage(`${msgRemove} ${msgAdd} Proceed?`, "Proceed", "Cancel");
             if (choice !== "Proceed") {
-                TelemetryHelper.finishStep(stepCancel);
+                finishStep(session, stepCancel);
                 return;
             } else {
-                TelemetryHelper.finishStep(stepProceed);
+                finishStep(session, stepProceed);
             }
 
             // add spring-boot-starter if no selected starters
@@ -211,7 +232,7 @@ export module Routines {
             const output: string = Utils.buildXmlContent(newXml);
             await fse.writeFile(entry.fsPath, output);
             vscode.window.showInformationMessage("Pom file successfully updated.");
-            TelemetryHelper.finishStep(stepWriteFile);
+            finishStep(session, stepWriteFile);
             return;
         }
 
