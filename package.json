@@ -20,11 +20,17 @@
   "activationEvents": [
     "onCommand:spring.initializr.maven-project",
     "onCommand:spring.initializr.gradle-project",
-    "onCommand:spring.initializr.editStarters"
+    "onCommand:spring.initializr.editStarters",
+    "onCommand:spring.initializr.generate"
   ],
   "main": "./out/extension",
   "contributes": {
     "commands": [
+      {
+        "command": "spring.initializr.generate",
+        "title": "Generate a Spring Boot Project",
+        "category": "Spring Initializr"
+      },
       {
         "command": "spring.initializr.maven-project",
         "title": "Generate a Maven Project",
@@ -45,6 +51,10 @@
       "commandPalette": [
         {
           "command": "spring.initializr.editStarters",
+          "when": "never"
+        },
+        {
+          "command": "spring.initializr.generate",
           "when": "never"
         }
       ],
