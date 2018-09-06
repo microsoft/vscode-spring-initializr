@@ -74,7 +74,7 @@ export module Routines {
         }
 
         async function specifyPackaging(): Promise<string> {
-            let packaging: string = vscode.workspace.getConfiguration("spring.initializr").get<string>("defaultLanguage");
+            let packaging: string = vscode.workspace.getConfiguration("spring.initializr").get<string>("defaultPackaging");
             if (!packaging) {
                 packaging = await vscode.window.showQuickPick(
                     ["JAR", "WAR"],
