@@ -28,10 +28,11 @@ export module Routines {
 
     export namespace GenerateProject {
         const STEP_LANGUAGE_MESSAGE: string = "Specify project language.";
-        const STEP_GROUPID_MESSAGE: string = "Input Group Id for your project. (Step 1/4)\t";
-        const STEP_ARTIFACTID_MESSAGE: string = "Input Artifact Id for your project. (Step 2/4)\t";
-        const STEP_BOOTVERSION_MESSAGE: string = "Specify Spring Boot version. (Step 3/4)";
-        const STEP_DEPENDENCY_MESSAGE: string = "Search for dependencies. (Step 4/4)";
+        const STEP_PACKAGING_MESSAGE: string = "Specify packaging type.";
+        const STEP_GROUPID_MESSAGE: string = "Input Group Id for your project.";
+        const STEP_ARTIFACTID_MESSAGE: string = "Input Artifact Id for your project.";
+        const STEP_BOOTVERSION_MESSAGE: string = "Specify Spring Boot version.";
+        const STEP_DEPENDENCY_MESSAGE: string = "Search for dependencies.";
 
         const stepLanguage: IStep = { name: "Language", info: "Language selected." };
         const stepGroupId: IStep = { name: "GroupId", info: "GroupId inputed." };
@@ -41,10 +42,7 @@ export module Routines {
         const stepTargetFolder: IStep = { name: "TargetFolder", info: "Target folder selected." };
         const stepDownloadUnzip: IStep = { name: "DownloadUnzip", info: "Package unzipped." };
 
-        export async function run(projectType: string): Promise<void> {
-            const session: Session = TelemetryWrapper.currentSession();
-            if (session && session.extraProperties) { session.extraProperties.finishedSteps = []; }
-            // Step: language
+        async function specifyLanguage(): Promise<string> {
             let language: string = vscode.workspace.getConfiguration("spring.initializr").get<string>("defaultLanguage");
             if (!language) {
                 language = await vscode.window.showQuickPick(
@@ -52,32 +50,41 @@ export module Routines {
                     { ignoreFocusOut: true, placeHolder: STEP_LANGUAGE_MESSAGE }
                 );
             }
-            if (language === undefined) { return; }
-            finishStep(session, stepLanguage);
+            return language && language.toLowerCase();
+        }
 
-            // Step: Group Id
+        async function specifyGroupId(): Promise<string> {
             const defaultGroupId: string = vscode.workspace.getConfiguration("spring.initializr").get<string>("defaultGroupId");
-            const groupId: string = await VSCodeUI.getFromInputBox({
+            return await VSCodeUI.getFromInputBox({
                 prompt: STEP_GROUPID_MESSAGE,
                 placeHolder: "e.g. com.example",
                 value: defaultGroupId,
                 validateInput: Utils.groupIdValidation
             });
-            if (groupId === undefined) { return; }
-            finishStep(session, stepGroupId);
+        }
 
-            // Step: Artifact Id
+        async function specifyArtifactId(): Promise<string> {
             const defaultArtifactId: string = vscode.workspace.getConfiguration("spring.initializr").get<string>("defaultArtifactId");
-            const artifactId: string = await VSCodeUI.getFromInputBox({
+            return await VSCodeUI.getFromInputBox({
                 prompt: STEP_ARTIFACTID_MESSAGE,
                 placeHolder: "e.g. demo",
                 value: defaultArtifactId,
                 validateInput: Utils.artifactIdValidation
             });
-            if (artifactId === undefined) { return; }
-            finishStep(session, stepArtifactId);
+        }
 
-            // Step: bootVersion
+        async function specifyPackaging(): Promise<string> {
+            let packaging: string = vscode.workspace.getConfiguration("spring.initializr").get<string>("defaultPackaging");
+            if (!packaging) {
+                packaging = await vscode.window.showQuickPick(
+                    ["JAR", "WAR"],
+                    { ignoreFocusOut: true, placeHolder: STEP_PACKAGING_MESSAGE }
+                );
+            }
+            return packaging && packaging.toLowerCase();
+        }
+
+        async function specifyBootVersion(): Promise<string> {
             const bootVersion: IValue = await VSCodeUI.getQuickPick<IValue>(
                 Metadata.getBootVersions(),
                 version => version.name,
@@ -85,6 +92,34 @@ export module Routines {
                 null,
                 { placeHolder: STEP_BOOTVERSION_MESSAGE }
             );
+            return bootVersion && bootVersion.id;
+        }
+
+        export async function run(projectType: string): Promise<void> {
+            const session: Session = TelemetryWrapper.currentSession();
+            if (session && session.extraProperties) { session.extraProperties.finishedSteps = []; }
+
+            // Step: language
+            const language: string = await specifyLanguage();
+            if (language === undefined) { return; }
+            finishStep(session, stepLanguage);
+
+            // Step: Group Id
+            const groupId: string = await specifyGroupId();
+            if (groupId === undefined) { return; }
+            finishStep(session, stepGroupId);
+
+            // Step: Artifact Id
+            const artifactId: string = await specifyArtifactId();
+            if (artifactId === undefined) { return; }
+            finishStep(session, stepArtifactId);
+
+            // Step: Packaging
+            const packaging: string = await specifyPackaging();
+            if (packaging === undefined) { return; }
+
+            // Step: bootVersion
+            const bootVersion: string = await specifyBootVersion();
             if (bootVersion === undefined) { return; }
             finishStep(session, stepBootVersion);
 
@@ -93,7 +128,7 @@ export module Routines {
             const manager: DependencyManager = new DependencyManager();
             do {
                 current = await vscode.window.showQuickPick(
-                    manager.getQuickPickItems(bootVersion.id, { hasLastSelected: true }), { ignoreFocusOut: true, placeHolder: STEP_DEPENDENCY_MESSAGE, matchOnDetail: true, matchOnDescription: true }
+                    manager.getQuickPickItems(bootVersion, { hasLastSelected: true }), { ignoreFocusOut: true, placeHolder: STEP_DEPENDENCY_MESSAGE, matchOnDetail: true, matchOnDescription: true }
                 );
                 if (current && current.itemType === "dependency") {
                     manager.toggleDependency(current.id);
@@ -115,7 +150,7 @@ export module Routines {
             await vscode.window.withProgress({ location: vscode.ProgressLocation.Window }, (p: vscode.Progress<{ message?: string }>) => new Promise<void>(
                 async (resolve: () => void, _reject: (e: Error) => void): Promise<void> => {
                     p.report({ message: "Downloading zip package..." });
-                    const targetUrl: string = `${Utils.settings.getServiceUrl()}/starter.zip?type=${projectType}&language=${language.toLowerCase()}&groupId=${groupId}&artifactId=${artifactId}&bootVersion=${bootVersion.id}&dependencies=${current.id}`;
+                    const targetUrl: string = `${Utils.settings.getServiceUrl()}/starter.zip?type=${projectType}&language=${language}&groupId=${groupId}&artifactId=${artifactId}&packaging=${packaging}&bootVersion=${bootVersion}&dependencies=${current.id}`;
                     const filepath: string = await Utils.downloadFile(targetUrl);
 
                     p.report({ message: "Starting to unzip..." });
