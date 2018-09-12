@@ -6,13 +6,17 @@
 [![Gitter](https://badges.gitter.im/DevDivSpring/Lobby.svg)](https://gitter.im/DevDivSpring/Lobby)
 
 ## Overview
+Spring Initializr is a lightweight extension to quickly generate a Spring Boot project in Visual Studio Code (VS Code). It helps you to customize your projects with configurations and manage Spring Boot dependencies.  
 
 ![Screenshot](images/spring-initializr-vsc.gif) 
 
-A lightweight extension based on Spring Initializr to generate quickstart Spring Boot Java projects using Visual Studio Code (VS Code). Here's a list of features:
+## Feature List
 
+- Generate a Maven/Gradle Spring Boot project 
+- Customize configurations for a new project (language, group id, artifact id, boot version and dependencies)
 - Search for dependencies
 - Quickstart with last settings
+- Edit Spring Boot dependencies of an existing Spring Boot project
 
 ## Requirements
 - VS Code (version 1.19.0 or later)
@@ -33,6 +37,7 @@ ext install vscode-spring-initializr
 - Press `Ctrl + Shift + P` to open command palette.
 - Type `Spring Initializr` to start generating a Maven or Gradle project.
 - Follow the wizard.
+- Right click inside the `pom.xml` or `gradle.build` file and choose `Edit starters` for dependency refactoring.   
 
 ## Configuration
 ```
