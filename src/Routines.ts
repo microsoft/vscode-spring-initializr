@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import * as fse from "fs-extra";
+import * as path from "path";
 import * as unzip from "unzip-stream";
 import * as vscode from "vscode";
 import { Session, TelemetryWrapper } from "vscode-extension-telemetry-wrapper";
@@ -150,7 +151,17 @@ export module Routines {
             await vscode.window.withProgress({ location: vscode.ProgressLocation.Window }, (p: vscode.Progress<{ message?: string }>) => new Promise<void>(
                 async (resolve: () => void, _reject: (e: Error) => void): Promise<void> => {
                     p.report({ message: "Downloading zip package..." });
-                    const targetUrl: string = `${Utils.settings.getServiceUrl()}/starter.zip?type=${projectType}&language=${language}&groupId=${groupId}&artifactId=${artifactId}&packaging=${packaging}&bootVersion=${bootVersion}&dependencies=${current.id}`;
+                    const params: string[] = [
+                        `type=${projectType}`,
+                        `language=${language}`,
+                        `groupId=${groupId}`,
+                        `artifactId=${artifactId}`,
+                        `packaging=${packaging}`,
+                        `bootVersion=${bootVersion}`,
+                        `baseDir=${artifactId}`,
+                        `dependencies=${current.id}`
+                    ];
+                    const targetUrl: string = `${Utils.settings.getServiceUrl()}/starter.zip?${params.join("&")}`;
                     const filepath: string = await Utils.downloadFile(targetUrl);
 
                     p.report({ message: "Starting to unzip..." });
@@ -169,7 +180,7 @@ export module Routines {
             const choice: string = await vscode.window.showInformationMessage(`Successfully generated. Location: ${outputUri.fsPath}`, "Open it");
             if (choice === "Open it") {
                 const hasOpenFolder: boolean = (vscode.workspace.workspaceFolders !== undefined);
-                vscode.commands.executeCommand("vscode.openFolder", outputUri, hasOpenFolder);
+                vscode.commands.executeCommand("vscode.openFolder", vscode.Uri.file(path.join(outputUri.fsPath, artifactId)), hasOpenFolder);
             }
         }
     }
