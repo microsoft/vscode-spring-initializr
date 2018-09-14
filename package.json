@@ -52,9 +52,9 @@
         {
           "command": "spring.initializr.editStarters",
           "when": "never"
-        },
-        {
-          "command": "spring.initializr.generate",
+        },	
+        {	
+          "command": "spring.initializr.generate",	
           "when": "never"
         }
       ],
@@ -139,7 +139,7 @@
     "lodash": "^4.17.5",
     "md5": "^2.2.1",
     "unzip-stream": "^0.3.0",
-    "vscode-extension-telemetry-wrapper": "^0.2.2",
+    "vscode-extension-telemetry-wrapper": "^0.3.1",
     "xml2js": "^0.4.19"
   }
 }
