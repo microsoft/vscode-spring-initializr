@@ -52,6 +52,10 @@ ext install vscode-spring-initializr
 
   // Spring Initializr Service URL.
   "spring.initializr.serviceUrl": "https://start.spring.io/",
+
+  // Default value for Packaging. Supported values are "JAR" and "WAR".
+  "spring.initializr.defaultPackaging": "JAR",
+  
 ```
 
 ## Feedback and Questions
