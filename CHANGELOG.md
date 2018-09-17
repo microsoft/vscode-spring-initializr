@@ -1,9 +1,12 @@
 # Change Log
 All notable changes to the "vscode-spring-initializr" extension will be documented in this file.
 
-## Unreleased
-
 ## Released
+### 0.4.0
+- Supported to specify packaging type. [#68](https://github.com/Microsoft/vscode-spring-initializr/issues/68)
+- Created a base directory named after the artifact Id. [#72](https://github.com/Microsoft/vscode-spring-initializr/issues/72)
+- Fixed some bugs.
+
 ### 0.3.0
 - Supported to edit starters of an existing Spring Boot Maven project.
 - Supported to generate Kotlin and Groovy projects. 
