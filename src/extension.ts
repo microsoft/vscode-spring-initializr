@@ -3,7 +3,7 @@
 
 "use strict";
 import * as vscode from "vscode";
-import { initializeFromJsonFile, instrumentOperation, TelemetryWrapper } from "vscode-extension-telemetry-wrapper";
+import { dispose as disposeTelemetryWrapper, initializeFromJsonFile, instrumentOperation, TelemetryWrapper } from "vscode-extension-telemetry-wrapper";
 import { Routines } from "./Routines";
 import { Utils } from "./Utils";
 import { VSCodeUI } from "./VSCodeUI";
@@ -29,8 +29,8 @@ async function initializeExtension(_operationId: string, context: vscode.Extensi
     }));
 }
 
-export function deactivate(): void {
-    // this method is called when your extension is deactivated
+export async function deactivate(): Promise<void> {
+    await disposeTelemetryWrapper();
 }
 
 type ProjectType = {
