@@ -50,10 +50,6 @@
     "menus": {
       "commandPalette": [
         {
-          "command": "spring.initializr.editStarters",
-          "when": "never"
-        },
-        {
           "command": "spring.initializr.generate",
           "when": "never"
         }
