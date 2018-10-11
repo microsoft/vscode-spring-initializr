@@ -24,7 +24,7 @@ async function initializeExtension(_operationId: string, context: vscode.Extensi
     context.subscriptions.push(instrumentAndRegisterCommand("spring.initializr.editStarters", async (entry?: vscode.Uri) => {
         const targetFile: vscode.Uri = entry || await Utils.getTargetPomXml();
         if (targetFile) {
-            await vscode.window.showTextDocument(entry);
+            await vscode.window.showTextDocument(targetFile);
             await Routines.EditStarters.run(targetFile);
         } else {
             vscode.window.showInformationMessage("No pom.xml found in the workspace.");

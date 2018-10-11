@@ -11,6 +11,7 @@ import * as url from "url";
 import * as vscode from 'vscode';
 import * as xml2js from "xml2js";
 import { VSCodeUI } from "./VSCodeUI";
+import _ = require("lodash");
 let EXTENSION_PUBLISHER: string;
 let EXTENSION_NAME: string;
 let EXTENSION_VERSION: string;
@@ -147,7 +148,7 @@ export module Utils {
         }
 
         const candidates: vscode.Uri[] = await vscode.workspace.findFiles('**/pom.xml');
-        if (candidates && candidates.length > 0) {
+        if (!_.isEmpty(candidates)) {
             if (candidates.length === 1) {
                 return candidates[0];
             } else {
