@@ -4,6 +4,7 @@
 import * as fse from "fs-extra";
 import * as http from "http";
 import * as https from "https";
+import * as _ from "lodash";
 import * as md5 from "md5";
 import * as os from "os";
 import * as path from "path";
@@ -11,7 +12,6 @@ import * as url from "url";
 import * as vscode from 'vscode';
 import * as xml2js from "xml2js";
 import { VSCodeUI } from "./VSCodeUI";
-import _ = require("lodash");
 let EXTENSION_PUBLISHER: string;
 let EXTENSION_NAME: string;
 let EXTENSION_VERSION: string;
