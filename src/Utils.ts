@@ -156,7 +156,8 @@ export module Utils {
                     candidates,
                     getRelativePathToWorkspaceFolder,
                     getWorkspaceFolderName,
-                    null
+                    null,
+                    { placeHolder: "Select the target project."}
                 );
             }
         }

@@ -60,6 +60,13 @@
           "command": "spring.initializr.editStarters",
           "group": "SpringInitializr"
         }
+      ],
+      "explorer/context": [
+        {
+          "when": "resourceFilename == pom.xml",
+          "command": "spring.initializr.editStarters",
+          "group": "SpringInitializr"
+        }
       ]
     },
     "configuration": {
