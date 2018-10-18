@@ -50,15 +50,18 @@
     "menus": {
       "commandPalette": [
         {
-          "command": "spring.initializr.editStarters",
-          "when": "never"
-        },
-        {
           "command": "spring.initializr.generate",
           "when": "never"
         }
       ],
       "editor/context": [
+        {
+          "when": "resourceFilename == pom.xml",
+          "command": "spring.initializr.editStarters",
+          "group": "SpringInitializr"
+        }
+      ],
+      "explorer/context": [
         {
           "when": "resourceFilename == pom.xml",
           "command": "spring.initializr.editStarters",

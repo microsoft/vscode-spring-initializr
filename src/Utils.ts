@@ -4,12 +4,14 @@
 import * as fse from "fs-extra";
 import * as http from "http";
 import * as https from "https";
+import * as _ from "lodash";
 import * as md5 from "md5";
 import * as os from "os";
 import * as path from "path";
 import * as url from "url";
 import * as vscode from 'vscode';
 import * as xml2js from "xml2js";
+import { VSCodeUI } from "./VSCodeUI";
 let EXTENSION_PUBLISHER: string;
 let EXTENSION_NAME: string;
 let EXTENSION_VERSION: string;
@@ -126,7 +128,7 @@ export module Utils {
         );
     }
 
-    export  function buildXmlContent(obj: any, options?: {}): string {
+    export function buildXmlContent(obj: any, options?: {}): string {
         const opts: {} = Object.assign({ explicitArray: true }, options);
         return new xml2js.Builder(opts).buildObject(obj);
     }
@@ -135,5 +137,50 @@ export module Utils {
         export function getServiceUrl(): string {
             return vscode.workspace.getConfiguration("spring.initializr").get<string>("serviceUrl");
         }
+    }
+
+    export async function getTargetPomXml(): Promise<vscode.Uri> {
+        if (vscode.window.activeTextEditor) {
+            const fsPath: string = vscode.window.activeTextEditor.document.fileName;
+            if ("pom.xml" === path.basename(fsPath).toLowerCase()) {
+                return vscode.Uri.file(fsPath);
+            }
+        }
+
+        const candidates: vscode.Uri[] = await vscode.workspace.findFiles('**/pom.xml');
+        if (!_.isEmpty(candidates)) {
+            if (candidates.length === 1) {
+                return candidates[0];
+            } else {
+                return await VSCodeUI.getQuickPick(
+                    candidates,
+                    getRelativePathToWorkspaceFolder,
+                    getWorkspaceFolderName,
+                    null,
+                    { placeHolder: "Select the target project."}
+                );
+            }
+        }
+        return undefined;
+    }
+
+    function getRelativePathToWorkspaceFolder(file: vscode.Uri): string {
+        if (file) {
+            const wf: vscode.WorkspaceFolder = vscode.workspace.getWorkspaceFolder(file);
+            if (wf) {
+                return path.relative(wf.uri.fsPath, file.fsPath);
+            }
+        }
+        return "";
+    }
+
+    function getWorkspaceFolderName(file: vscode.Uri): string {
+        if (file) {
+            const wf: vscode.WorkspaceFolder = vscode.workspace.getWorkspaceFolder(file);
+            if (wf) {
+                return wf.name;
+            }
+        }
+        return "";
     }
 }

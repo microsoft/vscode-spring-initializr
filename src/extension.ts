@@ -21,7 +21,15 @@ async function initializeExtension(_operationId: string, context: vscode.Extensi
         context.subscriptions.push(instrumentAndRegisterCommand(`spring.initializr.${projectType.value}`, async () => await Routines.GenerateProject.run(projectType.value)));
     });
 
-    context.subscriptions.push(instrumentAndRegisterCommand("spring.initializr.editStarters", async (entry: vscode.Uri) => await Routines.EditStarters.run(entry)));
+    context.subscriptions.push(instrumentAndRegisterCommand("spring.initializr.editStarters", async (entry?: vscode.Uri) => {
+        const targetFile: vscode.Uri = entry || await Utils.getTargetPomXml();
+        if (targetFile) {
+            await vscode.window.showTextDocument(targetFile);
+            await Routines.EditStarters.run(targetFile);
+        } else {
+            vscode.window.showInformationMessage("No pom.xml found in the workspace.");
+        }
+    }));
 
     context.subscriptions.push(instrumentAndRegisterCommand("spring.initializr.generate", async () => {
         const projectType: ProjectType = await VSCodeUI.getQuickPick(ProjectTypes.all(), item => item.title, null, null, { placeHolder: "Select project type." });
