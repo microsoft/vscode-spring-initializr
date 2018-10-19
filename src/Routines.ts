@@ -165,13 +165,6 @@ export module Routines {
                     const filepath: string = await Utils.downloadFile(targetUrl);
 
                     p.report({ message: "Starting to unzip..." });
-                    // fse.createReadStream(filepath).pipe(unzip.Extract({ path: outputUri.fsPath })).on("close", () => {
-                    //     manager.updateLastUsedDependencies(current);
-                    //     resolve();
-                    // }).on("error", (err: Error) => {
-                    //     vscode.window.showErrorMessage(err.message);
-                    //     resolve();
-                    // });
                     extract(filepath, { dir: outputUri.fsPath }, (err) => {
                         if (err) {
                             vscode.window.showErrorMessage(err.message);
