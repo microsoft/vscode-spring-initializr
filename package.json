@@ -138,10 +138,10 @@
     "vscode": "^1.1.21"
   },
   "dependencies": {
+    "extract-zip": "^1.6.7",
     "fs-extra": "^5.0.0",
     "lodash": "^4.17.5",
     "md5": "^2.2.1",
-    "unzip-stream": "^0.3.0",
     "vscode-extension-telemetry-wrapper": "^0.3.3",
     "xml2js": "^0.4.19"
   }

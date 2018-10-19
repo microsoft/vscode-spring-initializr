@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 
+import * as extract from "extract-zip";
 import * as fse from "fs-extra";
 import * as path from "path";
-import * as unzip from "unzip-stream";
 import * as vscode from "vscode";
 import { Session, TelemetryWrapper } from "vscode-extension-telemetry-wrapper";
 import { DependencyManager, IDependencyQuickPickItem } from "./DependencyManager";
@@ -165,11 +165,12 @@ export module Routines {
                     const filepath: string = await Utils.downloadFile(targetUrl);
 
                     p.report({ message: "Starting to unzip..." });
-                    fse.createReadStream(filepath).pipe(unzip.Extract({ path: outputUri.fsPath })).on("close", () => {
-                        manager.updateLastUsedDependencies(current);
-                        resolve();
-                    }).on("error", (err: Error) => {
-                        vscode.window.showErrorMessage(err.message);
+                    extract(filepath, { dir: outputUri.fsPath }, (err) => {
+                        if (err) {
+                            vscode.window.showErrorMessage(err.message);
+                        } else {
+                            manager.updateLastUsedDependencies(current);
+                        }
                         resolve();
                     });
                 }
