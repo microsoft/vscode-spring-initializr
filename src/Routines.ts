@@ -96,6 +96,24 @@ export module Routines {
             return bootVersion && bootVersion.id;
         }
 
+        async function specifyTargetFolder(projectName: string): Promise<vscode.Uri> {
+            const OPTION_CONTINUE_TO_OVERRIDE: string = "Continue to override";
+            const OPTION_CHOOSE_ANOTHER_FOLDER: string = "Choose another folder";
+            const LABEL_CHOOSE_FOLDER: string = "Generate into this folder";
+            const MESSAGE_EXISTING_FOLDER: string = `A folder [${projectName}] is already existing in target path. Continue to override or Choose another folder?`;
+
+            let outputUri: vscode.Uri = await VSCodeUI.openDialogForFolder({ openLabel: LABEL_CHOOSE_FOLDER });
+            while (outputUri && await (fse.pathExists(path.join(outputUri.fsPath, projectName)))) {
+                const overrideChoice: String = await vscode.window.showWarningMessage(MESSAGE_EXISTING_FOLDER, OPTION_CONTINUE_TO_OVERRIDE, OPTION_CHOOSE_ANOTHER_FOLDER);
+                if (overrideChoice === OPTION_CHOOSE_ANOTHER_FOLDER) {
+                    outputUri = await VSCodeUI.openDialogForFolder({ openLabel: LABEL_CHOOSE_FOLDER });
+                } else {
+                    break;
+                }
+            }
+            return outputUri;
+        }
+
         export async function run(projectType: string): Promise<void> {
             const session: Session = TelemetryWrapper.currentSession();
             if (session && session.extraProperties) { session.extraProperties.finishedSteps = []; }
@@ -143,8 +161,8 @@ export module Routines {
             finishStep(session, stepDependencies);
 
             // Step: Choose target folder
-            const outputUri: vscode.Uri = await VSCodeUI.openDialogForFolder({ openLabel: "Generate into this folder" });
-            if (!outputUri) { return; }
+            const outputUri: vscode.Uri = await specifyTargetFolder(artifactId);
+            if (outputUri === undefined) { return; }
             finishStep(session, stepTargetFolder);
 
             // Step: Download & Unzip
