@@ -62,5 +62,5 @@ namespace ProjectTypes {
 
 function instrumentAndRegisterCommand(name: string, cb: (...args: any[]) => any): vscode.Disposable {
     const instrumented: (...args: any[]) => any = instrumentOperation(name, async (_operationId, myargs) => await cb(myargs));
-    return vscode.commands.registerCommand(name, instrumented);
+    return TelemetryWrapper.registerCommand(name, instrumented);
 }
