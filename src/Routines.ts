@@ -100,10 +100,10 @@ export module Routines {
             const OPTION_CONTINUE: string = "Continue";
             const OPTION_CHOOSE_ANOTHER_FOLDER: string = "Choose another folder";
             const LABEL_CHOOSE_FOLDER: string = "Generate into this folder";
-            const MESSAGE_EXISTING_FOLDER: string = `A folder [${projectName}] is already existing in the selected folder. Continue to overwrite or Choose another folder?`;
+            const MESSAGE_EXISTING_FOLDER: string = `A folder [${projectName}] already exists in the selected folder. Continue to overwrite or Choose another folder?`;
 
             let outputUri: vscode.Uri = await VSCodeUI.openDialogForFolder({ openLabel: LABEL_CHOOSE_FOLDER });
-            while (outputUri && await (fse.pathExists(path.join(outputUri.fsPath, projectName)))) {
+            while (outputUri && await fse.pathExists(path.join(outputUri.fsPath, projectName))) {
                 const overrideChoice: String = await vscode.window.showWarningMessage(MESSAGE_EXISTING_FOLDER, OPTION_CONTINUE, OPTION_CHOOSE_ANOTHER_FOLDER);
                 if (overrideChoice === OPTION_CHOOSE_ANOTHER_FOLDER) {
                     outputUri = await VSCodeUI.openDialogForFolder({ openLabel: LABEL_CHOOSE_FOLDER });
