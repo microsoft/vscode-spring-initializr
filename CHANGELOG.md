@@ -2,6 +2,9 @@
 All notable changes to the "vscode-spring-initializr" extension will be documented in this file.
 
 ## Released
+### 0.4.2
+- Allow users to choose another target folder if an existing folder is found. [#88](https://github.com/Microsoft/vscode-spring-initializr/issues/88)
+
 ### 0.4.1
 - Improved experience of editing starters. [#79](https://github.com/Microsoft/vscode-spring-initializr/issues/79)
 - Fixed a bug that mvnw could not be executed in Unix-like systems. [#66](https://github.com/Microsoft/vscode-spring-initializr/issues/66)
