@@ -9,7 +9,7 @@ import { Utils } from "./Utils";
 import { VSCodeUI } from "./VSCodeUI";
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
-    await initializeFromJsonFile(context.asAbsolutePath("./package.json"));
+    await initializeFromJsonFile(context.asAbsolutePath("./package.json"), true);
     await instrumentOperation("activation", initializeExtension)(context);
 }
 
@@ -18,7 +18,7 @@ async function initializeExtension(_operationId: string, context: vscode.Extensi
     await TelemetryWrapper.initilizeFromJsonFile(context.asAbsolutePath("package.json"));
 
     ProjectTypes.all().forEach((projectType) => {
-        context.subscriptions.push(instrumentAndRegisterCommand(`spring.initializr.${projectType.value}`, async () => await Routines.GenerateProject.run(projectType.value)));
+        context.subscriptions.push(instrumentAndRegisterCommand(`spring.initializr.${projectType.value}`, async (operationId) => await Routines.GenerateProject.run(projectType.value, operationId), true));
     });
 
     context.subscriptions.push(instrumentAndRegisterCommand("spring.initializr.editStarters", async (entry?: vscode.Uri) => {
@@ -60,7 +60,9 @@ namespace ProjectTypes {
     }
 }
 
-function instrumentAndRegisterCommand(name: string, cb: (...args: any[]) => any): vscode.Disposable {
-    const instrumented: (...args: any[]) => any = instrumentOperation(name, async (_operationId, myargs) => await cb(myargs));
+function instrumentAndRegisterCommand(name: string, cb: (...args: any[]) => any, withOperationIdAhead?: boolean): vscode.Disposable {
+    const instrumented: (...args: any[]) => any = instrumentOperation(name, async (_operationId, ...args) => {
+        withOperationIdAhead ? await cb(_operationId, ...args) : await cb(...args);
+    });
     return TelemetryWrapper.registerCommand(name, instrumented);
 }

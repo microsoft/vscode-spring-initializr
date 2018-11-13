@@ -5,8 +5,9 @@ import * as extract from "extract-zip";
 import * as fse from "fs-extra";
 import * as path from "path";
 import * as vscode from "vscode";
-import { Session, TelemetryWrapper } from "vscode-extension-telemetry-wrapper";
+import { instrumentOperationStep, Session, TelemetryWrapper } from "vscode-extension-telemetry-wrapper";
 import { DependencyManager, IDependencyQuickPickItem } from "./DependencyManager";
+import { OperationCanceledError } from "./Errors";
 import { IBom, IMavenId, IRepository, IStarters, IValue, XmlNode } from "./Interfaces";
 import * as Metadata from "./Metadata";
 import { BomNode } from "./pomxml/BomNode";
@@ -17,6 +18,7 @@ import { Utils } from "./Utils";
 import { VSCodeUI } from "./VSCodeUI";
 
 export module Routines {
+    // TO REMOVE
     interface IStep {
         name: string;
         info: string;
@@ -26,6 +28,7 @@ export module Routines {
         if (session && session.extraProperties) { session.extraProperties.finishedSteps.push(step.name); }
         TelemetryWrapper.info(step.info);
     }
+    // UNTIL HERE
 
     export namespace GenerateProject {
         const STEP_LANGUAGE_MESSAGE: string = "Specify project language.";
@@ -114,85 +117,95 @@ export module Routines {
             return outputUri;
         }
 
-        export async function run(projectType: string): Promise<void> {
+        export async function run(projectType: string, operationId?: string): Promise<void> {
             const session: Session = TelemetryWrapper.currentSession();
             if (session && session.extraProperties) { session.extraProperties.finishedSteps = []; }
 
             // Step: language
-            const language: string = await specifyLanguage();
+            const language: string = await instrumentOperationStep(operationId, stepLanguage.name, specifyLanguage)();
             if (language === undefined) { return; }
             finishStep(session, stepLanguage);
 
             // Step: Group Id
-            const groupId: string = await specifyGroupId();
+            const groupId: string = await instrumentOperationStep(operationId, stepGroupId.name, specifyGroupId)();
             if (groupId === undefined) { return; }
             finishStep(session, stepGroupId);
 
             // Step: Artifact Id
-            const artifactId: string = await specifyArtifactId();
+            const artifactId: string = await instrumentOperationStep(operationId, stepArtifactId.name, specifyArtifactId)();
             if (artifactId === undefined) { return; }
             finishStep(session, stepArtifactId);
 
             // Step: Packaging
-            const packaging: string = await specifyPackaging();
+            const packaging: string = await instrumentOperationStep(operationId, "Packaging", specifyPackaging)();
             if (packaging === undefined) { return; }
 
             // Step: bootVersion
-            const bootVersion: string = await specifyBootVersion();
+            const bootVersion: string = await instrumentOperationStep(operationId, stepBootVersion.name, specifyBootVersion)();
             if (bootVersion === undefined) { return; }
             finishStep(session, stepBootVersion);
 
             // Step: Dependencies
-            let current: IDependencyQuickPickItem = null;
             const manager: DependencyManager = new DependencyManager();
-            do {
-                current = await vscode.window.showQuickPick(
-                    manager.getQuickPickItems(bootVersion, { hasLastSelected: true }), { ignoreFocusOut: true, placeHolder: STEP_DEPENDENCY_MESSAGE, matchOnDetail: true, matchOnDescription: true }
-                );
-                if (current && current.itemType === "dependency") {
-                    manager.toggleDependency(current.id);
+            const deps: IDependencyQuickPickItem = await instrumentOperationStep(operationId, stepDependencies.name, async () => {
+                let current: IDependencyQuickPickItem = null;
+                do {
+                    current = await vscode.window.showQuickPick(
+                        manager.getQuickPickItems(bootVersion, { hasLastSelected: true }), { ignoreFocusOut: true, placeHolder: STEP_DEPENDENCY_MESSAGE, matchOnDetail: true, matchOnDescription: true }
+                    );
+                    if (current && current.itemType === "dependency") {
+                        manager.toggleDependency(current.id);
+                    }
+                } while (current && current.itemType === "dependency");
+                if (!current) {
+                    throw new OperationCanceledError("Canceled on dependency seletion.");
                 }
-            } while (current && current.itemType === "dependency");
-            if (!current) { return; }
+                return current;
+            })();
+
+            // TO REMOVE
             if (session && session.extraProperties) {
-                session.extraProperties.depsType = current.itemType;
-                session.extraProperties.dependencies = current.id;
+                session.extraProperties.depsType = deps.itemType;
+                session.extraProperties.dependencies = deps.id;
             }
             finishStep(session, stepDependencies);
+            // UNTIL HERE
 
             // Step: Choose target folder
-            const outputUri: vscode.Uri = await specifyTargetFolder(artifactId);
+            const outputUri: vscode.Uri = await instrumentOperationStep(operationId, stepTargetFolder.name, specifyTargetFolder)(artifactId);
             if (outputUri === undefined) { return; }
             finishStep(session, stepTargetFolder);
 
             // Step: Download & Unzip
-            await vscode.window.withProgress({ location: vscode.ProgressLocation.Window }, (p: vscode.Progress<{ message?: string }>) => new Promise<void>(
-                async (resolve: () => void, _reject: (e: Error) => void): Promise<void> => {
-                    p.report({ message: "Downloading zip package..." });
-                    const params: string[] = [
-                        `type=${projectType}`,
-                        `language=${language}`,
-                        `groupId=${groupId}`,
-                        `artifactId=${artifactId}`,
-                        `packaging=${packaging}`,
-                        `bootVersion=${bootVersion}`,
-                        `baseDir=${artifactId}`,
-                        `dependencies=${current.id}`
-                    ];
-                    const targetUrl: string = `${Utils.settings.getServiceUrl()}/starter.zip?${params.join("&")}`;
-                    const filepath: string = await Utils.downloadFile(targetUrl);
+            await instrumentOperationStep(operationId, stepDownloadUnzip.name, async () => {
+                await vscode.window.withProgress({ location: vscode.ProgressLocation.Window }, (p: vscode.Progress<{ message?: string }>) => new Promise<void>(
+                    async (resolve: () => void, _reject: (e: Error) => void): Promise<void> => {
+                        p.report({ message: "Downloading zip package..." });
+                        const params: string[] = [
+                            `type=${projectType}`,
+                            `language=${language}`,
+                            `groupId=${groupId}`,
+                            `artifactId=${artifactId}`,
+                            `packaging=${packaging}`,
+                            `bootVersion=${bootVersion}`,
+                            `baseDir=${artifactId}`,
+                            `dependencies=${deps.id}`
+                        ];
+                        const targetUrl: string = `${Utils.settings.getServiceUrl()}/starter.zip?${params.join("&")}`;
+                        const filepath: string = await Utils.downloadFile(targetUrl);
 
-                    p.report({ message: "Starting to unzip..." });
-                    extract(filepath, { dir: outputUri.fsPath }, (err) => {
-                        if (err) {
-                            vscode.window.showErrorMessage(err.message);
-                        } else {
-                            manager.updateLastUsedDependencies(current);
-                        }
-                        resolve();
-                    });
-                }
-            ));
+                        p.report({ message: "Starting to unzip..." });
+                        extract(filepath, { dir: outputUri.fsPath }, (err) => {
+                            if (err) {
+                                vscode.window.showErrorMessage(err.message);
+                            } else {
+                                manager.updateLastUsedDependencies(deps);
+                            }
+                            resolve();
+                        });
+                    }
+                ));
+            })();
             finishStep(session, stepDownloadUnzip);
 
             //Open in new window
