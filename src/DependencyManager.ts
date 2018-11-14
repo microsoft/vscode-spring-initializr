@@ -17,7 +17,7 @@ export class DependencyManager {
     public dict: { [key: string]: IDependency } = {};
     public selectedIds: string[] = [];
 
-    public updateLastUsedDependencies(v: IDependencyQuickPickItem): void {
+    public updateLastUsedDependencies(v: { itemType: string; id: string; }): void {
         Utils.writeFileToExtensionRoot(DEPENDENCIES_HISTORY_FILENAME, v.id);
         this.lastselected = this.genLastSelectedItem(v.id);
     }

@@ -2,8 +2,10 @@
 // Licensed under the MIT license.
 
 "use strict";
+import * as _ from "lodash";
 import * as vscode from "vscode";
 import { dispose as disposeTelemetryWrapper, initializeFromJsonFile, instrumentOperation, TelemetryWrapper } from "vscode-extension-telemetry-wrapper";
+import { GenerateProjectHandler } from "./GenerateProjectHandler";
 import { Routines } from "./Routines";
 import { Utils } from "./Utils";
 import { VSCodeUI } from "./VSCodeUI";
@@ -17,9 +19,15 @@ async function initializeExtension(_operationId: string, context: vscode.Extensi
     await Utils.loadPackageInfo(context);
     await TelemetryWrapper.initilizeFromJsonFile(context.asAbsolutePath("package.json"));
 
-    ProjectTypes.all().forEach((projectType) => {
-        context.subscriptions.push(instrumentAndRegisterCommand(`spring.initializr.${projectType.value}`, async (operationId) => await Routines.GenerateProject.run(projectType.value, operationId), true));
-    });
+    context.subscriptions.push(
+        instrumentAndRegisterCommand("spring.initializr.maven-project", async (operationId) => await new GenerateProjectHandler("maven-project").run(operationId), true),
+        instrumentAndRegisterCommand("spring.initializr.gradle-project", async (operationId) => await new GenerateProjectHandler("gradle-project").run(operationId), true)
+    );
+
+    context.subscriptions.push(instrumentAndRegisterCommand("spring.initializr.generate", async () => {
+        const projectType: string = await VSCodeUI.getQuickPick(["maven-project", "gradle-project"], _.capitalize, null, null, { placeHolder: "Select project type." });
+        await vscode.commands.executeCommand(`spring.initializr.${projectType}`);
+    }));
 
     context.subscriptions.push(instrumentAndRegisterCommand("spring.initializr.editStarters", async (entry?: vscode.Uri) => {
         const targetFile: vscode.Uri = entry || await Utils.getTargetPomXml();
@@ -30,34 +38,10 @@ async function initializeExtension(_operationId: string, context: vscode.Extensi
             vscode.window.showInformationMessage("No pom.xml found in the workspace.");
         }
     }));
-
-    context.subscriptions.push(instrumentAndRegisterCommand("spring.initializr.generate", async () => {
-        const projectType: ProjectType = await VSCodeUI.getQuickPick(ProjectTypes.all(), item => item.title, null, null, { placeHolder: "Select project type." });
-        await vscode.commands.executeCommand(`spring.initializr.${projectType.value}`);
-    }));
 }
 
 export async function deactivate(): Promise<void> {
     await disposeTelemetryWrapper();
-}
-
-type ProjectType = {
-    title: string;
-    value: string;
-};
-
-namespace ProjectTypes {
-    export const MAVEN: ProjectType = {
-        title: "Maven Project",
-        value: "maven-project"
-    };
-    export const GRADLE: ProjectType = {
-        title: "Gradle Project",
-        value: "gradle-project"
-    };
-    export function all(): ProjectType[] {
-        return [MAVEN, GRADLE];
-    }
 }
 
 function instrumentAndRegisterCommand(name: string, cb: (...args: any[]) => any, withOperationIdAhead?: boolean): vscode.Disposable {
