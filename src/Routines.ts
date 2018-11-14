@@ -5,7 +5,7 @@ import * as extract from "extract-zip";
 import * as fse from "fs-extra";
 import * as path from "path";
 import * as vscode from "vscode";
-import { instrumentOperationStep, Session, TelemetryWrapper } from "vscode-extension-telemetry-wrapper";
+import { instrumentOperationStep, sendInfo, Session, TelemetryWrapper } from "vscode-extension-telemetry-wrapper";
 import { DependencyManager, IDependencyQuickPickItem } from "./DependencyManager";
 import { OperationCanceledError } from "./Errors";
 import { IBom, IMavenId, IRepository, IStarters, IValue, XmlNode } from "./Interfaces";
@@ -143,6 +143,7 @@ export module Routines {
             // Step: bootVersion
             const bootVersion: string = await instrumentOperationStep(operationId, stepBootVersion.name, specifyBootVersion)();
             if (bootVersion === undefined) { return; }
+            sendInfo(operationId, { bootVersion });
             finishStep(session, stepBootVersion);
 
             // Step: Dependencies
@@ -170,6 +171,7 @@ export module Routines {
             }
             finishStep(session, stepDependencies);
             // UNTIL HERE
+            sendInfo(operationId, { depsType: deps.itemType, dependencies: deps.id });
 
             // Step: Choose target folder
             const outputUri: vscode.Uri = await instrumentOperationStep(operationId, stepTargetFolder.name, specifyTargetFolder)(artifactId);
