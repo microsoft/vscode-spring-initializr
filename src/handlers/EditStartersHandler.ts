@@ -4,14 +4,14 @@
 import * as fse from "fs-extra";
 import * as vscode from "vscode";
 import { Session, TelemetryWrapper } from "vscode-extension-telemetry-wrapper";
-import { dependencyManager, IDependencyQuickPickItem } from "./DependencyManager";
-import { IBom, IMavenId, IRepository, IStarters, XmlNode } from "./Interfaces";
-import * as Metadata from "./Metadata";
-import { BomNode } from "./pomxml/BomNode";
-import { DependencyNode } from "./pomxml/DependencyNode";
-import { addBomNode, addDependencyNode, addRepositoryNode, getBootVersion, getDependencyNodes, removeDependencyNode } from "./pomxml/PomXml";
-import { RepositoryNode } from "./pomxml/RepositoryNode";
-import { buildXmlContent, readXmlContent } from "./Utils";
+import { dependencyManager, IDependencyQuickPickItem } from "../DependencyManager";
+import { IBom, IMavenId, IRepository, IStarters, XmlNode } from "../Interfaces";
+import * as Metadata from "../Metadata";
+import { BomNode } from "../pomxml/BomNode";
+import { DependencyNode } from "../pomxml/DependencyNode";
+import { addBomNode, addDependencyNode, addRepositoryNode, getBootVersion, getDependencyNodes, removeDependencyNode } from "../pomxml/PomXml";
+import { RepositoryNode } from "../pomxml/RepositoryNode";
+import { buildXmlContent, readXmlContent } from "../Utils";
 
 export class EditStartersHandler {
 

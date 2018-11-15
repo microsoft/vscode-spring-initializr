@@ -3,12 +3,12 @@ import * as fse from "fs-extra";
 import * as path from "path";
 import * as vscode from "vscode";
 import { instrumentOperationStep, sendInfo, Session, TelemetryWrapper } from "vscode-extension-telemetry-wrapper";
-import { dependencyManager, IDependencyQuickPickItem } from "./DependencyManager";
-import { OperationCanceledError } from "./Errors";
-import { IValue } from "./Interfaces";
-import * as Metadata from "./Metadata";
-import { artifactIdValidation, downloadFile, getServiceUrl, groupIdValidation } from "./Utils";
-import { VSCodeUI } from "./VSCodeUI";
+import { dependencyManager, IDependencyQuickPickItem } from "../DependencyManager";
+import { OperationCanceledError } from "../Errors";
+import { IValue } from "../Interfaces";
+import * as Metadata from "../Metadata";
+import { artifactIdValidation, downloadFile, getServiceUrl, groupIdValidation } from "../Utils";
+import { VSCodeUI } from "../Utils/VSCodeUI";
 
 export class GenerateProjectHandler {
     private artifactId: string;

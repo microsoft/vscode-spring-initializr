@@ -4,7 +4,7 @@
 import * as _ from "lodash";
 import { IDependency, IStarters, ITopLevelAttribute } from "./Interfaces";
 import { downloadFile, getServiceUrl } from "./Utils";
-import { matchRange } from "./VersionHelper";
+import { matchRange } from "./Utils/VersionHelper";
 
 let overview: {
     dependencies: ITopLevelAttribute,

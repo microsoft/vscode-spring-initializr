@@ -5,10 +5,10 @@
 import * as _ from "lodash";
 import * as vscode from "vscode";
 import { dispose as disposeTelemetryWrapper, initializeFromJsonFile, instrumentOperation, TelemetryWrapper } from "vscode-extension-telemetry-wrapper";
-import { EditStartersHandler } from "./EditStartersHandler";
-import { GenerateProjectHandler } from "./GenerateProjectHandler";
+import { EditStartersHandler } from "./handlers/EditStartersHandler";
+import { GenerateProjectHandler } from "./handlers/GenerateProjectHandler";
 import { getTargetPomXml, loadPackageInfo } from "./Utils";
-import { VSCodeUI } from "./VSCodeUI";
+import { VSCodeUI } from "./Utils/VSCodeUI";
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
     await initializeFromJsonFile(context.asAbsolutePath("./package.json"), true);
