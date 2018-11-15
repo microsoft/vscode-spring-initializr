@@ -28,8 +28,10 @@ export class GenerateProjectHandler {
     }
 
     public async run(operationId?: string): Promise<void> {
+        // TO REMOVE
         const session: Session = TelemetryWrapper.currentSession();
         if (session && session.extraProperties) { session.extraProperties.finishedSteps = []; }
+        // UNTIL HERE
 
         // Step: language
         this.language = await instrumentOperationStep(operationId, stepLanguage.name, specifyLanguage)();

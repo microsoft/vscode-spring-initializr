@@ -5,8 +5,8 @@
 import * as _ from "lodash";
 import * as vscode from "vscode";
 import { dispose as disposeTelemetryWrapper, initializeFromJsonFile, instrumentOperation, TelemetryWrapper } from "vscode-extension-telemetry-wrapper";
+import { EditStartersHandler } from "./EditStartersHandler";
 import { GenerateProjectHandler } from "./GenerateProjectHandler";
-import { Routines } from "./Routines";
 import { Utils } from "./Utils";
 import { VSCodeUI } from "./VSCodeUI";
 
@@ -33,7 +33,7 @@ async function initializeExtension(_operationId: string, context: vscode.Extensi
         const targetFile: vscode.Uri = entry || await Utils.getTargetPomXml();
         if (targetFile) {
             await vscode.window.showTextDocument(targetFile);
-            await Routines.EditStarters.run(targetFile);
+            await new EditStartersHandler().run(targetFile);
         } else {
             vscode.window.showInformationMessage("No pom.xml found in the workspace.");
         }
