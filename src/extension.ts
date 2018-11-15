@@ -4,11 +4,16 @@
 "use strict";
 import * as _ from "lodash";
 import * as vscode from "vscode";
-import { dispose as disposeTelemetryWrapper, initializeFromJsonFile, instrumentOperation, TelemetryWrapper } from "vscode-extension-telemetry-wrapper";
+import {
+    dispose as disposeTelemetryWrapper,
+    initializeFromJsonFile,
+    instrumentOperation,
+    TelemetryWrapper,
+} from "vscode-extension-telemetry-wrapper";
 import { EditStartersHandler } from "./handlers/EditStartersHandler";
 import { GenerateProjectHandler } from "./handlers/GenerateProjectHandler";
 import { getTargetPomXml, loadPackageInfo } from "./Utils";
-import { VSCodeUI } from "./Utils/VSCodeUI";
+import { getQuickPick } from "./Utils/VSCodeUI";
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
     await initializeFromJsonFile(context.asAbsolutePath("./package.json"), true);
@@ -21,11 +26,11 @@ async function initializeExtension(_operationId: string, context: vscode.Extensi
 
     context.subscriptions.push(
         instrumentAndRegisterCommand("spring.initializr.maven-project", async (operationId) => await new GenerateProjectHandler("maven-project").run(operationId), true),
-        instrumentAndRegisterCommand("spring.initializr.gradle-project", async (operationId) => await new GenerateProjectHandler("gradle-project").run(operationId), true)
+        instrumentAndRegisterCommand("spring.initializr.gradle-project", async (operationId) => await new GenerateProjectHandler("gradle-project").run(operationId), true),
     );
 
     context.subscriptions.push(instrumentAndRegisterCommand("spring.initializr.generate", async () => {
-        const projectType: string = await VSCodeUI.getQuickPick(["maven-project", "gradle-project"], _.capitalize, null, null, { placeHolder: "Select project type." });
+        const projectType: string = await getQuickPick(["maven-project", "gradle-project"], _.capitalize, null, null, { placeHolder: "Select project type." });
         await vscode.commands.executeCommand(`spring.initializr.${projectType}`);
     }));
 

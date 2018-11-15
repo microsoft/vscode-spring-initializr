@@ -9,9 +9,9 @@ import * as md5 from "md5";
 import * as os from "os";
 import * as path from "path";
 import * as url from "url";
-import * as vscode from 'vscode';
+import * as vscode from "vscode";
 import * as xml2js from "xml2js";
-import { VSCodeUI } from "./VSCodeUI";
+import { getQuickPick } from "./VSCodeUI";
 let EXTENSION_PUBLISHER: string;
 let EXTENSION_NAME: string;
 let EXTENSION_VERSION: string;
@@ -47,7 +47,7 @@ export async function downloadFile(targetUrl: string, readContent?: boolean, cus
 
     return await new Promise((resolve: (res: string) => void, reject: (e: Error) => void): void => {
         const urlObj: url.Url = url.parse(targetUrl);
-        const options: Object = Object.assign({ headers: Object.assign({}, customHeaders, { 'User-Agent': `vscode/${getVersion()}` }) }, urlObj);
+        const options = Object.assign({ headers: Object.assign({}, customHeaders, { "User-Agent": `vscode/${getVersion()}` }) }, urlObj);
         let client: any;
         if (urlObj.protocol === "https:") {
             client = https;
@@ -65,14 +65,14 @@ export async function downloadFile(targetUrl: string, readContent?: boolean, cus
             } else {
                 ws = fse.createWriteStream(tempFilePath);
             }
-            res.on('data', (chunk: string | Buffer) => {
+            res.on("data", (chunk: string | Buffer) => {
                 if (readContent) {
                     rawData += chunk;
                 } else {
                     ws.write(chunk);
                 }
             });
-            res.on('end', () => {
+            res.on("end", () => {
                 if (readContent) {
                     resolve(rawData);
                 } else {
@@ -123,7 +123,7 @@ export async function readXmlContent(xml: string, options?: {}): Promise<any> {
                     resolve(res);
                 }
             });
-        }
+        },
     );
 }
 
@@ -144,17 +144,17 @@ export async function getTargetPomXml(): Promise<vscode.Uri> {
         }
     }
 
-    const candidates: vscode.Uri[] = await vscode.workspace.findFiles('**/pom.xml');
+    const candidates: vscode.Uri[] = await vscode.workspace.findFiles("**/pom.xml");
     if (!_.isEmpty(candidates)) {
         if (candidates.length === 1) {
             return candidates[0];
         } else {
-            return await VSCodeUI.getQuickPick(
+            return await getQuickPick(
                 candidates,
                 getRelativePathToWorkspaceFolder,
                 getWorkspaceFolderName,
                 null,
-                { placeHolder: "Select the target project." }
+                { placeHolder: "Select the target project." },
             );
         }
     }

@@ -28,8 +28,8 @@ export function addDependencyNode(projectNode: XmlNode, node: IDependencyNode): 
     if (isNullOrEmptyNode(dependenciesNode.dependency)) {
         dependenciesNode.dependency = [node];
     } else {
-        //insert if not exists
-        if (!(<any[]>dependenciesNode.dependency).find(elem => _.isEqual(elem, node))) {
+        // insert if not exists
+        if (!dependenciesNode.dependency.find(elem => _.isEqual(elem, node))) {
             dependenciesNode.dependency.push(node);
         }
     }
@@ -57,8 +57,8 @@ export function addBomNode(projectNode: XmlNode, node: IBomNode): void {
     if (isNullOrEmptyNode(dependenciesNode.dependency)) {
         dependenciesNode.dependency = [node];
     } else {
-        //insert if not exists
-        if (!(<any[]>dependenciesNode.dependency).find(elem => _.isEqual(elem, node))) {
+        // insert if not exists
+        if (!dependenciesNode.dependency.find(elem => _.isEqual(elem, node))) {
             dependenciesNode.dependency.push(node);
         }
     }
@@ -69,8 +69,8 @@ export function addRepositoryNode(projectNode: XmlNode, node: IRepositoryNode): 
     if (isNullOrEmptyNode(repositoriesNode.repository)) {
         repositoriesNode.repository = [node];
     } else {
-        //insert if not exists
-        if (!(<any[]>repositoriesNode.repository).find(elem => _.isEqual(elem, node))) {
+        // insert if not exists
+        if (!repositoriesNode.repository.find(elem => _.isEqual(elem, node))) {
             repositoriesNode.repository.push(node);
         }
     }

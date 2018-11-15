@@ -4,7 +4,7 @@
 const strictRange: RegExp = /\[(.*),(.*)\]/;
 const halfopenRightRange: RegExp = /\[(.*),(.*)\)/;
 const halfopenLeftRange: RegExp = /\((.*),(.*)\]/;
-const qualifiers: string[] = ['M', 'RC', 'BUILD-SNAPSHOT', 'RELEASE'];
+const qualifiers: string[] = ["M", "RC", "BUILD-SNAPSHOT", "RELEASE"];
 
 export function matchRange(version: string, range: string): boolean {
     const strictMatchGrp: RegExpMatchArray = range.match(strictRange);

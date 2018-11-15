@@ -13,22 +13,17 @@ let overview: {
     packaging: ITopLevelAttribute,
     javaVersion: ITopLevelAttribute,
     language: ITopLevelAttribute,
-    bootVersion: ITopLevelAttribute
+    bootVersion: ITopLevelAttribute,
 };
 
-export namespace dependencies {
+const starters: { [bootVersion: string]: IStarters } = {};
 
-    const starters: {
-        [bootVersion: string]: IStarters
-    } = {};
-
-    export async function getStarters(bootVersion: string): Promise<IStarters> {
-        if (!starters[bootVersion]) {
-            const rawJSONString: string = await downloadFile(`${getServiceUrl()}dependencies?bootVersion=${bootVersion}`, true, { Accept: "application/vnd.initializr.v2.1+json" });
-            starters[bootVersion] = JSON.parse(rawJSONString);
-        }
-        return _.cloneDeep(starters[bootVersion]);
+export async function getStarters(bootVersion: string): Promise<IStarters> {
+    if (!starters[bootVersion]) {
+        const rawJSONString: string = await downloadFile(`${getServiceUrl()}dependencies?bootVersion=${bootVersion}`, true, { Accept: "application/vnd.initializr.v2.1+json" });
+        starters[bootVersion] = JSON.parse(rawJSONString);
     }
+    return _.cloneDeep(starters[bootVersion]);
 }
 
 export async function getBootVersions(): Promise<any[]> {

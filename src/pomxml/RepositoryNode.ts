@@ -23,9 +23,9 @@ export class RepositoryNode {
             url: [this.url],
             snapshots: [
                 {
-                    enabled: [this.snapshotEnabled ? BooleanString.TRUE : BooleanString.FALSE]
-                }
-            ]
+                    enabled: [this.snapshotEnabled ? BooleanString.TRUE : BooleanString.FALSE],
+                },
+            ],
         };
     }
 }

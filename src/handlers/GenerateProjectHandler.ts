@@ -1,14 +1,17 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license.
+
 import * as extract from "extract-zip";
 import * as fse from "fs-extra";
 import * as path from "path";
 import * as vscode from "vscode";
 import { instrumentOperationStep, sendInfo, Session, TelemetryWrapper } from "vscode-extension-telemetry-wrapper";
-import { dependencyManager, IDependencyQuickPickItem } from "../DependencyManager";
+import { dependencyManager, IDependenciesItem } from "../DependencyManager";
 import { OperationCanceledError } from "../Errors";
 import { IValue } from "../Interfaces";
 import * as Metadata from "../Metadata";
 import { artifactIdValidation, downloadFile, getServiceUrl, groupIdValidation } from "../Utils";
-import { VSCodeUI } from "../Utils/VSCodeUI";
+import { getFromInputBox, getQuickPick, openDialogForFolder } from "../Utils/VSCodeUI";
 
 export class GenerateProjectHandler {
     private artifactId: string;
@@ -17,10 +20,7 @@ export class GenerateProjectHandler {
     private projectType: "maven-project" | "gradle-project";
     private packaging: string;
     private bootVersion: string;
-    private dependencies: {
-        itemType: string;
-        id: string;
-    };
+    private dependencies: IDependenciesItem;
     private outputUri: vscode.Uri;
 
     constructor(projectType: "maven-project" | "gradle-project") {
@@ -80,11 +80,11 @@ export class GenerateProjectHandler {
 
         dependencyManager.updateLastUsedDependencies(this.dependencies);
 
-        //Open in new window
+        // Open in new window
         const hasOpenFolder: boolean = (vscode.workspace.workspaceFolders !== undefined);
         const candidates: string[] = [
             "Open",
-            hasOpenFolder ? "Add to Workspace" : undefined
+            hasOpenFolder ? "Add to Workspace" : undefined,
         ].filter(Boolean);
         const choice: string = await vscode.window.showInformationMessage(`Successfully generated. Location: ${this.outputUri.fsPath}`, ...candidates);
         if (choice === "Open") {
@@ -103,7 +103,7 @@ export class GenerateProjectHandler {
             `packaging=${this.packaging}`,
             `bootVersion=${this.bootVersion}`,
             `baseDir=${this.artifactId}`,
-            `dependencies=${this.dependencies.id}`
+            `dependencies=${this.dependencies.id}`,
         ];
         return `${getServiceUrl()}/starter.zip?${params.join("&")}`;
     }
@@ -114,7 +114,7 @@ async function specifyLanguage(): Promise<string> {
     if (!language) {
         language = await vscode.window.showQuickPick(
             ["Java", "Kotlin", "Groovy"],
-            { ignoreFocusOut: true, placeHolder: STEP_LANGUAGE_MESSAGE }
+            { ignoreFocusOut: true, placeHolder: STEP_LANGUAGE_MESSAGE },
         );
     }
     return language && language.toLowerCase();
@@ -122,21 +122,21 @@ async function specifyLanguage(): Promise<string> {
 
 async function specifyGroupId(): Promise<string> {
     const defaultGroupId: string = vscode.workspace.getConfiguration("spring.initializr").get<string>("defaultGroupId");
-    return await VSCodeUI.getFromInputBox({
-        prompt: STEP_GROUPID_MESSAGE,
+    return await getFromInputBox({
         placeHolder: "e.g. com.example",
+        prompt: STEP_GROUPID_MESSAGE,
+        validateInput: groupIdValidation,
         value: defaultGroupId,
-        validateInput: groupIdValidation
     });
 }
 
 async function specifyArtifactId(): Promise<string> {
     const defaultArtifactId: string = vscode.workspace.getConfiguration("spring.initializr").get<string>("defaultArtifactId");
-    return await VSCodeUI.getFromInputBox({
-        prompt: STEP_ARTIFACTID_MESSAGE,
+    return await getFromInputBox({
         placeHolder: "e.g. demo",
+        prompt: STEP_ARTIFACTID_MESSAGE,
+        validateInput: artifactIdValidation,
         value: defaultArtifactId,
-        validateInput: artifactIdValidation
     });
 }
 
@@ -145,28 +145,28 @@ async function specifyPackaging(): Promise<string> {
     if (!packaging) {
         packaging = await vscode.window.showQuickPick(
             ["JAR", "WAR"],
-            { ignoreFocusOut: true, placeHolder: STEP_PACKAGING_MESSAGE }
+            { ignoreFocusOut: true, placeHolder: STEP_PACKAGING_MESSAGE },
         );
     }
     return packaging && packaging.toLowerCase();
 }
 
 async function specifyBootVersion(): Promise<string> {
-    const bootVersion: IValue = await VSCodeUI.getQuickPick<IValue>(
+    const bootVersion: IValue = await getQuickPick<IValue>(
         Metadata.getBootVersions(),
         version => version.name,
         version => version.description,
         null,
-        { placeHolder: STEP_BOOTVERSION_MESSAGE }
+        { placeHolder: STEP_BOOTVERSION_MESSAGE },
     );
     return bootVersion && bootVersion.id;
 }
 
-async function specifyDependencies(bootVersion: string): Promise<IDependencyQuickPickItem> {
-    let current: IDependencyQuickPickItem = null;
+async function specifyDependencies(bootVersion: string): Promise<IDependenciesItem> {
+    let current: IDependenciesItem = null;
     do {
         current = await vscode.window.showQuickPick(
-            dependencyManager.getQuickPickItems(bootVersion, { hasLastSelected: true }), { ignoreFocusOut: true, placeHolder: STEP_DEPENDENCY_MESSAGE, matchOnDetail: true, matchOnDescription: true }
+            dependencyManager.getQuickPickItems(bootVersion, { hasLastSelected: true }), { ignoreFocusOut: true, placeHolder: STEP_DEPENDENCY_MESSAGE, matchOnDetail: true, matchOnDescription: true },
         );
         if (current && current.itemType === "dependency") {
             dependencyManager.toggleDependency(current.id);
@@ -184,11 +184,11 @@ async function specifyTargetFolder(projectName: string): Promise<vscode.Uri> {
     const LABEL_CHOOSE_FOLDER: string = "Generate into this folder";
     const MESSAGE_EXISTING_FOLDER: string = `A folder [${projectName}] already exists in the selected folder. Continue to overwrite or Choose another folder?`;
 
-    let outputUri: vscode.Uri = await VSCodeUI.openDialogForFolder({ openLabel: LABEL_CHOOSE_FOLDER });
+    let outputUri: vscode.Uri = await openDialogForFolder({ openLabel: LABEL_CHOOSE_FOLDER });
     while (outputUri && await fse.pathExists(path.join(outputUri.fsPath, projectName))) {
-        const overrideChoice: String = await vscode.window.showWarningMessage(MESSAGE_EXISTING_FOLDER, OPTION_CONTINUE, OPTION_CHOOSE_ANOTHER_FOLDER);
+        const overrideChoice: string = await vscode.window.showWarningMessage(MESSAGE_EXISTING_FOLDER, OPTION_CONTINUE, OPTION_CHOOSE_ANOTHER_FOLDER);
         if (overrideChoice === OPTION_CHOOSE_ANOTHER_FOLDER) {
-            outputUri = await VSCodeUI.openDialogForFolder({ openLabel: LABEL_CHOOSE_FOLDER });
+            outputUri = await openDialogForFolder({ openLabel: LABEL_CHOOSE_FOLDER });
         } else {
             break;
         }
@@ -208,7 +208,7 @@ async function downloadAndUnzip(targetUrl: string, targetFolder: string): Promis
                 }
                 return resolve();
             });
-        }
+        },
     ));
 }
 // TO REMOVE

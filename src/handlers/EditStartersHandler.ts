@@ -4,12 +4,19 @@
 import * as fse from "fs-extra";
 import * as vscode from "vscode";
 import { Session, TelemetryWrapper } from "vscode-extension-telemetry-wrapper";
-import { dependencyManager, IDependencyQuickPickItem } from "../DependencyManager";
+import { dependencyManager, IDependenciesItem } from "../DependencyManager";
 import { IBom, IMavenId, IRepository, IStarters, XmlNode } from "../Interfaces";
 import * as Metadata from "../Metadata";
 import { BomNode } from "../pomxml/BomNode";
 import { DependencyNode } from "../pomxml/DependencyNode";
-import { addBomNode, addDependencyNode, addRepositoryNode, getBootVersion, getDependencyNodes, removeDependencyNode } from "../pomxml/PomXml";
+import {
+    addBomNode,
+    addDependencyNode,
+    addRepositoryNode,
+    getBootVersion,
+    getDependencyNodes,
+    removeDependencyNode,
+} from "../pomxml/PomXml";
 import { RepositoryNode } from "../pomxml/RepositoryNode";
 import { buildXmlContent, readXmlContent } from "../Utils";
 
@@ -42,10 +49,13 @@ export class EditStartersHandler {
         finishStep(session, stepBootVersion);
 
         // [interaction] Step: Dependencies, with pre-selected deps
-        const starters: IStarters = await vscode.window.withProgress<IStarters>({ location: vscode.ProgressLocation.Window }, async (p) => {
-            p.report({ message: `Fetching metadata for version ${bootVersion} ...` });
-            return await Metadata.dependencies.getStarters(bootVersion);
-        });
+        const starters: IStarters = await vscode.window.withProgress<IStarters>(
+            { location: vscode.ProgressLocation.Window },
+            async (p) => {
+                p.report({ message: `Fetching metadata for version ${bootVersion} ...` });
+                return await Metadata.getStarters(bootVersion);
+            },
+        );
 
         const oldStarterIds: string[] = [];
         Object.keys(starters.dependencies).forEach(key => {
@@ -56,10 +66,16 @@ export class EditStartersHandler {
         });
 
         dependencyManager.selectedIds = [].concat(oldStarterIds);
-        let current: IDependencyQuickPickItem = null;
+        let current: IDependenciesItem = null;
         do {
             current = await vscode.window.showQuickPick(
-                dependencyManager.getQuickPickItems(bootVersion), { ignoreFocusOut: true, placeHolder: "Select dependencies.", matchOnDetail: true, matchOnDescription: true }
+                dependencyManager.getQuickPickItems(bootVersion),
+                {
+                    ignoreFocusOut: true,
+                    matchOnDescription: true,
+                    matchOnDetail: true,
+                    placeHolder: "Select dependencies.",
+                },
             );
             if (current && current.itemType === "dependency") {
                 dependencyManager.toggleDependency(current.id);
@@ -92,8 +108,8 @@ export class EditStartersHandler {
         if (dependencyManager.selectedIds.length === 0) {
             toAdd.push("spring-boot-starter");
             starters.dependencies["spring-boot-starter"] = {
+                artifactId: "spring-boot-starter",
                 groupId: "org.springframework.boot",
-                artifactId: "spring-boot-starter"
             };
         }
         // modify xml object
