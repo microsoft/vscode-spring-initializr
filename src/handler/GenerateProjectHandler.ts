@@ -8,8 +8,7 @@ import * as vscode from "vscode";
 import { instrumentOperationStep, sendInfo, Session, TelemetryWrapper } from "vscode-extension-telemetry-wrapper";
 import { dependencyManager, IDependenciesItem } from "../DependencyManager";
 import { OperationCanceledError } from "../Errors";
-import { IValue } from "../Interfaces";
-import * as Metadata from "../Metadata";
+import { getBootVersions, IValue } from "../model";
 import { artifactIdValidation, downloadFile, getServiceUrl, groupIdValidation } from "../Utils";
 import { getFromInputBox, getQuickPick, openDialogForFolder } from "../Utils/VSCodeUI";
 
@@ -153,7 +152,7 @@ async function specifyPackaging(): Promise<string> {
 
 async function specifyBootVersion(): Promise<string> {
     const bootVersion: IValue = await getQuickPick<IValue>(
-        Metadata.getBootVersions(),
+        getBootVersions(),
         version => version.name,
         version => version.description,
         null,
