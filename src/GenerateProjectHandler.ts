@@ -3,7 +3,7 @@ import * as fse from "fs-extra";
 import * as path from "path";
 import * as vscode from "vscode";
 import { instrumentOperationStep, sendInfo, Session, TelemetryWrapper } from "vscode-extension-telemetry-wrapper";
-import { DependencyManager, IDependencyQuickPickItem } from "./DependencyManager";
+import { dependencyManager, IDependencyQuickPickItem } from "./DependencyManager";
 import { OperationCanceledError } from "./Errors";
 import { IValue } from "./Interfaces";
 import * as Metadata from "./Metadata";
@@ -11,7 +11,6 @@ import { Utils } from "./Utils";
 import { VSCodeUI } from "./VSCodeUI";
 
 export class GenerateProjectHandler {
-    private manager: DependencyManager = new DependencyManager();
     private artifactId: string;
     private groupId: string;
     private language: string;
@@ -58,7 +57,7 @@ export class GenerateProjectHandler {
         finishStep(session, stepBootVersion);
 
         // Step: Dependencies
-        this.dependencies = await instrumentOperationStep(operationId, stepDependencies.name, this.specifyDependencies)(this);
+        this.dependencies = await instrumentOperationStep(operationId, stepDependencies.name, specifyDependencies)(this.bootVersion);
         sendInfo(operationId, { depsType: this.dependencies.itemType, dependencies: this.dependencies.id });
         // TO REMOVE
         if (session && session.extraProperties) {
@@ -74,63 +73,37 @@ export class GenerateProjectHandler {
         finishStep(session, stepTargetFolder);
 
         // Step: Download & Unzip
-        await instrumentOperationStep(operationId, stepDownloadUnzip.name, this.downloadAndUnzip)(this);
+        await instrumentOperationStep(operationId, stepDownloadUnzip.name, downloadAndUnzip)(this.downloadUrl, this.outputUri.fsPath);
         finishStep(session, stepDownloadUnzip);
 
+        dependencyManager.updateLastUsedDependencies(this.dependencies);
+
         //Open in new window
-        const choice: string = await vscode.window.showInformationMessage(`Successfully generated. Location: ${this.outputUri.fsPath}`, "Open", "Add to Workspace");
+        const hasOpenFolder: boolean = (vscode.workspace.workspaceFolders !== undefined);
+        const candidates: string[] = [
+            "Open",
+            hasOpenFolder ? "Add to Workspace" : undefined
+        ].filter(Boolean);
+        const choice: string = await vscode.window.showInformationMessage(`Successfully generated. Location: ${this.outputUri.fsPath}`, ...candidates);
         if (choice === "Open") {
-            const hasOpenFolder: boolean = (vscode.workspace.workspaceFolders !== undefined);
             vscode.commands.executeCommand("vscode.openFolder", vscode.Uri.file(path.join(this.outputUri.fsPath, this.artifactId)), hasOpenFolder);
         } else if (choice === "Add to Workspace") {
             vscode.workspace.updateWorkspaceFolders(vscode.workspace.workspaceFolders.length, null, { uri: vscode.Uri.file(path.join(this.outputUri.fsPath, this.artifactId)) });
         }
     }
 
-    private async specifyDependencies(handler: GenerateProjectHandler): Promise<IDependencyQuickPickItem> {
-        let current: IDependencyQuickPickItem = null;
-        do {
-            current = await vscode.window.showQuickPick(
-                handler.manager.getQuickPickItems(handler.bootVersion, { hasLastSelected: true }), { ignoreFocusOut: true, placeHolder: STEP_DEPENDENCY_MESSAGE, matchOnDetail: true, matchOnDescription: true }
-            );
-            if (current && current.itemType === "dependency") {
-                handler.manager.toggleDependency(current.id);
-            }
-        } while (current && current.itemType === "dependency");
-        if (!current) {
-            throw new OperationCanceledError("Canceled on dependency seletion.");
-        }
-        return current;
-    }
-
-    private async downloadAndUnzip(handler: GenerateProjectHandler): Promise<void> {
-        await vscode.window.withProgress({ location: vscode.ProgressLocation.Window }, (p: vscode.Progress<{ message?: string }>) => new Promise<void>(
-            async (resolve: () => void, _reject: (e: Error) => void): Promise<void> => {
-                p.report({ message: "Downloading zip package..." });
-                const params: string[] = [
-                    `type=${handler.projectType}`,
-                    `language=${handler.language}`,
-                    `groupId=${handler.groupId}`,
-                    `artifactId=${handler.artifactId}`,
-                    `packaging=${handler.packaging}`,
-                    `bootVersion=${handler.bootVersion}`,
-                    `baseDir=${handler.artifactId}`,
-                    `dependencies=${handler.dependencies.id}`
-                ];
-                const targetUrl: string = `${Utils.settings.getServiceUrl()}/starter.zip?${params.join("&")}`;
-                const filepath: string = await Utils.downloadFile(targetUrl);
-
-                p.report({ message: "Starting to unzip..." });
-                extract(filepath, { dir: handler.outputUri.fsPath }, (err) => {
-                    if (err) {
-                        vscode.window.showErrorMessage(err.message);
-                    } else {
-                        handler.manager.updateLastUsedDependencies(handler.dependencies);
-                    }
-                    return resolve();
-                });
-            }
-        ));
+    private get downloadUrl(): string {
+        const params: string[] = [
+            `type=${this.projectType}`,
+            `language=${this.language}`,
+            `groupId=${this.groupId}`,
+            `artifactId=${this.artifactId}`,
+            `packaging=${this.packaging}`,
+            `bootVersion=${this.bootVersion}`,
+            `baseDir=${this.artifactId}`,
+            `dependencies=${this.dependencies.id}`
+        ];
+        return `${Utils.settings.getServiceUrl()}/starter.zip?${params.join("&")}`;
     }
 }
 
@@ -187,6 +160,22 @@ async function specifyBootVersion(): Promise<string> {
     return bootVersion && bootVersion.id;
 }
 
+async function specifyDependencies(bootVersion: string): Promise<IDependencyQuickPickItem> {
+    let current: IDependencyQuickPickItem = null;
+    do {
+        current = await vscode.window.showQuickPick(
+            dependencyManager.getQuickPickItems(bootVersion, { hasLastSelected: true }), { ignoreFocusOut: true, placeHolder: STEP_DEPENDENCY_MESSAGE, matchOnDetail: true, matchOnDescription: true }
+        );
+        if (current && current.itemType === "dependency") {
+            dependencyManager.toggleDependency(current.id);
+        }
+    } while (current && current.itemType === "dependency");
+    if (!current) {
+        throw new OperationCanceledError("Canceled on dependency seletion.");
+    }
+    return current;
+}
+
 async function specifyTargetFolder(projectName: string): Promise<vscode.Uri> {
     const OPTION_CONTINUE: string = "Continue";
     const OPTION_CHOOSE_ANOTHER_FOLDER: string = "Choose another folder";
@@ -205,6 +194,21 @@ async function specifyTargetFolder(projectName: string): Promise<vscode.Uri> {
     return outputUri;
 }
 
+async function downloadAndUnzip(targetUrl: string, targetFolder: string): Promise<void> {
+    await vscode.window.withProgress({ location: vscode.ProgressLocation.Window }, (p: vscode.Progress<{ message?: string }>) => new Promise<void>(
+        async (resolve: () => void, reject: (e: Error) => void): Promise<void> => {
+            p.report({ message: "Downloading zip package..." });
+            const filepath: string = await Utils.downloadFile(targetUrl);
+            p.report({ message: "Starting to unzip..." });
+            extract(filepath, { dir: targetFolder }, (err) => {
+                if (err) {
+                    return reject(err);
+                }
+                return resolve();
+            });
+        }
+    ));
+}
 // TO REMOVE
 interface IStep {
     name: string;

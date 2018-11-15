@@ -10,7 +10,7 @@ const PLACEHOLDER: string = "";
 const HINT_CONFIRM: string = "Press <Enter> to continue.";
 const DEPENDENCIES_HISTORY_FILENAME: string = ".last_used_dependencies";
 
-export class DependencyManager {
+class DependencyManager {
 
     public lastselected: IDependencyQuickPickItem = null;
     public dependencies: IDependency[] = [];
@@ -98,3 +98,5 @@ export interface IDependencyQuickPickItem extends QuickPickItem {
     itemType: string;
     id: string;
 }
+
+export const dependencyManager: DependencyManager = new DependencyManager();
