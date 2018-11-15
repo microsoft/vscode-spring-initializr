@@ -7,7 +7,7 @@ import * as vscode from "vscode";
 import { dispose as disposeTelemetryWrapper, initializeFromJsonFile, instrumentOperation, TelemetryWrapper } from "vscode-extension-telemetry-wrapper";
 import { EditStartersHandler } from "./EditStartersHandler";
 import { GenerateProjectHandler } from "./GenerateProjectHandler";
-import { Utils } from "./Utils";
+import { getTargetPomXml, loadPackageInfo } from "./Utils";
 import { VSCodeUI } from "./VSCodeUI";
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
@@ -16,7 +16,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 }
 
 async function initializeExtension(_operationId: string, context: vscode.ExtensionContext): Promise<void> {
-    await Utils.loadPackageInfo(context);
+    await loadPackageInfo(context);
     await TelemetryWrapper.initilizeFromJsonFile(context.asAbsolutePath("package.json"));
 
     context.subscriptions.push(
@@ -30,7 +30,7 @@ async function initializeExtension(_operationId: string, context: vscode.Extensi
     }));
 
     context.subscriptions.push(instrumentAndRegisterCommand("spring.initializr.editStarters", async (entry?: vscode.Uri) => {
-        const targetFile: vscode.Uri = entry || await Utils.getTargetPomXml();
+        const targetFile: vscode.Uri = entry || await getTargetPomXml();
         if (targetFile) {
             await vscode.window.showTextDocument(targetFile);
             await new EditStartersHandler().run(targetFile);

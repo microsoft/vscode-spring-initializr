@@ -11,7 +11,7 @@ import { BomNode } from "./pomxml/BomNode";
 import { DependencyNode } from "./pomxml/DependencyNode";
 import { addBomNode, addDependencyNode, addRepositoryNode, getBootVersion, getDependencyNodes, removeDependencyNode } from "./pomxml/PomXml";
 import { RepositoryNode } from "./pomxml/RepositoryNode";
-import { Utils } from "./Utils";
+import { buildXmlContent, readXmlContent } from "./Utils";
 
 export class EditStartersHandler {
 
@@ -25,7 +25,7 @@ export class EditStartersHandler {
 
         // Read pom.xml for $bootVersion, $dependencies(gid, aid)
         const content: Buffer = await fse.readFile(entry.fsPath);
-        const xml: { project: XmlNode } = await Utils.readXmlContent(content.toString());
+        const xml: { project: XmlNode } = await readXmlContent(content.toString());
 
         const bootVersion: string = getBootVersion(xml.project);
         if (!bootVersion) {
@@ -100,7 +100,7 @@ export class EditStartersHandler {
         const newXml: { project: XmlNode } = getUpdatedPomXml(xml, starters, toRemove, toAdd);
 
         // re-generate a pom.xml
-        const output: string = Utils.buildXmlContent(newXml);
+        const output: string = buildXmlContent(newXml);
         await fse.writeFile(entry.fsPath, output);
         vscode.window.showInformationMessage("Pom file successfully updated.");
         finishStep(session, stepWriteFile);

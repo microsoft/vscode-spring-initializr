@@ -7,7 +7,7 @@ import { dependencyManager, IDependencyQuickPickItem } from "./DependencyManager
 import { OperationCanceledError } from "./Errors";
 import { IValue } from "./Interfaces";
 import * as Metadata from "./Metadata";
-import { Utils } from "./Utils";
+import { artifactIdValidation, downloadFile, getServiceUrl, groupIdValidation } from "./Utils";
 import { VSCodeUI } from "./VSCodeUI";
 
 export class GenerateProjectHandler {
@@ -105,7 +105,7 @@ export class GenerateProjectHandler {
             `baseDir=${this.artifactId}`,
             `dependencies=${this.dependencies.id}`
         ];
-        return `${Utils.settings.getServiceUrl()}/starter.zip?${params.join("&")}`;
+        return `${getServiceUrl()}/starter.zip?${params.join("&")}`;
     }
 }
 
@@ -126,7 +126,7 @@ async function specifyGroupId(): Promise<string> {
         prompt: STEP_GROUPID_MESSAGE,
         placeHolder: "e.g. com.example",
         value: defaultGroupId,
-        validateInput: Utils.groupIdValidation
+        validateInput: groupIdValidation
     });
 }
 
@@ -136,7 +136,7 @@ async function specifyArtifactId(): Promise<string> {
         prompt: STEP_ARTIFACTID_MESSAGE,
         placeHolder: "e.g. demo",
         value: defaultArtifactId,
-        validateInput: Utils.artifactIdValidation
+        validateInput: artifactIdValidation
     });
 }
 
@@ -200,7 +200,7 @@ async function downloadAndUnzip(targetUrl: string, targetFolder: string): Promis
     await vscode.window.withProgress({ location: vscode.ProgressLocation.Window }, (p: vscode.Progress<{ message?: string }>) => new Promise<void>(
         async (resolve: () => void, reject: (e: Error) => void): Promise<void> => {
             p.report({ message: "Downloading zip package..." });
-            const filepath: string = await Utils.downloadFile(targetUrl);
+            const filepath: string = await downloadFile(targetUrl);
             p.report({ message: "Starting to unzip..." });
             extract(filepath, { dir: targetFolder }, (err) => {
                 if (err) {

@@ -4,7 +4,7 @@
 import { QuickPickItem } from "vscode";
 import { IDependency } from "./Interfaces";
 import * as Metadata from "./Metadata";
-import { Utils } from "./Utils";
+import { readFileFromExtensionRoot, writeFileToExtensionRoot } from "./Utils";
 
 const PLACEHOLDER: string = "";
 const HINT_CONFIRM: string = "Press <Enter> to continue.";
@@ -18,7 +18,7 @@ class DependencyManager {
     public selectedIds: string[] = [];
 
     public updateLastUsedDependencies(v: { itemType: string; id: string; }): void {
-        Utils.writeFileToExtensionRoot(DEPENDENCIES_HISTORY_FILENAME, v.id);
+        writeFileToExtensionRoot(DEPENDENCIES_HISTORY_FILENAME, v.id);
         this.lastselected = this.genLastSelectedItem(v.id);
     }
 
@@ -27,7 +27,7 @@ class DependencyManager {
         for (const dep of this.dependencies) {
             this.dict[dep.id] = dep;
         }
-        const idList: string = await Utils.readFileFromExtensionRoot(DEPENDENCIES_HISTORY_FILENAME);
+        const idList: string = await readFileFromExtensionRoot(DEPENDENCIES_HISTORY_FILENAME);
         this.lastselected = this.genLastSelectedItem(idList);
     }
 

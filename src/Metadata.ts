@@ -3,8 +3,8 @@
 
 import * as _ from "lodash";
 import { IDependency, IStarters, ITopLevelAttribute } from "./Interfaces";
-import { Utils } from "./Utils";
-import { Versions } from "./Versions";
+import { downloadFile, getServiceUrl } from "./Utils";
+import { matchRange } from "./VersionHelper";
 
 let overview: {
     dependencies: ITopLevelAttribute,
@@ -24,7 +24,7 @@ export namespace dependencies {
 
     export async function getStarters(bootVersion: string): Promise<IStarters> {
         if (!starters[bootVersion]) {
-            const rawJSONString: string = await Utils.downloadFile(`${Utils.settings.getServiceUrl()}dependencies?bootVersion=${bootVersion}`, true, { Accept: "application/vnd.initializr.v2.1+json" });
+            const rawJSONString: string = await downloadFile(`${getServiceUrl()}dependencies?bootVersion=${bootVersion}`, true, { Accept: "application/vnd.initializr.v2.1+json" });
             starters[bootVersion] = JSON.parse(rawJSONString);
         }
         return _.cloneDeep(starters[bootVersion]);
@@ -61,13 +61,13 @@ export async function getAvailableDependencies(bootVersion: string): Promise<IDe
 
 function isCompatible(dep: IDependency, bootVersion: string): boolean {
     if (bootVersion && dep && dep.versionRange) {
-        return Versions.matchRange(bootVersion, dep.versionRange);
+        return matchRange(bootVersion, dep.versionRange);
     } else {
         return true;
     }
 }
 
 async function update(): Promise<void> {
-    const rawJSONString: string = await Utils.downloadFile(Utils.settings.getServiceUrl(), true, { Accept: "application/vnd.initializr.v2.1+json" });
+    const rawJSONString: string = await downloadFile(getServiceUrl(), true, { Accept: "application/vnd.initializr.v2.1+json" });
     overview = JSON.parse(rawJSONString);
 }
