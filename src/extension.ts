@@ -10,8 +10,8 @@ import {
     instrumentOperation,
     TelemetryWrapper,
 } from "vscode-extension-telemetry-wrapper";
-import { EditStartersHandler } from "./handlers/EditStartersHandler";
-import { GenerateProjectHandler } from "./handlers/GenerateProjectHandler";
+import { EditStartersHandler } from "./handler/EditStartersHandler";
+import { GenerateProjectHandler } from "./handler/GenerateProjectHandler";
 import { getTargetPomXml, loadPackageInfo } from "./Utils";
 import { getQuickPick } from "./Utils/VSCodeUI";
 

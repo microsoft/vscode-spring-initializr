@@ -2,9 +2,9 @@
 // Licensed under the MIT license.
 
 import * as _ from "lodash";
+import { downloadFile, getServiceUrl } from "../Utils";
+import { matchRange } from "../Utils/VersionHelper";
 import { IDependency, IStarters, ITopLevelAttribute } from "./Interfaces";
-import { downloadFile, getServiceUrl } from "./Utils";
-import { matchRange } from "./Utils/VersionHelper";
 
 let overview: {
     dependencies: ITopLevelAttribute,
@@ -66,3 +66,9 @@ async function update(): Promise<void> {
     const rawJSONString: string = await downloadFile(getServiceUrl(), true, { Accept: "application/vnd.initializr.v2.1+json" });
     overview = JSON.parse(rawJSONString);
 }
+
+export * from "./Interfaces";
+export * from "./pomxml/BomNode";
+export * from "./pomxml/DependencyNode";
+export * from "./pomxml/PomXml";
+export * from "./pomxml/RepositoryNode";

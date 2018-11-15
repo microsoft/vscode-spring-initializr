@@ -5,19 +5,23 @@ import * as fse from "fs-extra";
 import * as vscode from "vscode";
 import { Session, TelemetryWrapper } from "vscode-extension-telemetry-wrapper";
 import { dependencyManager, IDependenciesItem } from "../DependencyManager";
-import { IBom, IMavenId, IRepository, IStarters, XmlNode } from "../Interfaces";
-import * as Metadata from "../Metadata";
-import { BomNode } from "../pomxml/BomNode";
-import { DependencyNode } from "../pomxml/DependencyNode";
 import {
     addBomNode,
     addDependencyNode,
     addRepositoryNode,
+    BomNode,
+    DependencyNode,
     getBootVersion,
     getDependencyNodes,
+    getStarters,
+    IBom,
+    IMavenId,
+    IRepository,
+    IStarters,
     removeDependencyNode,
-} from "../pomxml/PomXml";
-import { RepositoryNode } from "../pomxml/RepositoryNode";
+    RepositoryNode,
+    XmlNode,
+} from "../model";
 import { buildXmlContent, readXmlContent } from "../Utils";
 
 export class EditStartersHandler {
@@ -53,7 +57,7 @@ export class EditStartersHandler {
             { location: vscode.ProgressLocation.Window },
             async (p) => {
                 p.report({ message: `Fetching metadata for version ${bootVersion} ...` });
-                return await Metadata.getStarters(bootVersion);
+                return await getStarters(bootVersion);
             },
         );
 
