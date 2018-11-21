@@ -1,6 +1,7 @@
-# Generate a Maven Project
+# Generate a Project
+## Generate a Maven Project
 
-**Quickstart with dependency search**
+### Quickstart with dependency search
 
 1. Open VS Code without opening any folder.
 1. Open `Command Palette`, execute command `Spring Initializr: Generate a Maven Project`.
@@ -28,7 +29,7 @@
     1. Selected dependencies are added under `<dependencies>` tag.
 1. Verify the folder structure is organized as `Group Id`.
 
-**Quickstart with last settings**
+### Quickstart with last settings
 
 1. Open `Command Palette`, execute command `Spring Initializr: Generate a Maven Project`.
 1. Input a valid `Group Id`, e.g. `com.microsoft.example`, press `<Enter>`.
@@ -38,26 +39,27 @@
 1. Choose a target folder, open it and verify the `pom.xml`, using same steps above. 
 
 
-# Generate a Gradle Project
+## Generate a Gradle Project
 
 Same steps with above, but using command `Spring Initializr: Generate a Gradle Project`.
 
 After that, verify `build.gradle` instead of `pom.xml`.
 
-# Customized Spring Initializr Service URL
+## Customized Spring Initializr Service URL
 1. Open `User settings` in VS Code.
-1. Change value of entry `spring.initializr.serviceUrl`, e.g. "http://start.cfapps.io/", or [run the service locally](https://github.com/spring-io/initializr#running-the-app-locally)
+1. Change value of entry `spring.initializr.serviceUrl`, e.g. "http://start.cfapps.io/", or [run the service locally](https://github.com/spring-io/initializr#running-the-app-locally) (if the previous one doesn't work). 
 1. Verify:
     1. Can generate a project from the specified service URL.
 
-# Default value of GroupId and ArtifactId.
+## Default Values
+### Default value of GroupId and ArtifactId.
 1. Open `User settings` in VS Code.
 1. Change values of entry `spring.initializr.defaultGroupId`, `spring.initializr.defaultArtifactId`.
 1. Open `Command Palette`, execute command `Spring Initializr: Generate a Maven Project`.
 1. Verify:
     1. `GroupId` and `ArtifactId` are filled by the specified default values.
 
-# Default value of language.
+### Default value of language.
 1. Open `User settings` in VS Code.
 2. Change values of entry `spring.initializr.defaultLanguage` to `""`.
 3. Verify:
@@ -67,7 +69,7 @@ After that, verify `build.gradle` instead of `pom.xml`.
 5. Verify:
     1. It skips the step to select language, and directly uses the value you set.
 
-# Default value of packaging.
+### Default value of packaging.
 1. Open `User settings` in VS Code.
 2. Change values of entry `spring.initializr.defaultPackaging` to `""`.
 3. Verify:
@@ -76,6 +78,23 @@ After that, verify `build.gradle` instead of `pom.xml`.
 4. Change values of entry `spring.initializr.defaultPackaging` to `"WAR"`.
 5. Verify:
     1. It skips the step to select packaging type, and directly uses the value you set.
+
+## Ways of opening generated projects. 
+### No workspace folder in current windows 
+1. Open VS Code without any workspace folder. 
+2. Generate a Maven/Gradle project.
+3. When it's completed, verify:
+    1. It pops up a dialog with button `Open`.
+    2. Click `Open`, it opens the project in current window.
+
+### Has worksapce folder in current window. 
+1. Open VS Code, and open a folder. 
+2. Generate a Maven/Gradle project.
+3. When it's completed, verify:
+    1. It pops up a dialog with buttons `Open`, `Add to Workspace`.
+    2. Click `Open`, it opens the project in a new window.
+    3. Click `Add to Workspace`, it opens the project as a workspace folder in current window.
+
 
 # Edit Starters for Spring Boot Maven projects.
 1. Generate a maven project as above, select some dependencies.
