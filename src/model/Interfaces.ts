@@ -26,7 +26,7 @@ export enum AttributeType {
     text = "text", // defines a simple text value with no option.
     single = "single-select", // defines a simple value to be chosen amongst the specified options.
     multi = "hierarchical-multi-select", // defines a hierarchical set of values (values in values) with the ability to select multiple values.
-    action = "action" // a special type that defines the attribute defining the action to use.
+    action = "action", // a special type that defines the attribute defining the action to use.
 }
 
 // Dependencies API
@@ -60,7 +60,7 @@ export interface IStarters {
 }
 
 // xml2js.explicitArray: true
-export type XmlNode = { [key: string]: XmlNode[] | string[] };
+export interface XmlNode { [key: string]: XmlNode[] | string[]; }
 
 export interface IDependencyNode extends XmlNode {
     groupId: string[];
@@ -91,5 +91,5 @@ export interface IRepositoryNode extends XmlNode {
 
 export enum BooleanString {
     TRUE = "true",
-    FALSE = "false"
+    FALSE = "false",
 }

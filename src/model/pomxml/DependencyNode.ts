@@ -18,7 +18,7 @@ export class DependencyNode {
     public get node(): IDependencyNode {
         const ret: IDependencyNode = {
             groupId: [this.groupId],
-            artifactId: [this.artifactId]
+            artifactId: [this.artifactId],
         };
         if (this.version) {
             ret.version = [this.version];

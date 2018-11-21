@@ -14,13 +14,13 @@ export class BomNode {
         this.version = ver;
     }
 
-    public get node() : IBomNode {
+    public get node(): IBomNode {
         return {
             groupId: [this.groupId],
             artifactId: [this.artifactId],
             version: [this.version],
             type: ["pom"],
-            scope: ["import"]
+            scope: ["import"],
         };
     }
 }

@@ -12,7 +12,7 @@
     "url": "https://github.com/Microsoft/vscode-spring-initializr.git"
   },
   "engines": {
-    "vscode": "^1.19.1"
+    "vscode": "^1.21.0"
   },
   "categories": [
     "Other"
