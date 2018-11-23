@@ -2,6 +2,9 @@
 All notable changes to the "vscode-spring-initializr" extension will be documented in this file.
 
 ## Released
+### 0.4.3
+- Allow users to add generated projects to current workspace.
+
 ### 0.4.2
 - Allow users to choose another target folder if an existing folder is found. [#88](https://github.com/Microsoft/vscode-spring-initializr/issues/88)
 
