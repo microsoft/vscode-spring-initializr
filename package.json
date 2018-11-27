@@ -134,7 +134,7 @@
     "@types/xml2js": "^0.4.2",
     "tslint": "^5.8.0",
     "typescript": "^2.6.1",
-    "vscode": "^1.1.21"
+    "vscode": "^1.1.22"
   },
   "dependencies": {
     "extract-zip": "^1.6.7",
