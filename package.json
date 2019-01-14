@@ -21,13 +21,13 @@
     "onCommand:spring.initializr.maven-project",
     "onCommand:spring.initializr.gradle-project",
     "onCommand:spring.initializr.editStarters",
-    "onCommand:spring.initializr.generate"
+    "onCommand:spring.initializr.createProject"
   ],
   "main": "./dist/extension",
   "contributes": {
     "commands": [
       {
-        "command": "spring.initializr.generate",
+        "command": "spring.initializr.createProject",
         "title": "Generate a Spring Boot Project",
         "category": "Spring Initializr"
       },
@@ -50,7 +50,7 @@
     "menus": {
       "commandPalette": [
         {
-          "command": "spring.initializr.generate",
+          "command": "spring.initializr.createProject",
           "when": "never"
         }
       ],
