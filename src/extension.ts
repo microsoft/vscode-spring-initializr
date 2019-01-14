@@ -12,7 +12,7 @@ import { EditStartersHandler, GenerateProjectHandler } from "./handler";
 import { getTargetPomXml, loadPackageInfo } from "./Utils";
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
-    await initializeFromJsonFile(context.asAbsolutePath("./package.json"), true);
+    await initializeFromJsonFile(context.asAbsolutePath("./package.json"));
     await instrumentOperation("activation", initializeExtension)(context);
 }
 
