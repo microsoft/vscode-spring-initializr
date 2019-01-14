@@ -28,7 +28,7 @@ async function initializeExtension(_operationId: string, context: vscode.Extensi
         instrumentAndRegisterCommand("spring.initializr.gradle-project", async (operationId) => await new GenerateProjectHandler("gradle-project").run(operationId), true),
     );
 
-    context.subscriptions.push(instrumentAndRegisterCommand("spring.initializr.generate", async () => {
+    context.subscriptions.push(instrumentAndRegisterCommand("spring.initializr.createProject", async () => {
         const projectType: {value: string, label: string} = await vscode.window.showQuickPick([
             { value: "maven-project", label: "Maven Project"},
             { value: "gradle-project", label: "Gradle Project"}

@@ -28,7 +28,7 @@
     "commands": [
       {
         "command": "spring.initializr.createProject",
-        "title": "Generate a Spring Boot Project",
+        "title": "Create a Spring Boot Project",
         "category": "Spring Initializr"
       },
       {
