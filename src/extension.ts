@@ -8,20 +8,21 @@ import {
     dispose as disposeTelemetryWrapper,
     initializeFromJsonFile,
     instrumentOperation,
-    TelemetryWrapper,
 } from "vscode-extension-telemetry-wrapper";
 import { EditStartersHandler, GenerateProjectHandler } from "./handler";
 import { getTargetPomXml, loadPackageInfo } from "./Utils";
-import { getQuickPick } from "./Utils/VSCodeUI";
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
     await initializeFromJsonFile(context.asAbsolutePath("./package.json"), true);
     await instrumentOperation("activation", initializeExtension)(context);
 }
 
+export async function deactivate(): Promise<void> {
+    await disposeTelemetryWrapper();
+}
+
 async function initializeExtension(_operationId: string, context: vscode.ExtensionContext): Promise<void> {
     await loadPackageInfo(context);
-    await TelemetryWrapper.initilizeFromJsonFile(context.asAbsolutePath("package.json"));
 
     context.subscriptions.push(
         instrumentAndRegisterCommand("spring.initializr.maven-project", async (operationId) => await new GenerateProjectHandler("maven-project").run(operationId), true),
@@ -29,8 +30,13 @@ async function initializeExtension(_operationId: string, context: vscode.Extensi
     );
 
     context.subscriptions.push(instrumentAndRegisterCommand("spring.initializr.generate", async () => {
-        const projectType: string = await getQuickPick(["maven-project", "gradle-project"], _.capitalize, null, null, { placeHolder: "Select project type." });
-        await vscode.commands.executeCommand(`spring.initializr.${projectType}`);
+        const projectType: {value: string, label: string} = await vscode.window.showQuickPick([
+            { value: "maven-project", label: "Maven Project"},
+            { value: "gradle-project", label: "Gradle Project"}
+        ], { placeHolder: "Select project type." });
+        if (projectType) {
+            await vscode.commands.executeCommand(`spring.initializr.${projectType.value}`);
+        }
     }));
 
     context.subscriptions.push(instrumentAndRegisterCommand("spring.initializr.editStarters", async (entry?: vscode.Uri) => {
@@ -44,13 +50,9 @@ async function initializeExtension(_operationId: string, context: vscode.Extensi
     }));
 }
 
-export async function deactivate(): Promise<void> {
-    await disposeTelemetryWrapper();
-}
-
 function instrumentAndRegisterCommand(name: string, cb: (...args: any[]) => any, withOperationIdAhead?: boolean): vscode.Disposable {
     const instrumented: (...args: any[]) => any = instrumentOperation(name, async (_operationId, ...args) => {
         withOperationIdAhead ? await cb(_operationId, ...args) : await cb(...args);
     });
-    return TelemetryWrapper.registerCommand(name, instrumented);
+    return vscode.commands.registerCommand(name, instrumented);
 }

@@ -6,8 +6,6 @@ import * as os from "os";
 import {
     InputBoxOptions,
     OpenDialogOptions,
-    QuickPickItem,
-    QuickPickOptions,
     Terminal,
     Uri,
     window,
@@ -99,27 +97,6 @@ export async function openFileIfExists(filepath: string): Promise<void> {
     }
 }
 
-export async function getQuickPick<T>(
-    itemsSource: T[] | Promise<T[]>,
-    labelfunc: (item: T) => string, descfunc: (item: T) => string,
-    detailfunc: (item: T) => string, options?: QuickPickOptions,
-): Promise<T> {
-    const itemWrappersPromise: Promise<Array<IQuickPickItemEx<T>>> = new Promise<Array<IQuickPickItemEx<T>>>(
-        async (resolve: (value: Array<IQuickPickItemEx<T>>) => void, _reject: (e: Error) => void): Promise<void> => {
-            const ret: Array<IQuickPickItemEx<T>> = (await itemsSource).map((item: T) => Object.assign({}, {
-                description: (descfunc && descfunc(item)),
-                detail: (detailfunc && detailfunc(item)),
-                label: (labelfunc && labelfunc(item)),
-                value: item,
-            }));
-            resolve(ret);
-        },
-    );
-
-    const selected: IQuickPickItemEx<T> = await window.showQuickPick(itemWrappersPromise, Object.assign({ ignoreFocusOut: true }, options));
-    return selected && selected.value;
-}
-
 export async function getFromInputBox(options?: InputBoxOptions): Promise<string> {
     return await window.showInputBox(Object.assign({ ignoreFocusOut: true }, options));
 
@@ -129,8 +106,4 @@ interface ITerminalOptions {
     addNewLine?: boolean;
     name?: string;
     cwd?: string;
-}
-
-interface IQuickPickItemEx<T> extends QuickPickItem {
-    value: T;
 }
