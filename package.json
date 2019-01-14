@@ -74,10 +74,13 @@
       "properties": {
         "spring.initializr.serviceUrl": {
           "default": "https://start.spring.io/",
-          "type": "string",
-          "pattern": "https?://.*",
+          "type": [
+            "string",
+            "array"
+          ],
+          "pattern": "https?://.+",
           "scope": "window",
-          "description": "Spring Initializr Service URL."
+          "description": "Spring Initializr Service URL(s)."
         },
         "spring.initializr.defaultLanguage": {
           "default": "",

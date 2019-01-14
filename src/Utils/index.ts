@@ -132,10 +132,6 @@ export function buildXmlContent(obj: any, options?: {}): string {
     return new xml2js.Builder(opts).buildObject(obj);
 }
 
-export function getServiceUrl(): string {
-    return vscode.workspace.getConfiguration("spring.initializr").get<string>("serviceUrl");
-}
-
 export async function getTargetPomXml(): Promise<vscode.Uri> {
     if (vscode.window.activeTextEditor) {
         const fsPath: string = vscode.window.activeTextEditor.document.fileName;

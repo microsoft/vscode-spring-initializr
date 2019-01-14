@@ -12,18 +12,21 @@ import {
     DependencyNode,
     getBootVersion,
     getDependencyNodes,
-    getStarters,
     IBom,
     IMavenId,
     IRepository,
     IStarters,
     removeDependencyNode,
     RepositoryNode,
+    ServiceManager,
     XmlNode,
 } from "../model";
 import { buildXmlContent, readXmlContent } from "../Utils";
+import { specifyServiceUrl } from "./utils";
 
 export class EditStartersHandler {
+    private serviceUrl: string;
+    private manager: ServiceManager;
 
     public async run(entry: vscode.Uri): Promise<void> {
         const deps: string[] = []; // gid:aid
@@ -42,12 +45,17 @@ export class EditStartersHandler {
             deps.push(`${elem.groupId[0]}:${elem.artifactId[0]}`);
         });
 
+        this.serviceUrl = await specifyServiceUrl();
+        if (this.serviceUrl === undefined) {
+            return;
+        }
+        this.manager = new ServiceManager(this.serviceUrl);
         // [interaction] Step: Dependencies, with pre-selected deps
         const starters: IStarters = await vscode.window.withProgress<IStarters>(
             { location: vscode.ProgressLocation.Window },
             async (p) => {
                 p.report({ message: `Fetching metadata for version ${bootVersion} ...` });
-                return await getStarters(bootVersion);
+                return await this.manager.getStarters(bootVersion);
             },
         );
 
@@ -63,7 +71,7 @@ export class EditStartersHandler {
         let current: IDependenciesItem = null;
         do {
             current = await vscode.window.showQuickPick(
-                dependencyManager.getQuickPickItems(bootVersion),
+                dependencyManager.getQuickPickItems(this.manager, bootVersion),
                 {
                     ignoreFocusOut: true,
                     matchOnDescription: true,
