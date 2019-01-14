@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 "use strict";
-import * as _ from "lodash";
 import * as vscode from "vscode";
 import {
     dispose as disposeTelemetryWrapper,

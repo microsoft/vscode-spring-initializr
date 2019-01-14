@@ -134,11 +134,11 @@ async function specifyPackaging(): Promise<string> {
 }
 
 async function specifyBootVersion(): Promise<string> {
-    const bootVersion: IValue = await vscode.window.showQuickPick(
-        getBootVersions().then(versions => versions.map(v => ({...v, label: v.name}))),
+    const bootVersion: { value: IValue, label: string } = await vscode.window.showQuickPick(
+        getBootVersions().then(versions => versions.map(v => ({ value: v, label: v.name }))),
         { ignoreFocusOut: true, placeHolder: "Specify Spring Boot version." }
     );
-    return bootVersion && bootVersion.id;
+    return bootVersion && bootVersion.value && bootVersion.value.id;
 }
 
 async function specifyDependencies(bootVersion: string): Promise<IDependenciesItem> {
