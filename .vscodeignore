@@ -5,4 +5,10 @@ out/**/*.map
 src/**
 .gitignore
 tsconfig.json
-images/** 
+images/**
+TestPlan.md
+.github/**
+.travis.yml
+webpack.*.js
+node_modules
+out/**

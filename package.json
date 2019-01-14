@@ -23,7 +23,7 @@
     "onCommand:spring.initializr.editStarters",
     "onCommand:spring.initializr.generate"
   ],
-  "main": "./out/extension",
+  "main": "./dist/extension",
   "contributes": {
     "commands": [
       {
@@ -118,30 +118,33 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
+    "vscode:prepublish": "webpack --mode production",
     "compile": "tsc -p ./",
     "tslint": "tslint -t verbose src/*.ts",
-    "watch": "tsc -watch -p ./",
+    "watch": "webpack --mode development --watch --info-verbosity verbose",
     "postinstall": "node ./node_modules/vscode/bin/install",
     "test": "npm run compile && node ./node_modules/vscode/bin/test"
   },
   "devDependencies": {
-    "@types/fs-extra": "^5.0.0",
-    "@types/lodash": "^4.14.107",
-    "@types/md5": "^2.1.32",
-    "@types/mocha": "^2.2.42",
-    "@types/node": "^7.0.43",
-    "@types/xml2js": "^0.4.2",
-    "tslint": "^5.8.0",
-    "typescript": "^2.6.1",
-    "vscode": "^1.1.22"
+    "@types/fs-extra": "^5.0.4",
+    "@types/lodash": "^4.14.119",
+    "@types/md5": "^2.1.33",
+    "@types/mocha": "^2.2.48",
+    "@types/node": "^7.10.2",
+    "@types/xml2js": "^0.4.3",
+    "ts-loader": "^4.4.2",
+    "tslint": "^5.12.1",
+    "typescript": "^2.9.2",
+    "vscode": "^1.1.26",
+    "webpack": "^4.28.2",
+    "webpack-cli": "^3.1.0"
   },
   "dependencies": {
     "extract-zip": "^1.6.7",
     "fs-extra": "^5.0.0",
-    "lodash": "^4.17.5",
+    "lodash": "^4.17.11",
     "md5": "^2.2.1",
-    "vscode-extension-telemetry-wrapper": "0.3.6",
+    "vscode-extension-telemetry-wrapper": "^0.3.8",
     "xml2js": "^0.4.19"
   }
 }
