@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to the "vscode-spring-initializr" extension will be documented in this file.
 
+### 0.5.0
+- Use webpack to improve the extension startup time.
+- Allow users to specify multiple service URLs.
+
 ## Released
 ### 0.4.3
 - Allow users to add generated projects to current workspace.
