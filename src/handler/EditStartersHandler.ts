@@ -22,6 +22,7 @@ import {
     XmlNode,
 } from "../model";
 import { buildXmlContent, readXmlContent } from "../Utils";
+import { specifyServiceUrl } from "./utils";
 
 export class EditStartersHandler {
     private serviceUrl: string;
@@ -143,15 +144,4 @@ function getUpdatedPomXml(xml: any, starters: IStarters, toRemove: string[], toA
 
     });
     return ret;
-}
-
-async function specifyServiceUrl(): Promise<string> {
-    const configValue = vscode.workspace.getConfiguration("spring.initializr").get<string | string[]>("serviceUrl");
-    if (typeof configValue === "string") {
-        return configValue;
-    } else if (typeof configValue === "object" && configValue instanceof Array) {
-        return await vscode.window.showQuickPick(configValue, { ignoreFocusOut: true, placeHolder: "Select the service URL." });
-    } else {
-        return "https://start.spring.io/";
-    }
 }

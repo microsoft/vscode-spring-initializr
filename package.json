@@ -78,7 +78,7 @@
             "string",
             "array"
           ],
-          "pattern": "https?://.*",
+          "pattern": "https?://.+",
           "scope": "window",
           "description": "Spring Initializr Service URL(s)."
         },

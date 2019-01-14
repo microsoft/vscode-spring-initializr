@@ -11,6 +11,7 @@ import { OperationCanceledError } from "../Errors";
 import { IValue, ServiceManager } from "../model";
 import { artifactIdValidation, downloadFile, groupIdValidation } from "../Utils";
 import { getFromInputBox, openDialogForFolder } from "../Utils/VSCodeUI";
+import { specifyServiceUrl } from "./utils";
 
 export class GenerateProjectHandler {
     private serviceUrl: string;
@@ -95,17 +96,6 @@ export class GenerateProjectHandler {
             `dependencies=${this.dependencies.id}`,
         ];
         return `${this.serviceUrl}/starter.zip?${params.join("&")}`;
-    }
-}
-
-async function specifyServiceUrl(): Promise<string> {
-    const configValue = vscode.workspace.getConfiguration("spring.initializr").get<string | string[]>("serviceUrl");
-    if (typeof configValue === "string") {
-        return configValue;
-    } else if (typeof configValue === "object" && configValue instanceof Array) {
-        return await vscode.window.showQuickPick(configValue, { ignoreFocusOut: true, placeHolder: "Select the service URL." });
-    } else {
-        return "https://start.spring.io/";
     }
 }
 
