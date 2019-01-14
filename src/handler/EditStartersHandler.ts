@@ -3,7 +3,6 @@
 
 import * as fse from "fs-extra";
 import * as vscode from "vscode";
-import { Session, TelemetryWrapper } from "vscode-extension-telemetry-wrapper";
 import { dependencyManager, IDependenciesItem } from "../DependencyManager";
 import {
     addBomNode,
@@ -27,11 +26,6 @@ import { buildXmlContent, readXmlContent } from "../Utils";
 export class EditStartersHandler {
 
     public async run(entry: vscode.Uri): Promise<void> {
-        // TO REMOVE
-        const session: Session = TelemetryWrapper.currentSession();
-        if (session && session.extraProperties) { session.extraProperties.finishedSteps = []; }
-        // UNTIL HERE
-
         const deps: string[] = []; // gid:aid
 
         // Read pom.xml for $bootVersion, $dependencies(gid, aid)
@@ -43,14 +37,10 @@ export class EditStartersHandler {
             vscode.window.showErrorMessage("Not a valid Spring Boot project.");
             return;
         }
-        if (session && session.extraProperties) {
-            session.extraProperties.bootVersion = bootVersion;
-        }
 
         getDependencyNodes(xml.project).forEach(elem => {
             deps.push(`${elem.groupId[0]}:${elem.artifactId[0]}`);
         });
-        finishStep(session, stepBootVersion);
 
         // [interaction] Step: Dependencies, with pre-selected deps
         const starters: IStarters = await vscode.window.withProgress<IStarters>(
@@ -86,10 +76,6 @@ export class EditStartersHandler {
             }
         } while (current && current.itemType === "dependency");
         if (!current) { return; }
-        if (session && session.extraProperties) {
-            session.extraProperties.dependencies = current.id;
-        }
-        finishStep(session, stepDependencies);
 
         // Diff deps for add/remove
         const toRemove: string[] = oldStarterIds.filter(elem => dependencyManager.selectedIds.indexOf(elem) < 0);
@@ -102,10 +88,7 @@ export class EditStartersHandler {
         const msgAdd: string = (toAdd && toAdd.length) ? `Adding: [${toAdd.map(d => dependencyManager.dict[d] && dependencyManager.dict[d].name).filter(Boolean).join(", ")}].` : "";
         const choice: string = await vscode.window.showWarningMessage(`${msgRemove} ${msgAdd} Proceed?`, "Proceed", "Cancel");
         if (choice !== "Proceed") {
-            finishStep(session, stepCancel);
             return;
-        } else {
-            finishStep(session, stepProceed);
         }
 
         // add spring-boot-starter if no selected starters
@@ -123,7 +106,6 @@ export class EditStartersHandler {
         const output: string = buildXmlContent(newXml);
         await fse.writeFile(entry.fsPath, output);
         vscode.window.showInformationMessage("Pom file successfully updated.");
-        finishStep(session, stepWriteFile);
         return;
     }
 
@@ -154,20 +136,4 @@ function getUpdatedPomXml(xml: any, starters: IStarters, toRemove: string[], toA
 
     });
     return ret;
-}
-
-const stepBootVersion: IStep = { name: "BootVersion", info: "BootVersion identified." };
-const stepDependencies: IStep = { name: "Dependencies", info: "Dependencies selected." };
-const stepCancel: IStep = { name: "Cancel", info: "Canceled by user." };
-const stepProceed: IStep = { name: "Proceed", info: "Confirmed by user." };
-const stepWriteFile: IStep = { name: "WriteFile", info: "Pom file updated." };
-
-interface IStep {
-    name: string;
-    info: string;
-}
-
-function finishStep(session: Session, step: IStep): void {
-    if (session && session.extraProperties) { session.extraProperties.finishedSteps.push(step.name); }
-    TelemetryWrapper.info(step.info);
 }

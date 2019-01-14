@@ -9,7 +9,8 @@
         "arrow-parens": false,
         "max-line-length": false,
         "interface-name": false,
-        "object-literal-sort-keys": false
+        "object-literal-sort-keys": false,
+        "trailing-comma": false
     },
     "rulesDirectory": []
 }

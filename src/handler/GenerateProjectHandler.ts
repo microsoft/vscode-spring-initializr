@@ -5,12 +5,12 @@ import * as extract from "extract-zip";
 import * as fse from "fs-extra";
 import * as path from "path";
 import * as vscode from "vscode";
-import { instrumentOperationStep, sendInfo, Session, TelemetryWrapper } from "vscode-extension-telemetry-wrapper";
+import { instrumentOperationStep, sendInfo } from "vscode-extension-telemetry-wrapper";
 import { dependencyManager, IDependenciesItem } from "../DependencyManager";
 import { OperationCanceledError } from "../Errors";
 import { getBootVersions, IValue } from "../model";
 import { artifactIdValidation, downloadFile, getServiceUrl, groupIdValidation } from "../Utils";
-import { getFromInputBox, getQuickPick, openDialogForFolder } from "../Utils/VSCodeUI";
+import { getFromInputBox, openDialogForFolder } from "../Utils/VSCodeUI";
 
 export class GenerateProjectHandler {
     private artifactId: string;
@@ -27,55 +27,38 @@ export class GenerateProjectHandler {
     }
 
     public async run(operationId?: string): Promise<void> {
-        // TO REMOVE
-        const session: Session = TelemetryWrapper.currentSession();
-        if (session && session.extraProperties) { session.extraProperties.finishedSteps = []; }
-        // UNTIL HERE
 
         // Step: language
-        this.language = await instrumentOperationStep(operationId, stepLanguage.name, specifyLanguage)();
+        this.language = await instrumentOperationStep(operationId, "Language", specifyLanguage)();
         if (this.language === undefined) { throw new OperationCanceledError("Language not specified."); }
-        finishStep(session, stepLanguage);
 
         // Step: Group Id
-        this.groupId = await instrumentOperationStep(operationId, stepGroupId.name, specifyGroupId)();
+        this.groupId = await instrumentOperationStep(operationId, "GroupId", specifyGroupId)();
         if (this.groupId === undefined) { throw new OperationCanceledError("GroupId not specified."); }
-        finishStep(session, stepGroupId);
 
         // Step: Artifact Id
-        this.artifactId = await instrumentOperationStep(operationId, stepArtifactId.name, specifyArtifactId)();
+        this.artifactId = await instrumentOperationStep(operationId, "ArtifactId", specifyArtifactId)();
         if (this.artifactId === undefined) { throw new OperationCanceledError("ArtifactId not specified."); }
-        finishStep(session, stepArtifactId);
 
         // Step: Packaging
         this.packaging = await instrumentOperationStep(operationId, "Packaging", specifyPackaging)();
         if (this.packaging === undefined) { throw new OperationCanceledError("Packaging not specified."); }
 
         // Step: bootVersion
-        this.bootVersion = await instrumentOperationStep(operationId, stepBootVersion.name, specifyBootVersion)();
+        this.bootVersion = await instrumentOperationStep(operationId, "BootVersion", specifyBootVersion)();
         if (this.bootVersion === undefined) { throw new OperationCanceledError("BootVersion not specified."); }
         sendInfo(operationId, { bootVersion: this.bootVersion });
-        finishStep(session, stepBootVersion);
 
         // Step: Dependencies
-        this.dependencies = await instrumentOperationStep(operationId, stepDependencies.name, specifyDependencies)(this.bootVersion);
+        this.dependencies = await instrumentOperationStep(operationId, "Dependencies", specifyDependencies)(this.bootVersion);
         sendInfo(operationId, { depsType: this.dependencies.itemType, dependencies: this.dependencies.id });
-        // TO REMOVE
-        if (session && session.extraProperties) {
-            session.extraProperties.depsType = this.dependencies.itemType;
-            session.extraProperties.dependencies = this.dependencies.id;
-        }
-        finishStep(session, stepDependencies);
-        // UNTIL HERE
 
         // Step: Choose target folder
-        this.outputUri = await instrumentOperationStep(operationId, stepTargetFolder.name, specifyTargetFolder)(this.artifactId);
+        this.outputUri = await instrumentOperationStep(operationId, "TargetFolder", specifyTargetFolder)(this.artifactId);
         if (this.outputUri === undefined) { throw new OperationCanceledError("Target folder not specified."); }
-        finishStep(session, stepTargetFolder);
 
         // Step: Download & Unzip
-        await instrumentOperationStep(operationId, stepDownloadUnzip.name, downloadAndUnzip)(this.downloadUrl, this.outputUri.fsPath);
-        finishStep(session, stepDownloadUnzip);
+        await instrumentOperationStep(operationId, "DownloadUnzip", downloadAndUnzip)(this.downloadUrl, this.outputUri.fsPath);
 
         dependencyManager.updateLastUsedDependencies(this.dependencies);
 
@@ -113,7 +96,7 @@ async function specifyLanguage(): Promise<string> {
     if (!language) {
         language = await vscode.window.showQuickPick(
             ["Java", "Kotlin", "Groovy"],
-            { ignoreFocusOut: true, placeHolder: STEP_LANGUAGE_MESSAGE },
+            { ignoreFocusOut: true, placeHolder: "Specify project language." },
         );
     }
     return language && language.toLowerCase();
@@ -123,7 +106,7 @@ async function specifyGroupId(): Promise<string> {
     const defaultGroupId: string = vscode.workspace.getConfiguration("spring.initializr").get<string>("defaultGroupId");
     return await getFromInputBox({
         placeHolder: "e.g. com.example",
-        prompt: STEP_GROUPID_MESSAGE,
+        prompt: "Input Group Id for your project.",
         validateInput: groupIdValidation,
         value: defaultGroupId,
     });
@@ -133,7 +116,7 @@ async function specifyArtifactId(): Promise<string> {
     const defaultArtifactId: string = vscode.workspace.getConfiguration("spring.initializr").get<string>("defaultArtifactId");
     return await getFromInputBox({
         placeHolder: "e.g. demo",
-        prompt: STEP_ARTIFACTID_MESSAGE,
+        prompt: "Input Artifact Id for your project.",
         validateInput: artifactIdValidation,
         value: defaultArtifactId,
     });
@@ -144,28 +127,26 @@ async function specifyPackaging(): Promise<string> {
     if (!packaging) {
         packaging = await vscode.window.showQuickPick(
             ["JAR", "WAR"],
-            { ignoreFocusOut: true, placeHolder: STEP_PACKAGING_MESSAGE },
+            { ignoreFocusOut: true, placeHolder: "Specify packaging type." },
         );
     }
     return packaging && packaging.toLowerCase();
 }
 
 async function specifyBootVersion(): Promise<string> {
-    const bootVersion: IValue = await getQuickPick<IValue>(
-        getBootVersions(),
-        version => version.name,
-        version => version.description,
-        null,
-        { placeHolder: STEP_BOOTVERSION_MESSAGE },
+    const bootVersion: { value: IValue, label: string } = await vscode.window.showQuickPick(
+        getBootVersions().then(versions => versions.map(v => ({ value: v, label: v.name }))),
+        { ignoreFocusOut: true, placeHolder: "Specify Spring Boot version." }
     );
-    return bootVersion && bootVersion.id;
+    return bootVersion && bootVersion.value && bootVersion.value.id;
 }
 
 async function specifyDependencies(bootVersion: string): Promise<IDependenciesItem> {
     let current: IDependenciesItem = null;
     do {
         current = await vscode.window.showQuickPick(
-            dependencyManager.getQuickPickItems(bootVersion, { hasLastSelected: true }), { ignoreFocusOut: true, placeHolder: STEP_DEPENDENCY_MESSAGE, matchOnDetail: true, matchOnDescription: true },
+            dependencyManager.getQuickPickItems(bootVersion, { hasLastSelected: true }),
+            { ignoreFocusOut: true, placeHolder: "Search for dependencies.", matchOnDetail: true, matchOnDescription: true },
         );
         if (current && current.itemType === "dependency") {
             dependencyManager.toggleDependency(current.id);
@@ -210,29 +191,3 @@ async function downloadAndUnzip(targetUrl: string, targetFolder: string): Promis
         },
     ));
 }
-// TO REMOVE
-interface IStep {
-    name: string;
-    info: string;
-}
-
-function finishStep(session: Session, step: IStep): void {
-    if (session && session.extraProperties) { session.extraProperties.finishedSteps.push(step.name); }
-    TelemetryWrapper.info(step.info);
-}
-// UNTIL HERE
-
-const STEP_LANGUAGE_MESSAGE: string = "Specify project language.";
-const STEP_PACKAGING_MESSAGE: string = "Specify packaging type.";
-const STEP_GROUPID_MESSAGE: string = "Input Group Id for your project.";
-const STEP_ARTIFACTID_MESSAGE: string = "Input Artifact Id for your project.";
-const STEP_BOOTVERSION_MESSAGE: string = "Specify Spring Boot version.";
-const STEP_DEPENDENCY_MESSAGE: string = "Search for dependencies.";
-
-const stepLanguage: IStep = { name: "Language", info: "Language selected." };
-const stepGroupId: IStep = { name: "GroupId", info: "GroupId inputed." };
-const stepArtifactId: IStep = { name: "ArtifactId", info: "ArtifactId inputed." };
-const stepBootVersion: IStep = { name: "BootVersion", info: "BootVersion selected." };
-const stepDependencies: IStep = { name: "Dependencies", info: "Dependencies selected." };
-const stepTargetFolder: IStep = { name: "TargetFolder", info: "Target folder selected." };
-const stepDownloadUnzip: IStep = { name: "DownloadUnzip", info: "Package unzipped." };
