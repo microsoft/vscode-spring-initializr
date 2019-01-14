@@ -8,11 +8,12 @@ import * as vscode from "vscode";
 import { instrumentOperationStep, sendInfo } from "vscode-extension-telemetry-wrapper";
 import { dependencyManager, IDependenciesItem } from "../DependencyManager";
 import { OperationCanceledError } from "../Errors";
-import { getBootVersions, IValue } from "../model";
-import { artifactIdValidation, downloadFile, getServiceUrl, groupIdValidation } from "../Utils";
+import { IValue, ServiceManager } from "../model";
+import { artifactIdValidation, downloadFile, groupIdValidation } from "../Utils";
 import { getFromInputBox, openDialogForFolder } from "../Utils/VSCodeUI";
 
 export class GenerateProjectHandler {
+    private serviceUrl: string;
     private artifactId: string;
     private groupId: string;
     private language: string;
@@ -21,12 +22,18 @@ export class GenerateProjectHandler {
     private bootVersion: string;
     private dependencies: IDependenciesItem;
     private outputUri: vscode.Uri;
+    private manager: ServiceManager;
 
     constructor(projectType: "maven-project" | "gradle-project") {
         this.projectType = projectType;
     }
 
     public async run(operationId?: string): Promise<void> {
+
+        // Step: service URL
+        this.serviceUrl = await instrumentOperationStep(operationId, "serviceUrl", specifyServiceUrl)();
+        if (this.serviceUrl === undefined) { throw new OperationCanceledError("Service URL not specified."); }
+        this.manager = new ServiceManager(this.serviceUrl);
 
         // Step: language
         this.language = await instrumentOperationStep(operationId, "Language", specifyLanguage)();
@@ -45,12 +52,12 @@ export class GenerateProjectHandler {
         if (this.packaging === undefined) { throw new OperationCanceledError("Packaging not specified."); }
 
         // Step: bootVersion
-        this.bootVersion = await instrumentOperationStep(operationId, "BootVersion", specifyBootVersion)();
+        this.bootVersion = await instrumentOperationStep(operationId, "BootVersion", specifyBootVersion)(this.manager);
         if (this.bootVersion === undefined) { throw new OperationCanceledError("BootVersion not specified."); }
         sendInfo(operationId, { bootVersion: this.bootVersion });
 
         // Step: Dependencies
-        this.dependencies = await instrumentOperationStep(operationId, "Dependencies", specifyDependencies)(this.bootVersion);
+        this.dependencies = await instrumentOperationStep(operationId, "Dependencies", specifyDependencies)(this.manager, this.bootVersion);
         sendInfo(operationId, { depsType: this.dependencies.itemType, dependencies: this.dependencies.id });
 
         // Step: Choose target folder
@@ -87,7 +94,18 @@ export class GenerateProjectHandler {
             `baseDir=${this.artifactId}`,
             `dependencies=${this.dependencies.id}`,
         ];
-        return `${getServiceUrl()}/starter.zip?${params.join("&")}`;
+        return `${this.serviceUrl}/starter.zip?${params.join("&")}`;
+    }
+}
+
+async function specifyServiceUrl(): Promise<string> {
+    const configValue = vscode.workspace.getConfiguration("spring.initializr").get<string | string[]>("serviceUrl");
+    if (typeof configValue === "string") {
+        return configValue;
+    } else if (typeof configValue === "object" && configValue instanceof Array) {
+        return await vscode.window.showQuickPick(configValue, { ignoreFocusOut: true, placeHolder: "Select the service URL." });
+    } else {
+        return "https://start.spring.io/";
     }
 }
 
@@ -133,19 +151,19 @@ async function specifyPackaging(): Promise<string> {
     return packaging && packaging.toLowerCase();
 }
 
-async function specifyBootVersion(): Promise<string> {
+async function specifyBootVersion(manager: ServiceManager): Promise<string> {
     const bootVersion: { value: IValue, label: string } = await vscode.window.showQuickPick(
-        getBootVersions().then(versions => versions.map(v => ({ value: v, label: v.name }))),
+        manager.getBootVersions().then(versions => versions.map(v => ({ value: v, label: v.name }))),
         { ignoreFocusOut: true, placeHolder: "Specify Spring Boot version." }
     );
     return bootVersion && bootVersion.value && bootVersion.value.id;
 }
 
-async function specifyDependencies(bootVersion: string): Promise<IDependenciesItem> {
+async function specifyDependencies(manager: ServiceManager, bootVersion: string): Promise<IDependenciesItem> {
     let current: IDependenciesItem = null;
     do {
         current = await vscode.window.showQuickPick(
-            dependencyManager.getQuickPickItems(bootVersion, { hasLastSelected: true }),
+            dependencyManager.getQuickPickItems(manager, bootVersion, { hasLastSelected: true }),
             { ignoreFocusOut: true, placeHolder: "Search for dependencies.", matchOnDetail: true, matchOnDescription: true },
         );
         if (current && current.itemType === "dependency") {

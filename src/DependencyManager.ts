@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { QuickPickItem } from "vscode";
-import { getAvailableDependencies, IDependency } from "./model";
+import { IDependency, ServiceManager } from "./model";
 import { readFileFromExtensionRoot, writeFileToExtensionRoot } from "./Utils";
 
 const PLACEHOLDER: string = "";
@@ -30,9 +30,9 @@ class DependencyManager {
         this.lastselected = idList;
     }
 
-    public async getQuickPickItems(bootVersion: string, options?: { hasLastSelected: boolean }): Promise<Array<QuickPickItem & IDependenciesItem>> {
+    public async getQuickPickItems(manager: ServiceManager, bootVersion: string, options?: { hasLastSelected: boolean }): Promise<Array<QuickPickItem & IDependenciesItem>> {
         if (this.dependencies.length === 0) {
-            await this.initialize(await getAvailableDependencies(bootVersion));
+            await this.initialize(await manager.getAvailableDependencies(bootVersion));
         }
         const ret: Array<QuickPickItem & IDependenciesItem> = [];
         if (this.selectedIds.length === 0) {
