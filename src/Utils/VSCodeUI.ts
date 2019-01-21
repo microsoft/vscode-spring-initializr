@@ -73,7 +73,7 @@ export async function openDialogForFolder(customOptions: OpenDialogOptions): Pro
     if (result && result.length) {
         return Promise.resolve(result[0]);
     } else {
-        return Promise.resolve(null);
+        return Promise.resolve(undefined);
     }
 }
 
@@ -87,7 +87,7 @@ export async function openDialogForFile(customOptions?: OpenDialogOptions): Prom
     if (result && result.length) {
         return Promise.resolve(result[0]);
     } else {
-        return Promise.resolve(null);
+        return Promise.resolve(undefined);
     }
 }
 
