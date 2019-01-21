@@ -3,6 +3,7 @@
 
 import * as fse from "fs-extra";
 import * as vscode from "vscode";
+import { setUserError } from "vscode-extension-telemetry-wrapper";
 import { dependencyManager, IDependenciesItem } from "../DependencyManager";
 import {
     addBomNode,
@@ -22,13 +23,18 @@ import {
     XmlNode,
 } from "../model";
 import { buildXmlContent, readXmlContent } from "../Utils";
+import { BaseHandler } from "./BaseHandler";
 import { specifyServiceUrl } from "./utils";
 
-export class EditStartersHandler {
+export class EditStartersHandler extends BaseHandler {
     private serviceUrl: string;
     private manager: ServiceManager;
 
-    public async run(entry: vscode.Uri): Promise<void> {
+    protected get failureMessage(): string {
+        return "Fail to edit starters.";
+    }
+
+    public async runSteps(_operationId: string, entry: vscode.Uri): Promise<void> {
         const deps: string[] = []; // gid:aid
 
         // Read pom.xml for $bootVersion, $dependencies(gid, aid)
@@ -37,8 +43,9 @@ export class EditStartersHandler {
 
         const bootVersion: string = getBootVersion(xml.project);
         if (!bootVersion) {
-            vscode.window.showErrorMessage("Not a valid Spring Boot project.");
-            return;
+            const ex = new Error("Not a valid Spring Boot project.");
+            setUserError(ex);
+            throw ex;
         }
 
         getDependencyNodes(xml.project).forEach(elem => {

@@ -11,9 +11,10 @@ import { OperationCanceledError } from "../Errors";
 import { IValue, ServiceManager } from "../model";
 import { artifactIdValidation, downloadFile, groupIdValidation } from "../Utils";
 import { getFromInputBox, openDialogForFolder } from "../Utils/VSCodeUI";
+import { BaseHandler } from "./BaseHandler";
 import { specifyServiceUrl } from "./utils";
 
-export class GenerateProjectHandler {
+export class GenerateProjectHandler extends BaseHandler {
     private serviceUrl: string;
     private artifactId: string;
     private groupId: string;
@@ -26,10 +27,15 @@ export class GenerateProjectHandler {
     private manager: ServiceManager;
 
     constructor(projectType: "maven-project" | "gradle-project") {
+        super();
         this.projectType = projectType;
     }
 
-    public async run(operationId?: string): Promise<void> {
+    protected get failureMessage(): string {
+        return "Fail to create a project.";
+    }
+
+    public async runSteps(operationId?: string): Promise<void> {
 
         // Step: service URL
         this.serviceUrl = await instrumentOperationStep(operationId, "serviceUrl", specifyServiceUrl)();
