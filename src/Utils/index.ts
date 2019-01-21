@@ -77,7 +77,9 @@ export async function downloadFile(targetUrl: string, readContent?: boolean, cus
                     resolve(rawData);
                 } else {
                     ws.end();
-                    resolve(tempFilePath);
+                    ws.on("close", () => {
+                        resolve(tempFilePath);
+                    });
                 }
             });
         }).on("error", (err: Error) => {
