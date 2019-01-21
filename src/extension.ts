@@ -38,15 +38,15 @@ async function initializeExtension(_operationId: string, context: vscode.Extensi
         }
     }));
 
-    context.subscriptions.push(instrumentAndRegisterCommand("spring.initializr.editStarters", async (entry?: vscode.Uri) => {
+    context.subscriptions.push(instrumentAndRegisterCommand("spring.initializr.editStarters", async (operationId: string, entry?: vscode.Uri) => {
         const targetFile: vscode.Uri = entry || await getTargetPomXml();
         if (targetFile) {
             await vscode.window.showTextDocument(targetFile);
-            await new EditStartersHandler().run(targetFile);
+            await new EditStartersHandler().run(operationId, targetFile);
         } else {
             vscode.window.showInformationMessage("No pom.xml found in the workspace.");
         }
-    }));
+    }, true));
 }
 
 function instrumentAndRegisterCommand(name: string, cb: (...args: any[]) => any, withOperationIdAhead?: boolean): vscode.Disposable {
