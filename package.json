@@ -73,14 +73,16 @@
       "title": "Spring Initializr",
       "properties": {
         "spring.initializr.serviceUrl": {
-          "default": "https://start.spring.io/",
+          "default": [
+            "https://start.spring.io/"
+          ],
           "type": [
             "string",
             "array"
           ],
           "pattern": "https?://.+",
           "scope": "window",
-          "description": "Spring Initializr Service URL(s)."
+          "description": "Spring Initializr Service URL(s). If more than one url is specified, it requires you to select one every time you create a project."
         },
         "spring.initializr.defaultLanguage": {
           "default": "",
