@@ -37,7 +37,10 @@ class DependencyManager {
         const ret: Array<QuickPickItem & IDependenciesItem> = [];
         if (this.selectedIds.length === 0) {
             if (options && options.hasLastSelected && this.lastselected) {
-                ret.push(this.genLastSelectedItem(this.lastselected));
+                const item = this.genLastSelectedItem(this.lastselected);
+                if (item) {
+                    ret.push(item);
+                }
             }
         }
         ret.push({
