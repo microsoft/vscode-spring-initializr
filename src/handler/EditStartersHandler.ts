@@ -166,7 +166,7 @@ async function searchForBootVersion(pomPath: string): Promise<string> {
     const relativePath = getParentReletivePath(projectNode);
     if (relativePath) {
         let absolutePath = path.join(path.dirname(pomPath), relativePath);
-        if (fse.statSync(absolutePath).isDirectory()) {
+        if ((await fse.stat(absolutePath)).isDirectory()) {
             absolutePath = path.join(absolutePath, "pom.xml");
         }
         if (await fse.pathExists(absolutePath)) {
