@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import * as fse from "fs-extra";
+import * as path from "path";
 import * as vscode from "vscode";
 import { setUserError } from "vscode-extension-telemetry-wrapper";
 import { dependencyManager, IDependenciesItem } from "../DependencyManager";
@@ -13,6 +14,7 @@ import {
     DependencyNode,
     getBootVersion,
     getDependencyNodes,
+    getParentReletivePath,
     IBom,
     IMavenId,
     IRepository,
@@ -35,18 +37,17 @@ export class EditStartersHandler extends BaseHandler {
     }
 
     public async runSteps(_operationId: string, entry: vscode.Uri): Promise<void> {
-        const deps: string[] = []; // gid:aid
-
-        // Read pom.xml for $bootVersion, $dependencies(gid, aid)
-        const content: Buffer = await fse.readFile(entry.fsPath);
-        const xml: { project: XmlNode } = await readXmlContent(content.toString());
-
-        const bootVersion: string = getBootVersion(xml.project);
+        const bootVersion: string = await searchForBootVersion(entry.fsPath);
         if (!bootVersion) {
             const ex = new Error("Not a valid Spring Boot project.");
             setUserError(ex);
             throw ex;
         }
+
+        const deps: string[] = []; // gid:aid
+        // Read pom.xml for $dependencies(gid, aid)
+        const content: Buffer = await fse.readFile(entry.fsPath);
+        const xml: { project: XmlNode } = await readXmlContent(content.toString());
 
         getDependencyNodes(xml.project).forEach(elem => {
             deps.push(`${elem.groupId[0]}:${elem.artifactId[0]}`);
@@ -151,4 +152,26 @@ function getUpdatedPomXml(xml: any, starters: IStarters, toRemove: string[], toA
 
     });
     return ret;
+}
+
+async function searchForBootVersion(pomPath: string): Promise<string> {
+    const content: Buffer = await fse.readFile(pomPath);
+    const { project: projectNode } = await readXmlContent(content.toString());
+    const bootVersion: string = getBootVersion(projectNode);
+    if (bootVersion) {
+        return bootVersion;
+    }
+
+    // search recursively in parent pom
+    const relativePath = getParentReletivePath(projectNode);
+    if (relativePath) {
+        let absolutePath = path.join(path.dirname(pomPath), relativePath);
+        if ((await fse.stat(absolutePath)).isDirectory()) {
+            absolutePath = path.join(absolutePath, "pom.xml");
+        }
+        if (await fse.pathExists(absolutePath)) {
+            return await searchForBootVersion(absolutePath);
+        }
+    }
+    return undefined;
 }
