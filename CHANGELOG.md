@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to the "vscode-spring-initializr" extension will be documented in this file.
 
+## 0.4.5
+### Fixed
+- A bug of Spring Boot project recognition. [#110](https://github.com/Microsoft/vscode-spring-initializr/issues/110)
+- A potential NPE. [PR#114](https://github.com/Microsoft/vscode-spring-initializr/pull/114)
+
 ## 0.4.4
 ### Changed
 - Use webpack to improve the extension startup time. [PR#98](https://github.com/Microsoft/vscode-spring-initializr/pull/98)
