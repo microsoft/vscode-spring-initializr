@@ -37,7 +37,7 @@ ext install vscode-spring-initializr
 - Press `Ctrl + Shift + P` to open command palette.
 - Type `Spring Initializr` to start generating a Maven or Gradle project.
 - Follow the wizard.
-- Right click inside the `pom.xml` or `gradle.build` file and choose `Edit starters` for dependency refactoring.   
+- Right click inside the `pom.xml` file and choose `Edit starters` for dependency refactoring. (Gradle project is not supported yet, PR is welcome for it.)
 
 ## Configuration
 ```
