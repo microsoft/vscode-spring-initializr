@@ -14,8 +14,8 @@ export abstract class BaseHandler {
         } catch (error) {
             if (!(error instanceof OperationCanceledError)) {
                 vscode.window.showErrorMessage(`${this.failureMessage} Error: ${error.message}`);
+                throw error;
             }
-            throw error;
         }
     }
 
