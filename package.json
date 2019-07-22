@@ -131,23 +131,23 @@
     "test": "npm run compile && node ./node_modules/vscode/bin/test"
   },
   "devDependencies": {
-    "@types/fs-extra": "^5.0.5",
-    "@types/lodash": "^4.14.122",
+    "@types/fs-extra": "^5.1.0",
+    "@types/lodash": "^4.14.136",
     "@types/md5": "^2.1.33",
     "@types/mocha": "^2.2.48",
-    "@types/node": "^7.10.5",
-    "@types/xml2js": "^0.4.3",
+    "@types/node": "^7.10.7",
+    "@types/xml2js": "^0.4.4",
     "ts-loader": "^4.4.2",
-    "tslint": "^5.13.1",
+    "tslint": "^5.18.0",
     "typescript": "^2.9.2",
-    "vscode": "^1.1.30",
-    "webpack": "^4.29.6",
-    "webpack-cli": "^3.2.3"
+    "vscode": "^1.1.35",
+    "webpack": "^4.36.1",
+    "webpack-cli": "^3.3.6"
   },
   "dependencies": {
     "extract-zip": "^1.6.7",
     "fs-extra": "^5.0.0",
-    "lodash": "^4.17.13",
+    "lodash": "^4.17.15",
     "md5": "^2.2.1",
     "vscode-extension-telemetry-wrapper": "^0.3.9",
     "xml2js": "^0.4.19"
