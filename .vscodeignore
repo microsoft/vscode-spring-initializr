@@ -9,5 +9,6 @@ TestPlan.md
 .github/**
 .travis.yml
 webpack.*.js
-node_modules
+node_modules/**
 out/**
+.*
