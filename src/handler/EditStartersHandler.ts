@@ -68,6 +68,11 @@ export class EditStartersHandler extends BaseHandler {
         );
 
         const oldStarterIds: string[] = [];
+        if (!starters.dependencies) {
+            await vscode.window.showErrorMessage("Unable to retrieve information of available starters.");
+            return;
+        }
+
         Object.keys(starters.dependencies).forEach(key => {
             const elem: IMavenId = starters.dependencies[key];
             if (deps.indexOf(`${elem.groupId}:${elem.artifactId}`) >= 0) {
