@@ -199,7 +199,7 @@ async function downloadAndUnzip(targetUrl: string, targetFolder: string): Promis
                 p.report({ message: "Downloading zip package..." });
                 filepath = await downloadFile(targetUrl);
             } catch (error) {
-                reject(error);
+                return reject(error);
             }
             
             p.report({ message: "Starting to unzip..." });
