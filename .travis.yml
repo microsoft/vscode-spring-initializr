@@ -6,7 +6,6 @@ node_js:
 branches:
   only:
     - master
-    - develop
 
 before_install:
 - if [ $TRAVIS_OS_NAME == "linux" ]; then
@@ -21,4 +20,5 @@ install:
 script:
   - npm run tslint
   - npm run compile
+  - npm run test
   
