@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to the "vscode-spring-initializr" extension will be documented in this file.
 
+### Fixed
+- A bug that there is no response when failing to download zip package. [#120](https://github.com/microsoft/vscode-spring-initializr/issues/120)
+
 ## 0.4.5
 ### Fixed
 - A bug of Spring Boot project recognition. [#110](https://github.com/Microsoft/vscode-spring-initializr/issues/110)
