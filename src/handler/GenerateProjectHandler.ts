@@ -149,6 +149,7 @@ async function specifyPackaging(): Promise<string> {
 
 async function specifyBootVersion(manager: ServiceManager): Promise<string> {
     const bootVersion: { value: IValue, label: string } = await vscode.window.showQuickPick(
+        // @ts-ignore
         manager.getBootVersions().then(versions => versions.map(v => ({ value: v, label: v.name }))),
         { ignoreFocusOut: true, placeHolder: "Specify Spring Boot version." }
     );
@@ -191,10 +192,16 @@ async function specifyTargetFolder(projectName: string): Promise<vscode.Uri> {
 }
 
 async function downloadAndUnzip(targetUrl: string, targetFolder: string): Promise<void> {
-    await vscode.window.withProgress({ location: vscode.ProgressLocation.Window }, (p: vscode.Progress<{ message?: string }>) => new Promise<void>(
+    await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification }, (p: vscode.Progress<{ message?: string }>) => new Promise<void>(
         async (resolve: () => void, reject: (e: Error) => void): Promise<void> => {
-            p.report({ message: "Downloading zip package..." });
-            const filepath: string = await downloadFile(targetUrl);
+            let filepath: string;
+            try {
+                p.report({ message: "Downloading zip package..." });
+                filepath = await downloadFile(targetUrl);
+            } catch (error) {
+                return reject(error);
+            }
+            
             p.report({ message: "Starting to unzip..." });
             extract(filepath, { dir: targetFolder }, (err) => {
                 if (err) {
