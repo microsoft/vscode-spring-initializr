@@ -12,7 +12,7 @@ import { EditStartersHandler, GenerateProjectHandler } from "./handler";
 import { getTargetPomXml, loadPackageInfo } from "./Utils";
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
-    await initializeFromJsonFile(context.asAbsolutePath("./package.json"));
+    await initializeFromJsonFile(context.asAbsolutePath("./package.json"), { firstParty: true });
     await instrumentOperation("activation", initializeExtension)(context);
 }
 
@@ -29,9 +29,9 @@ async function initializeExtension(_operationId: string, context: vscode.Extensi
     );
 
     context.subscriptions.push(instrumentAndRegisterCommand("spring.initializr.createProject", async () => {
-        const projectType: {value: string, label: string} = await vscode.window.showQuickPick([
-            { value: "maven-project", label: "Maven Project"},
-            { value: "gradle-project", label: "Gradle Project"}
+        const projectType: { value: string, label: string } = await vscode.window.showQuickPick([
+            { value: "maven-project", label: "Maven Project" },
+            { value: "gradle-project", label: "Gradle Project" }
         ], { placeHolder: "Select project type." });
         if (projectType) {
             await vscode.commands.executeCommand(`spring.initializr.${projectType.value}`);
