@@ -152,7 +152,7 @@
     "fs-extra": "^5.0.0",
     "lodash": "^4.17.15",
     "md5": "^2.2.1",
-    "vscode-extension-telemetry-wrapper": "0.7.0",
+    "vscode-extension-telemetry-wrapper": "0.7.1",
     "xml2js": "^0.4.19"
   }
 }
