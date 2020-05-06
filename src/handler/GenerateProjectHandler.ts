@@ -201,7 +201,7 @@ async function downloadAndUnzip(targetUrl: string, targetFolder: string): Promis
             } catch (error) {
                 return reject(error);
             }
-            
+
             p.report({ message: "Starting to unzip..." });
             extract(filepath, { dir: targetFolder }, (err) => {
                 if (err) {
