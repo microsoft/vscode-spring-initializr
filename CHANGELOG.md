@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to the "vscode-spring-initializr" extension will be documented in this file.
 
+## 0.4.7
+### Fixed
+- Vulnerabilities.
+
 ## 0.4.6
 ### Fixed
 - A bug that there is no response when failing to download zip package. [#120](https://github.com/microsoft/vscode-spring-initializr/issues/120)
@@ -16,7 +20,7 @@ All notable changes to the "vscode-spring-initializr" extension will be document
 - Allow users to specify multiple service URLs. [PR#99](https://github.com/Microsoft/vscode-spring-initializr/pull/99)
 
 ### Fixed
-- A potential NPE. [#102](https://github.com/Microsoft/vscode-spring-initializr/issues/102) 
+- A potential NPE. [#102](https://github.com/Microsoft/vscode-spring-initializr/issues/102)
 - A bug that the generated .zip file is being extracted before it is completely downloaded. [#103](https://github.com/Microsoft/vscode-spring-initializr/issues/103)
 
 ## 0.4.3
@@ -36,7 +40,7 @@ All notable changes to the "vscode-spring-initializr" extension will be document
 
 ## 0.3.0
 - Supported to edit starters of an existing Spring Boot Maven project.
-- Supported to generate Kotlin and Groovy projects. 
+- Supported to generate Kotlin and Groovy projects.
 - Supported to specify default language of projects.
 - Fixed some bugs.
 
