@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to the "vscode-spring-initializr" extension will be documented in this file.
 
+## 0.4.8
+- Update dependencies to fix issue in telemetry.
+
 ## 0.4.7
 ### Fixed
 - Vulnerabilities.
