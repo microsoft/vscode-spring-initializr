@@ -148,7 +148,7 @@ async function specifyPackaging(): Promise<string> {
 }
 
 async function specifyBootVersion(manager: ServiceManager): Promise<string> {
-    const bootVersion: { value: IValue, label: string } = await vscode.window.showQuickPick(
+    const bootVersion: { value: IValue, label: string } = await vscode.window.showQuickPick<{ value: IValue, label: string }>(
         // @ts-ignore
         manager.getBootVersions().then(versions => versions.map(v => ({ value: v, label: v.name }))),
         { ignoreFocusOut: true, placeHolder: "Specify Spring Boot version." }
