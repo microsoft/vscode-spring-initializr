@@ -6,4 +6,4 @@ export * from "./pomxml/BomNode";
 export * from "./pomxml/DependencyNode";
 export * from "./pomxml/PomXml";
 export * from "./pomxml/RepositoryNode";
-export { ServiceManager } from "./ServiceManager";
+export { serviceManager } from "./ServiceManager";
