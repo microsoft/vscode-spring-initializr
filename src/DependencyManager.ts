@@ -2,14 +2,14 @@
 // Licensed under the MIT license.
 
 import { QuickPickItem } from "vscode";
-import { IDependency, ServiceManager } from "./model";
+import { IDependency, serviceManager } from "./model";
 import { readFileFromExtensionRoot, writeFileToExtensionRoot } from "./Utils";
 
 const PLACEHOLDER: string = "";
 const HINT_CONFIRM: string = "Press <Enter> to continue.";
 const DEPENDENCIES_HISTORY_FILENAME: string = ".last_used_dependencies";
 
-class DependencyManager {
+export class DependencyManager {
 
     public lastselected: string = null;
     public dependencies: IDependency[] = [];
@@ -30,9 +30,9 @@ class DependencyManager {
         this.lastselected = idList;
     }
 
-    public async getQuickPickItems(manager: ServiceManager, bootVersion: string, options?: { hasLastSelected: boolean }): Promise<Array<QuickPickItem & IDependenciesItem>> {
+    public async getQuickPickItems(serviceUrl: string, bootVersion: string, options?: { hasLastSelected: boolean }): Promise<Array<QuickPickItem & IDependenciesItem>> {
         if (this.dependencies.length === 0) {
-            await this.initialize(await manager.getAvailableDependencies(bootVersion));
+            await this.initialize(await serviceManager.getAvailableDependencies(serviceUrl, bootVersion));
         }
         const ret: Array<QuickPickItem & IDependenciesItem> = [];
         if (this.selectedIds.length === 0) {
@@ -97,6 +97,3 @@ class DependencyManager {
 }
 
 export interface IDependenciesItem { itemType: string; id: string; }
-
-// tslint:disable-next-line:export-name
-export const dependencyManager: DependencyManager = new DependencyManager();
