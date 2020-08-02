@@ -74,6 +74,16 @@ After that, verify `build.gradle` instead of `pom.xml`.
 5. Verify:
     1. It skips the step to select language, and directly uses the value you set.
 
+### Default value of Java version.
+1. Open `User settings` in VS Code.
+2. Change values of entry `spring.initializr.defaultJavaVersion` to `""`.
+3. Verify:
+    1. It allows to select Java version during generating the project.
+    2. Open the generated project, the Java version matches what you selected.
+4. Change values of entry `spring.initializr.defaultJavaVersion` to `"1.8"`.
+5. Verify:
+    1. It skips the step to select Java version, and directly uses the value you set.
+
 ### Default value of packaging.
 1. Open `User settings` in VS Code.
 2. Change values of entry `spring.initializr.defaultPackaging` to `""`.

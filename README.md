@@ -13,7 +13,7 @@ Spring Initializr is a lightweight extension to quickly generate a Spring Boot p
 ## Feature List
 
 - Generate a Maven/Gradle Spring Boot project 
-- Customize configurations for a new project (language, group id, artifact id, boot version and dependencies)
+- Customize configurations for a new project (language, Java version, group id, artifact id, boot version and dependencies)
 - Search for dependencies
 - Quickstart with last settings
 - Edit Spring Boot dependencies of an existing Spring Boot project
@@ -43,6 +43,9 @@ ext install vscode-spring-initializr
 ```
   // Default language.
   "spring.initializr.defaultLanguage": "Java",
+
+  // Default Java version.
+  "spring.initializr.defaultJavaVersion": "11",
 
   // Default value for Artifact Id.
   "spring.initializr.defaultArtifactId": "demo",
