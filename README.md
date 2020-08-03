@@ -50,6 +50,9 @@ ext install vscode-spring-initializr
   // Default value for Artifact Id.
   "spring.initializr.defaultArtifactId": "demo",
 
+  // Default value for Name.
+  "spring.initializr.defaultName": "demo",
+
   // Default value for Group Id.
   "spring.initializr.defaultGroupId": "com.example",
 

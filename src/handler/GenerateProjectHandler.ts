@@ -9,7 +9,7 @@ import { instrumentOperationStep, sendInfo } from "vscode-extension-telemetry-wr
 import { DependencyManager, IDependenciesItem } from "../DependencyManager";
 import { OperationCanceledError } from "../Errors";
 import { IValue, serviceManager } from "../model";
-import { artifactIdValidation, downloadFile, groupIdValidation } from "../Utils";
+import { artifactIdValidation, nameValidation, downloadFile, groupIdValidation } from "../Utils";
 import { getFromInputBox, openDialogForFolder } from "../Utils/VSCodeUI";
 import { BaseHandler } from "./BaseHandler";
 import { specifyServiceUrl } from "./utils";
@@ -18,6 +18,7 @@ export class GenerateProjectHandler extends BaseHandler {
     private serviceUrl: string;
     private artifactId: string;
     private groupId: string;
+    private name: string;
     private language: string;
     private javaVersion: string;
     private projectType: "maven-project" | "gradle-project";
@@ -56,6 +57,10 @@ export class GenerateProjectHandler extends BaseHandler {
         // Step: Artifact Id
         this.artifactId = await instrumentOperationStep(operationId, "ArtifactId", specifyArtifactId)();
         if (this.artifactId === undefined) { throw new OperationCanceledError("ArtifactId not specified."); }
+
+        // Step: Name
+        this.name = await instrumentOperationStep(operationId, "Name", specifyName)();
+        if (this.name === undefined) { throw new OperationCanceledError("Name not specified."); }
 
         // Step: Packaging
         this.packaging = await instrumentOperationStep(operationId, "Packaging", specifyPackaging)();
@@ -98,6 +103,7 @@ export class GenerateProjectHandler extends BaseHandler {
             `javaVersion=${this.javaVersion}`,
             `groupId=${this.groupId}`,
             `artifactId=${this.artifactId}`,
+            `name=${this.name}`,
             `packaging=${this.packaging}`,
             `bootVersion=${this.bootVersion}`,
             `baseDir=${this.artifactId}`,
@@ -146,6 +152,16 @@ async function specifyArtifactId(): Promise<string> {
         prompt: "Input Artifact Id for your project.",
         validateInput: artifactIdValidation,
         value: defaultArtifactId,
+    });
+}
+
+async function specifyName(): Promise<string> {
+    const defaultName: string = vscode.workspace.getConfiguration("spring.initializr").get<string>("defaultName");
+    return await getFromInputBox({
+        placeHolder: "e.g. demo (will turn into DemoApplication class - mostly the same as ArtifactId)",
+        prompt: "Input project name.",
+        validateInput: nameValidation,
+        value: defaultName,
     });
 }
 
