@@ -128,7 +128,7 @@ async function specifyJavaVersion(): Promise<string> {
     let javaVersion: string = vscode.workspace.getConfiguration("spring.initializr").get<string>("defaultJavaVersion");
     if (!javaVersion) {
         javaVersion = await vscode.window.showQuickPick(
-            ["1.8", "11", "14"],
+            ["11", "1.8", "14"],
             { ignoreFocusOut: true, placeHolder: "Specify Java version." },
         );
     }
