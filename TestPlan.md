@@ -64,13 +64,6 @@ After that, verify `build.gradle` instead of `pom.xml`.
 1. Verify:
     1. `GroupId` and `ArtifactId` are filled by the specified default values.
 
-### Default value of Name.
-1. Open `User settings` in VS Code.
-2. Change values of entry `spring.initializr.defaultName`.
-3. Open `Command Palette`, execute command `Spring Initializr: Generate a Maven Project`.
-4. Verify:
-    1. `Name` is filled by the specified default value.
-
 ### Default value of language.
 1. Open `User settings` in VS Code.
 2. Change values of entry `spring.initializr.defaultLanguage` to `""`.

@@ -120,12 +120,6 @@
           "scope": "window",
           "description": "Default value for Artifact Id."
         },
-        "spring.initializr.defaultName": {
-          "default": "demo",
-          "type": "string",
-          "scope": "window",
-          "description": "Default value for Name (Application name)."
-        },
         "spring.initializr.defaultPackaging": {
           "default": "JAR",
           "type": "string",

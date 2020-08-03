@@ -114,10 +114,6 @@ export function artifactIdValidation(value: string): string {
     return (/^[a-z_][a-z0-9_]*(-[a-z_][a-z0-9_]*)*$/.test(value)) ? null : "Invalid Artifact Id";
 }
 
-export function nameValidation(value: string): string {
-    return (/^[a-z_][a-z0-9_]*(-[a-z_][a-z0-9_]*)*$/.test(value)) ? null : "Invalid Name";
-}
-
 export async function readXmlContent(xml: string, options?: {}): Promise<any> {
     const opts: {} = Object.assign({ explicitArray: true }, options);
     return new Promise<{}>(
