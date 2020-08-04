@@ -96,6 +96,18 @@
           "scope": "window",
           "description": "Default language."
         },
+        "spring.initializr.defaultJavaVersion": {
+          "default": "",
+          "type": "string",
+          "enum": [
+            "",
+            "1.8",
+            "11",
+            "14"
+          ],
+          "scope": "window",
+          "description": "Default Java version."
+        },
         "spring.initializr.defaultGroupId": {
           "default": "com.example",
           "type": "string",

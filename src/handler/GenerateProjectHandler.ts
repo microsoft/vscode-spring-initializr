@@ -19,6 +19,7 @@ export class GenerateProjectHandler extends BaseHandler {
     private artifactId: string;
     private groupId: string;
     private language: string;
+    private javaVersion: string;
     private projectType: "maven-project" | "gradle-project";
     private packaging: string;
     private bootVersion: string;
@@ -43,6 +44,10 @@ export class GenerateProjectHandler extends BaseHandler {
         // Step: language
         this.language = await instrumentOperationStep(operationId, "Language", specifyLanguage)();
         if (this.language === undefined) { throw new OperationCanceledError("Language not specified."); }
+
+        // Step: java version
+        this.javaVersion = await instrumentOperationStep(operationId, "JavaVersion", specifyJavaVersion)();
+        if (this.javaVersion === undefined) { throw new OperationCanceledError("Java version not specified."); }
 
         // Step: Group Id
         this.groupId = await instrumentOperationStep(operationId, "GroupId", specifyGroupId)();
@@ -90,8 +95,10 @@ export class GenerateProjectHandler extends BaseHandler {
         const params: string[] = [
             `type=${this.projectType}`,
             `language=${this.language}`,
+            `javaVersion=${this.javaVersion}`,
             `groupId=${this.groupId}`,
             `artifactId=${this.artifactId}`,
+            `name=${this.artifactId}`,
             `packaging=${this.packaging}`,
             `bootVersion=${this.bootVersion}`,
             `baseDir=${this.artifactId}`,
@@ -110,6 +117,17 @@ async function specifyLanguage(): Promise<string> {
         );
     }
     return language && language.toLowerCase();
+}
+
+async function specifyJavaVersion(): Promise<string> {
+    let javaVersion: string = vscode.workspace.getConfiguration("spring.initializr").get<string>("defaultJavaVersion");
+    if (!javaVersion) {
+        javaVersion = await vscode.window.showQuickPick(
+            ["11", "1.8", "14"],
+            { ignoreFocusOut: true, placeHolder: "Specify Java version." },
+        );
+    }
+    return javaVersion;
 }
 
 async function specifyGroupId(): Promise<string> {
