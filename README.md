@@ -16,7 +16,7 @@ Spring Initializr is a lightweight extension to quickly generate a Spring Boot p
 - Customize configurations for a new project (language, Java version, group id, artifact id, boot version and dependencies)
 - Search for dependencies
 - Quickstart with last settings
-- Edit Spring Boot dependencies of an existing Spring Boot project
+- Edit Spring Boot dependencies of an existing Maven Spring Boot project
 
 ## Requirements
 - VS Code (version 1.19.0 or later)
