@@ -5,16 +5,17 @@ import * as extract from "extract-zip";
 import * as fse from "fs-extra";
 import * as path from "path";
 import * as vscode from "vscode";
-import { instrumentOperationStep, sendInfo } from "vscode-extension-telemetry-wrapper";
-import { DependencyManager, IDependenciesItem } from "../DependencyManager";
+import { instrumentOperationStep } from "vscode-extension-telemetry-wrapper";
+import { IDependenciesItem } from "../DependencyManager";
 import { OperationCanceledError } from "../Errors";
-import { IValue, serviceManager } from "../model";
-import { artifactIdValidation, downloadFile, groupIdValidation } from "../Utils";
-import { getFromInputBox, openDialogForFolder } from "../Utils/VSCodeUI";
+import { downloadFile } from "../Utils";
+import { openDialogForFolder } from "../Utils/VSCodeUI";
 import { BaseHandler } from "./BaseHandler";
-import { specifyServiceUrl } from "./utils";
+import { IStep } from "./IStep";
+import { specifyServiceUrlStep } from "./SpecifyServiceUrlStep";
 
 export class GenerateProjectHandler extends BaseHandler {
+
     private serviceUrl: string;
     private artifactId: string;
     private groupId: string;
@@ -37,38 +38,20 @@ export class GenerateProjectHandler extends BaseHandler {
 
     public async runSteps(operationId?: string): Promise<void> {
 
-        // Step: service URL
-        this.serviceUrl = await instrumentOperationStep(operationId, "serviceUrl", specifyServiceUrl)();
-        if (this.serviceUrl === undefined) { throw new OperationCanceledError("Service URL not specified."); }
+        let step: IStep | undefined = specifyServiceUrlStep;
+        const projectMetadata: ProjectMetadata = {};
+        while (step !== undefined) {
+            step = await step.execute(operationId, projectMetadata);
+        }
 
-        // Step: language
-        this.language = await instrumentOperationStep(operationId, "Language", specifyLanguage)();
-        if (this.language === undefined) { throw new OperationCanceledError("Language not specified."); }
-
-        // Step: java version
-        this.javaVersion = await instrumentOperationStep(operationId, "JavaVersion", specifyJavaVersion)();
-        if (this.javaVersion === undefined) { throw new OperationCanceledError("Java version not specified."); }
-
-        // Step: Group Id
-        this.groupId = await instrumentOperationStep(operationId, "GroupId", specifyGroupId)();
-        if (this.groupId === undefined) { throw new OperationCanceledError("GroupId not specified."); }
-
-        // Step: Artifact Id
-        this.artifactId = await instrumentOperationStep(operationId, "ArtifactId", specifyArtifactId)();
-        if (this.artifactId === undefined) { throw new OperationCanceledError("ArtifactId not specified."); }
-
-        // Step: Packaging
-        this.packaging = await instrumentOperationStep(operationId, "Packaging", specifyPackaging)();
-        if (this.packaging === undefined) { throw new OperationCanceledError("Packaging not specified."); }
-
-        // Step: bootVersion
-        this.bootVersion = await instrumentOperationStep(operationId, "BootVersion", specifyBootVersion)(this.serviceUrl);
-        if (this.bootVersion === undefined) { throw new OperationCanceledError("BootVersion not specified."); }
-        sendInfo(operationId, { bootVersion: this.bootVersion });
-
-        // Step: Dependencies
-        this.dependencies = await instrumentOperationStep(operationId, "Dependencies", specifyDependencies)(this.serviceUrl, this.bootVersion);
-        sendInfo(operationId, { depsType: this.dependencies.itemType, dependencies: this.dependencies.id });
+        this.serviceUrl = projectMetadata.serviceUrl;
+        this.language = projectMetadata.language;
+        this.javaVersion = projectMetadata.javaVersion;
+        this.groupId = projectMetadata.groupId;
+        this.artifactId = projectMetadata.artifactId;
+        this.packaging = projectMetadata.packaging;
+        this.bootVersion = projectMetadata.bootVersion;
+        this.dependencies = projectMetadata.dependencies;
 
         // Step: Choose target folder
         this.outputUri = await instrumentOperationStep(operationId, "TargetFolder", specifyTargetFolder)(this.artifactId);
@@ -108,85 +91,16 @@ export class GenerateProjectHandler extends BaseHandler {
     }
 }
 
-async function specifyLanguage(): Promise<string> {
-    let language: string = vscode.workspace.getConfiguration("spring.initializr").get<string>("defaultLanguage");
-    if (!language) {
-        language = await vscode.window.showQuickPick(
-            ["Java", "Kotlin", "Groovy"],
-            { ignoreFocusOut: true, placeHolder: "Specify project language." },
-        );
-    }
-    return language && language.toLowerCase();
-}
-
-async function specifyJavaVersion(): Promise<string> {
-    let javaVersion: string = vscode.workspace.getConfiguration("spring.initializr").get<string>("defaultJavaVersion");
-    if (!javaVersion) {
-        javaVersion = await vscode.window.showQuickPick(
-            ["11", "1.8", "14"],
-            { ignoreFocusOut: true, placeHolder: "Specify Java version." },
-        );
-    }
-    return javaVersion;
-}
-
-async function specifyGroupId(): Promise<string> {
-    const defaultGroupId: string = vscode.workspace.getConfiguration("spring.initializr").get<string>("defaultGroupId");
-    return await getFromInputBox({
-        placeHolder: "e.g. com.example",
-        prompt: "Input Group Id for your project.",
-        validateInput: groupIdValidation,
-        value: defaultGroupId,
-    });
-}
-
-async function specifyArtifactId(): Promise<string> {
-    const defaultArtifactId: string = vscode.workspace.getConfiguration("spring.initializr").get<string>("defaultArtifactId");
-    return await getFromInputBox({
-        placeHolder: "e.g. demo",
-        prompt: "Input Artifact Id for your project.",
-        validateInput: artifactIdValidation,
-        value: defaultArtifactId,
-    });
-}
-
-async function specifyPackaging(): Promise<string> {
-    let packaging: string = vscode.workspace.getConfiguration("spring.initializr").get<string>("defaultPackaging");
-    if (!packaging) {
-        packaging = await vscode.window.showQuickPick(
-            ["JAR", "WAR"],
-            { ignoreFocusOut: true, placeHolder: "Specify packaging type." },
-        );
-    }
-    return packaging && packaging.toLowerCase();
-}
-
-async function specifyBootVersion(serviceUrl: string): Promise<string> {
-    const bootVersion: { value: IValue, label: string } = await vscode.window.showQuickPick<{ value: IValue, label: string }>(
-        // @ts-ignore
-        serviceManager.getBootVersions(serviceUrl).then(versions => versions.map(v => ({ value: v, label: v.name }))),
-        { ignoreFocusOut: true, placeHolder: "Specify Spring Boot version." }
-    );
-    return bootVersion && bootVersion.value && bootVersion.value.id;
-}
-
-async function specifyDependencies(serviceUrl: string, bootVersion: string): Promise<IDependenciesItem> {
-    const dependencyManager = new DependencyManager();
-    let current: IDependenciesItem = null;
-    do {
-        current = await vscode.window.showQuickPick(
-            dependencyManager.getQuickPickItems(serviceUrl, bootVersion, { hasLastSelected: true }),
-            { ignoreFocusOut: true, placeHolder: "Search for dependencies.", matchOnDetail: true, matchOnDescription: true },
-        );
-        if (current && current.itemType === "dependency") {
-            dependencyManager.toggleDependency(current.id);
-        }
-    } while (current && current.itemType === "dependency");
-    if (!current) {
-        throw new OperationCanceledError("Canceled on dependency seletion.");
-    }
-    dependencyManager.updateLastUsedDependencies(this.dependencies);
-    return current;
+export interface ProjectMetadata {
+    serviceUrl?: string;
+    language?: string;
+    javaVersion?: string;
+    groupId?: string;
+    artifactId?: string;
+    packaging?: string;
+    bootVersion?: string;
+    dependencies?: IDependenciesItem;
+    firstStep?: IStep;
 }
 
 async function specifyTargetFolder(projectName: string): Promise<vscode.Uri> {
