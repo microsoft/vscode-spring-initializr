@@ -7,25 +7,24 @@ import { DependencyManager, IDependenciesItem } from "../DependencyManager";
 import { OperationCanceledError } from "../Errors";
 import { ProjectMetadata } from "./GenerateProjectHandler";
 import { IStep } from "./IStep";
-import { specifyBootVersionStep } from "./SpecifyBootVersionStep";
 
 export class SpecifyDependenciesStep implements IStep {
 
-    public lastStep: IStep | undefined;
-    public nextStep: IStep | undefined;
-
-    constructor(lastStep: IStep | undefined, nextStep: IStep | undefined) {
-        this.lastStep = lastStep;
-        this.nextStep = nextStep;
+    public static getInstance(): SpecifyDependenciesStep {
+        return SpecifyDependenciesStep.specifyDependenciesStep;
     }
+
+    private static specifyDependenciesStep: SpecifyDependenciesStep = new SpecifyDependenciesStep();
 
     public async execute(operationId: string, projectMetadata: ProjectMetadata): Promise<IStep | undefined> {
-        const executeResult: boolean = await instrumentOperationStep(operationId, "Dependencies", this.specifyDependencies)(projectMetadata);
+        if (!await instrumentOperationStep(operationId, "Dependencies", this.specifyDependencies)(projectMetadata)) {
+            return projectMetadata.pickSteps.pop();
+        }
         sendInfo(operationId, { depsType: projectMetadata.dependencies.itemType, dependencies: projectMetadata.dependencies.id });
-        return (executeResult === true) ? this.nextStep : this.lastStep;
+        return undefined;
     }
 
-    private async specifyDependencies(projectMetadata: ProjectMetadata): Promise<IDependenciesItem> {
+    private async specifyDependencies(projectMetadata: ProjectMetadata): Promise<boolean> {
         const dependencyManager = new DependencyManager();
         let current: IDependenciesItem = null;
         let result: boolean = false;
@@ -40,13 +39,17 @@ export class SpecifyDependenciesStep implements IStep {
                     pickBox.ignoreFocusOut = true;
                     pickBox.matchOnDetail = true;
                     pickBox.matchOnDescription = true;
-                    pickBox.buttons = [(QuickInputButtons.Back)];
+                    if (projectMetadata.pickSteps.length > 0) {
+                        pickBox.buttons = [(QuickInputButtons.Back)];
+                        disposables.push(
+                            pickBox.onDidTriggerButton((item) => {
+                                if (item === QuickInputButtons.Back) {
+                                    resolve(false);
+                                }
+                            })
+                        );
+                    }
                     disposables.push(
-                        pickBox.onDidTriggerButton((item) => {
-                            if (item === QuickInputButtons.Back) {
-                                resolve(false);
-                            }
-                        }),
                         pickBox.onDidAccept(() => {
                             current = pickBox.selectedItems[0];
                             resolve(true);
@@ -66,14 +69,15 @@ export class SpecifyDependenciesStep implements IStep {
             if (current && current.itemType === "dependency") {
                 dependencyManager.toggleDependency(current.id);
             }
+            if (result === false) {
+                break;
+            }
         } while (current && current.itemType === "dependency");
         if (!current) {
             throw new OperationCanceledError("Canceled on dependency seletion.");
         }
-        dependencyManager.updateLastUsedDependencies(projectMetadata.dependencies);
         projectMetadata.dependencies = current;
-        return current;
+        dependencyManager.updateLastUsedDependencies(projectMetadata.dependencies);
+        return result;
     }
 }
-
-export const specifyDependenciesStep: SpecifyDependenciesStep = new SpecifyDependenciesStep(specifyBootVersionStep, undefined);

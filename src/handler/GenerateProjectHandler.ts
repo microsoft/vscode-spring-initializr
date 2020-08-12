@@ -12,7 +12,7 @@ import { downloadFile } from "../Utils";
 import { openDialogForFolder } from "../Utils/VSCodeUI";
 import { BaseHandler } from "./BaseHandler";
 import { IStep } from "./IStep";
-import { specifyServiceUrlStep } from "./SpecifyServiceUrlStep";
+import { SpecifyServiceUrlStep } from "./SpecifyServiceUrlStep";
 
 export class GenerateProjectHandler extends BaseHandler {
 
@@ -38,8 +38,10 @@ export class GenerateProjectHandler extends BaseHandler {
 
     public async runSteps(operationId?: string): Promise<void> {
 
-        let step: IStep | undefined = specifyServiceUrlStep;
-        const projectMetadata: ProjectMetadata = {};
+        let step: IStep | undefined = SpecifyServiceUrlStep.getInstance();
+        const projectMetadata: ProjectMetadata = {
+            pickSteps: []
+        };
         while (step !== undefined) {
             step = await step.execute(operationId, projectMetadata);
         }
@@ -100,7 +102,7 @@ export interface ProjectMetadata {
     packaging?: string;
     bootVersion?: string;
     dependencies?: IDependenciesItem;
-    firstStep?: IStep;
+    pickSteps: IStep[];
 }
 
 async function specifyTargetFolder(projectName: string): Promise<vscode.Uri> {

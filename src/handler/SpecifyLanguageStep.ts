@@ -6,25 +6,24 @@ import { instrumentOperationStep } from "vscode-extension-telemetry-wrapper";
 import { OperationCanceledError } from "../Errors";
 import { ProjectMetadata } from "./GenerateProjectHandler";
 import { IStep } from "./IStep";
-import { specifyJavaVersionStep } from "./SpecifyJavaVersionStep";
-import { specifyServiceUrlStep } from "./SpecifyServiceUrlStep";
+import { SpecifyJavaVersionStep } from "./SpecifyJavaVersionStep";
 
 export class SpecifyLanguageStep implements IStep {
 
-    public lastStep: IStep | undefined;
-    public nextStep: IStep | undefined;
-
-    constructor(lastStep: IStep | undefined, nextStep: IStep | undefined) {
-        this.lastStep = lastStep;
-        this.nextStep = nextStep;
+    public static getInstance(): SpecifyLanguageStep {
+        return SpecifyLanguageStep.specifyLanguageStep;
     }
 
+    private static specifyLanguageStep: SpecifyLanguageStep = new SpecifyLanguageStep();
+
     public async execute(operationId: string, projectMetadata: ProjectMetadata): Promise<IStep | undefined> {
-        const executeResult: boolean = await instrumentOperationStep(operationId, "Language", this.specifyLanguage)(projectMetadata);
+        if (!await instrumentOperationStep(operationId, "Language", this.specifyLanguage)(projectMetadata)) {
+            return projectMetadata.pickSteps.pop();
+        }
         if (projectMetadata.language === undefined) {
             throw new OperationCanceledError("Language not specified.");
         }
-        return (executeResult === true) ? this.nextStep : this.lastStep;
+        return SpecifyJavaVersionStep.getInstance();
     }
 
     private async specifyLanguage(projectMetadata: ProjectMetadata): Promise<boolean> {
@@ -38,7 +37,7 @@ export class SpecifyLanguageStep implements IStep {
                     pickBox.placeholder = "Specify project language.";
                     pickBox.items = [{label: "Java"}, {label: "Kotlin"}, {label: "Groovy"}];
                     pickBox.ignoreFocusOut = true;
-                    if (projectMetadata.firstStep === specifyServiceUrlStep) {
+                    if (projectMetadata.pickSteps.length > 0) {
                         pickBox.buttons = [(QuickInputButtons.Back)];
                         disposables.push(
                             pickBox.onDidTriggerButton((item) => {
@@ -51,6 +50,7 @@ export class SpecifyLanguageStep implements IStep {
                     disposables.push(
                         pickBox.onDidAccept(() => {
                             projectMetadata.language = pickBox.selectedItems[0].label && pickBox.selectedItems[0].label.toLowerCase();
+                            projectMetadata.pickSteps.push(SpecifyLanguageStep.getInstance());
                             resolve(true);
                         }),
                         pickBox.onDidHide(() => {
@@ -65,9 +65,10 @@ export class SpecifyLanguageStep implements IStep {
                     d.dispose();
                 }
             }
+        } else {
+            projectMetadata.language = language;
+            result = true;
         }
         return result;
     }
 }
-
-export const specifyLanguageStep: SpecifyLanguageStep = new SpecifyLanguageStep(specifyServiceUrlStep, specifyJavaVersionStep);

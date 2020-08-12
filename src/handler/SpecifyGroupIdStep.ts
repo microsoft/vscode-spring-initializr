@@ -6,25 +6,26 @@ import { instrumentOperationStep } from "vscode-extension-telemetry-wrapper";
 import { OperationCanceledError } from "../Errors";
 import { ProjectMetadata } from "./GenerateProjectHandler";
 import { IStep } from "./IStep";
-import { specifyArtifactIdStep } from "./SpecifyArtifactIdStep";
-import { specifyJavaVersionStep } from "./SpecifyJavaVersionStep";
+import { SpecifyArtifactIdStep } from "./SpecifyArtifactIdStep";
 
 export class SpecifyGroupIdStep implements IStep {
 
-    public lastStep: IStep | undefined;
-    public nextStep: IStep | undefined;
-
-    constructor(lastStep: IStep | undefined, nextStep: IStep | undefined) {
-        this.lastStep = lastStep;
-        this.nextStep = nextStep;
+    public static getInstance(): SpecifyGroupIdStep {
+        return SpecifyGroupIdStep.specifyGroupIdStep;
     }
 
+    private static specifyGroupIdStep: SpecifyGroupIdStep = new SpecifyGroupIdStep();
+
+    private lastInput: string;
+
     public async execute(operationId: string, projectMetadata: ProjectMetadata): Promise<IStep | undefined> {
-        const executeResult: boolean = await instrumentOperationStep(operationId, "GroupId", this.specifyGroupId)(projectMetadata);
+        if (!await instrumentOperationStep(operationId, "GroupId", this.specifyGroupId)(projectMetadata)) {
+            return projectMetadata.pickSteps.pop();
+        }
         if (projectMetadata.groupId === undefined) {
             throw new OperationCanceledError("GroupId not specified.");
         }
-        return (executeResult === true) ? this.nextStep : this.lastStep;
+        return SpecifyArtifactIdStep.getInstance();
     }
 
     private async specifyGroupId(projectMetadata: ProjectMetadata): Promise<boolean> {
@@ -36,18 +37,24 @@ export class SpecifyGroupIdStep implements IStep {
                 const inputBox: InputBox = window.createInputBox();
                 inputBox.placeholder = "e.g. com.example";
                 inputBox.prompt = "Input Group Id for your project.";
-                inputBox.value = defaultGroupId;
+                inputBox.value = (SpecifyGroupIdStep.getInstance().lastInput === undefined) ? defaultGroupId : SpecifyGroupIdStep.getInstance().lastInput;
                 inputBox.ignoreFocusOut = true;
-                // validateInput: groupIdValidation
-                inputBox.buttons = [(QuickInputButtons.Back)];
+                // TODO: validateInput: groupIdValidation
+                if (projectMetadata.pickSteps.length > 0) {
+                    inputBox.buttons = [(QuickInputButtons.Back)];
+                    disposables.push(
+                        inputBox.onDidTriggerButton((item) => {
+                            if (item === QuickInputButtons.Back) {
+                                resolve(false);
+                            }
+                        })
+                    );
+                }
                 disposables.push(
-                    inputBox.onDidTriggerButton((item) => {
-                        if (item === QuickInputButtons.Back) {
-                            resolve(false);
-                        }
-                    }),
                     inputBox.onDidAccept(() => {
                         projectMetadata.groupId = inputBox.value;
+                        SpecifyGroupIdStep.getInstance().lastInput = inputBox.value;
+                        projectMetadata.pickSteps.push(SpecifyGroupIdStep.getInstance());
                         resolve(true);
                     }),
                     inputBox.onDidHide(() => {
@@ -65,5 +72,3 @@ export class SpecifyGroupIdStep implements IStep {
         return result;
     }
 }
-
-export const specifyGroupIdStep: SpecifyGroupIdStep = new SpecifyGroupIdStep(specifyJavaVersionStep, specifyArtifactIdStep);

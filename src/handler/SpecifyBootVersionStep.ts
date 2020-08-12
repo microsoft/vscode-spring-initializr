@@ -7,26 +7,25 @@ import { OperationCanceledError } from "../Errors";
 import { IValue, serviceManager } from "../model";
 import { ProjectMetadata } from "./GenerateProjectHandler";
 import { IStep } from "./IStep";
-import { specifyDependenciesStep } from "./SpecifyDependenciesStep";
-import { specifyPackagingStep } from "./SpecifyPackagingStep";
+import { SpecifyDependenciesStep } from "./SpecifyDependenciesStep";
 
 export class SpecifyBootVersionStep implements IStep {
 
-    public lastStep: IStep | undefined;
-    public nextStep: IStep | undefined;
-
-    constructor(lastStep: IStep | undefined, nextStep: IStep | undefined) {
-        this.lastStep = lastStep;
-        this.nextStep = nextStep;
+    public static getInstance(): SpecifyBootVersionStep {
+        return SpecifyBootVersionStep.specifyBootVersionStep;
     }
 
+    private static specifyBootVersionStep: SpecifyBootVersionStep = new SpecifyBootVersionStep();
+
     public async execute(operationId: string, projectMetadata: ProjectMetadata): Promise<IStep | undefined> {
-        const executeResult: boolean = await instrumentOperationStep(operationId, "BootVersion", this.specifyBootVersion)(projectMetadata);
+        if (!await instrumentOperationStep(operationId, "BootVersion", this.specifyBootVersion)(projectMetadata)) {
+            return projectMetadata.pickSteps.pop();
+        }
         if (projectMetadata.bootVersion === undefined) {
             throw new OperationCanceledError("BootVersion not specified.");
         }
         sendInfo(operationId, { bootVersion: projectMetadata.bootVersion });
-        return (executeResult === true) ? this.nextStep : this.lastStep;
+        return SpecifyDependenciesStep.getInstance();
     }
 
     private async specifyBootVersion(projectMetadata: ProjectMetadata): Promise<boolean> {
@@ -38,15 +37,20 @@ export class SpecifyBootVersionStep implements IStep {
                 pickBox.placeholder = "Specify Spring Boot version.";
                 pickBox.items = await serviceManager.getBootVersions(projectMetadata.serviceUrl).then(versions => versions.map(v => ({ value: v, label: v.name })));
                 pickBox.ignoreFocusOut = true;
-                pickBox.buttons = [(QuickInputButtons.Back)];
+                if (projectMetadata.pickSteps.length > 0) {
+                    pickBox.buttons = [(QuickInputButtons.Back)];
+                    disposables.push(
+                        pickBox.onDidTriggerButton((item) => {
+                            if (item === QuickInputButtons.Back) {
+                                resolve(false);
+                            }
+                        })
+                    );
+                }
                 disposables.push(
-                    pickBox.onDidTriggerButton((item) => {
-                        if (item === QuickInputButtons.Back) {
-                            resolve(false);
-                        }
-                    }),
                     pickBox.onDidAccept(() => {
                         projectMetadata.bootVersion = pickBox.selectedItems[0] && pickBox.selectedItems[0].value && pickBox.selectedItems[0].value.id;
+                        projectMetadata.pickSteps.push(SpecifyBootVersionStep.getInstance());
                         resolve(true);
                     }),
                     pickBox.onDidHide(() => {
@@ -64,5 +68,3 @@ export class SpecifyBootVersionStep implements IStep {
         return result;
     }
 }
-
-export const specifyBootVersionStep: SpecifyBootVersionStep = new SpecifyBootVersionStep(specifyPackagingStep, specifyDependenciesStep);

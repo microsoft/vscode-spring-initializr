@@ -4,7 +4,5 @@
 import { ProjectMetadata } from "./GenerateProjectHandler";
 
 export interface IStep {
-    lastStep: IStep | undefined;
-    nextStep: IStep | undefined;
     execute(operationId: string, projectMetadata: ProjectMetadata): Promise<IStep | undefined>;
 }

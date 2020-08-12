@@ -6,26 +6,24 @@ import { instrumentOperationStep } from "vscode-extension-telemetry-wrapper";
 import { OperationCanceledError } from "../Errors";
 import { ProjectMetadata } from "./GenerateProjectHandler";
 import { IStep } from "./IStep";
-import { specifyLanguageStep } from "./SpecifyLanguageStep";
+import { SpecifyLanguageStep } from "./SpecifyLanguageStep";
 
 const DEFAULT_SERVICE_URL: string = "https://start.spring.io/";
 
 export class SpecifyServiceUrlStep implements IStep {
 
-    public lastStep: IStep | undefined;
-    public nextStep: IStep | undefined;
-
-    constructor(lastStep: IStep | undefined, nextStep: IStep | undefined) {
-        this.lastStep = lastStep;
-        this.nextStep = nextStep;
+    public static getInstance(): SpecifyServiceUrlStep {
+        return SpecifyServiceUrlStep.specifyServiceUrlStep;
     }
+
+    private static specifyServiceUrlStep: SpecifyServiceUrlStep = new SpecifyServiceUrlStep();
 
     public async execute(operationId: string, projectMetadata: ProjectMetadata): Promise<IStep | undefined> {
         await instrumentOperationStep(operationId, "serviceUrl", this.specifyServiceUrl)(projectMetadata);
         if (projectMetadata.serviceUrl === undefined) {
             throw new OperationCanceledError("Service URL not specified.");
         }
-        return this.nextStep;
+        return SpecifyLanguageStep.getInstance();
     }
 
     private async specifyServiceUrl(projectMetadata: ProjectMetadata): Promise<void> {
@@ -38,8 +36,8 @@ export class SpecifyServiceUrlStep implements IStep {
                 projectMetadata.serviceUrl = configValue[0];
                 return;
             }
-            projectMetadata.firstStep = specifyServiceUrlStep;
             projectMetadata.serviceUrl = await window.showQuickPick(configValue, { ignoreFocusOut: true, placeHolder: "Select the service URL." });
+            projectMetadata.pickSteps.push(SpecifyServiceUrlStep.getInstance());
             return;
         } else {
             projectMetadata.serviceUrl = DEFAULT_SERVICE_URL;
@@ -47,5 +45,3 @@ export class SpecifyServiceUrlStep implements IStep {
         }
     }
 }
-
-export const specifyServiceUrlStep: SpecifyServiceUrlStep = new SpecifyServiceUrlStep(undefined, specifyLanguageStep);

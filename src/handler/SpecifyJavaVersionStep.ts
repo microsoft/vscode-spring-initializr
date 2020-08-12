@@ -6,25 +6,24 @@ import { instrumentOperationStep } from "vscode-extension-telemetry-wrapper";
 import { OperationCanceledError } from "../Errors";
 import { ProjectMetadata } from "./GenerateProjectHandler";
 import { IStep } from "./IStep";
-import { specifyGroupIdStep } from "./SpecifyGroupIdStep";
-import { specifyLanguageStep } from "./SpecifyLanguageStep";
+import { SpecifyGroupIdStep } from "./SpecifyGroupIdStep";
 
 export class SpecifyJavaVersionStep implements IStep {
 
-    public lastStep: IStep | undefined;
-    public nextStep: IStep | undefined;
-
-    constructor(lastStep: IStep | undefined, nextStep: IStep | undefined) {
-        this.lastStep = lastStep;
-        this.nextStep = nextStep;
+    public static getInstance(): SpecifyJavaVersionStep {
+        return SpecifyJavaVersionStep.specifyJavaVersionStep;
     }
 
+    private static specifyJavaVersionStep: SpecifyJavaVersionStep = new SpecifyJavaVersionStep();
+
     public async execute(operationId: string, projectMetadata: ProjectMetadata): Promise<IStep | undefined> {
-        const executeResult: boolean = await instrumentOperationStep(operationId, "JavaVersion", this.specifyJavaVersion)(projectMetadata);
+        if (!await instrumentOperationStep(operationId, "JavaVersion", this.specifyJavaVersion)(projectMetadata)) {
+            return projectMetadata.pickSteps.pop();
+        }
         if (projectMetadata.javaVersion === undefined) {
             throw new OperationCanceledError("Java version not specified.");
         }
-        return (executeResult === true) ? this.nextStep : this.lastStep;
+        return SpecifyGroupIdStep.getInstance();
     }
 
     private async specifyJavaVersion(projectMetadata: ProjectMetadata): Promise<boolean> {
@@ -35,18 +34,23 @@ export class SpecifyJavaVersionStep implements IStep {
             try {
                 result = await new Promise<boolean>((resolve, reject) => {
                     const pickBox: QuickPick<QuickPickItem> = window.createQuickPick<QuickPickItem>();
-                    pickBox.placeholder = "Specify project language.";
-                    pickBox.items = [{label: "Java"}, {label: "Kotlin"}, {label: "Groovy"}];
+                    pickBox.placeholder = "Specify Java version.";
+                    pickBox.items = [{label: "11"}, {label: "1.8"}, {label: "14"}];
                     pickBox.ignoreFocusOut = true;
-                    pickBox.buttons = [(QuickInputButtons.Back)];
+                    if (projectMetadata.pickSteps.length > 0) {
+                        pickBox.buttons = [(QuickInputButtons.Back)];
+                        disposables.push(
+                            pickBox.onDidTriggerButton((item) => {
+                                if (item === QuickInputButtons.Back) {
+                                    resolve(false);
+                                }
+                            })
+                        );
+                    }
                     disposables.push(
-                        pickBox.onDidTriggerButton((item) => {
-                            if (item === QuickInputButtons.Back) {
-                                resolve(false);
-                            }
-                        }),
                         pickBox.onDidAccept(() => {
                             projectMetadata.javaVersion = pickBox.selectedItems[0].label;
+                            projectMetadata.pickSteps.push(SpecifyJavaVersionStep.getInstance());
                             resolve(true);
                         }),
                         pickBox.onDidHide(() => {
@@ -61,10 +65,10 @@ export class SpecifyJavaVersionStep implements IStep {
                     d.dispose();
                 }
             }
+        } else {
+            projectMetadata.javaVersion = javaVersion;
+            result = true;
         }
         return result;
     }
-
 }
-
-export const specifyJavaVersionStep: SpecifyJavaVersionStep = new SpecifyJavaVersionStep(specifyLanguageStep, specifyGroupIdStep);
