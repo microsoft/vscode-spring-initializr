@@ -4,6 +4,7 @@
 import { Disposable, InputBox, QuickInputButtons, window, workspace } from "vscode";
 import { instrumentOperationStep } from "vscode-extension-telemetry-wrapper";
 import { OperationCanceledError } from "../Errors";
+import { artifactIdValidation } from "../Utils";
 import { ProjectMetadata } from "./GenerateProjectHandler";
 import { IStep } from "./IStep";
 import { SpecifyPackagingStep } from "./SpecifyPackagingStep";
@@ -51,7 +52,20 @@ export class SpecifyArtifactIdStep implements IStep {
                     );
                 }
                 disposables.push(
+                    inputBox.onDidChangeValue(() => {
+                        const validCheck: string | null = artifactIdValidation(inputBox.value);
+                        if (validCheck !== null) {
+                            inputBox.enabled = false;
+                            inputBox.validationMessage = validCheck;
+                        } else {
+                            inputBox.enabled = true;
+                            inputBox.validationMessage = undefined;
+                        }
+                    }),
                     inputBox.onDidAccept(() => {
+                        if (!inputBox.enabled) {
+                            return;
+                        }
                         projectMetadata.artifactId = inputBox.value;
                         SpecifyArtifactIdStep.getInstance().lastInput = inputBox.value;
                         projectMetadata.pickSteps.push(SpecifyArtifactIdStep.getInstance());

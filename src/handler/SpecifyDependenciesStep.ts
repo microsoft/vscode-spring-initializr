@@ -66,13 +66,16 @@ export class SpecifyDependenciesStep implements IStep {
                     d.dispose();
                 }
             }
+            if (!result) {
+                break;
+            }
             if (current && current.itemType === "dependency") {
                 dependencyManager.toggleDependency(current.id);
             }
-            if (result === false) {
-                break;
-            }
         } while (current && current.itemType === "dependency");
+        if (!result) {
+            return result;
+        }
         if (!current) {
             throw new OperationCanceledError("Canceled on dependency seletion.");
         }

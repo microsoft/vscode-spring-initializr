@@ -4,6 +4,7 @@
 import { Disposable, InputBox, QuickInputButtons, window, workspace } from "vscode";
 import { instrumentOperationStep } from "vscode-extension-telemetry-wrapper";
 import { OperationCanceledError } from "../Errors";
+import { groupIdValidation } from "../Utils";
 import { ProjectMetadata } from "./GenerateProjectHandler";
 import { IStep } from "./IStep";
 import { SpecifyArtifactIdStep } from "./SpecifyArtifactIdStep";
@@ -51,7 +52,20 @@ export class SpecifyGroupIdStep implements IStep {
                     );
                 }
                 disposables.push(
+                    inputBox.onDidChangeValue(() => {
+                        const validCheck: string | null = groupIdValidation(inputBox.value);
+                        if (validCheck !== null) {
+                            inputBox.enabled = false;
+                            inputBox.validationMessage = validCheck;
+                        } else {
+                            inputBox.enabled = true;
+                            inputBox.validationMessage = undefined;
+                        }
+                    }),
                     inputBox.onDidAccept(() => {
+                        if (!inputBox.enabled) {
+                            return;
+                        }
                         projectMetadata.groupId = inputBox.value;
                         SpecifyGroupIdStep.getInstance().lastInput = inputBox.value;
                         projectMetadata.pickSteps.push(SpecifyGroupIdStep.getInstance());
