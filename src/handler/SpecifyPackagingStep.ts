@@ -66,7 +66,7 @@ export class SpecifyPackagingStep implements IStep {
                 }
             }
         } else {
-            projectMetadata.packaging = packaging;
+            projectMetadata.packaging = packaging && packaging.toLowerCase();
             result = true;
         }
         return result;

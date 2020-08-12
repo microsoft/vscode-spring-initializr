@@ -66,7 +66,7 @@ export class SpecifyLanguageStep implements IStep {
                 }
             }
         } else {
-            projectMetadata.language = language;
+            projectMetadata.language = language && language.toLowerCase();
             result = true;
         }
         return result;
