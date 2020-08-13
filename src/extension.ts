@@ -9,6 +9,7 @@ import {
     instrumentOperation
 } from "vscode-extension-telemetry-wrapper";
 import { GenerateProjectHandler } from "./handler";
+import { AddStartersHandler } from "./handler/AddStartersHandler";
 import { getTargetPomXml, loadPackageInfo } from "./Utils";
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
@@ -38,11 +39,11 @@ async function initializeExtension(_operationId: string, context: vscode.Extensi
         }
     }));
 
-    context.subscriptions.push(instrumentAndRegisterCommand("spring.initializr.editStarters", async (_oid: string, entry?: vscode.Uri) => {
-        throw new Error("Not implemented");
+    context.subscriptions.push(instrumentAndRegisterCommand("spring.initializr.addStarters", async (_oid: string, entry?: vscode.Uri) => {
         const targetFile: vscode.Uri = entry || await getTargetPomXml();
         if (targetFile) {
-            // await vscode.window.showTextDocument(targetFile);
+            await vscode.window.showTextDocument(targetFile);
+            await new AddStartersHandler().run(_oid, targetFile);
         } else {
             vscode.window.showInformationMessage("No pom.xml found in the workspace.");
         }

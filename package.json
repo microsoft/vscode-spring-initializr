@@ -20,7 +20,7 @@
   "activationEvents": [
     "onCommand:spring.initializr.maven-project",
     "onCommand:spring.initializr.gradle-project",
-    "onCommand:spring.initializr.editStarters",
+    "onCommand:spring.initializr.addStarters",
     "onCommand:spring.initializr.createProject"
   ],
   "main": "./dist/extension",
@@ -42,8 +42,8 @@
         "category": "Spring Initializr"
       },
       {
-        "command": "spring.initializr.editStarters",
-        "title": "Edit starters",
+        "command": "spring.initializr.addStarters",
+        "title": "Add Starters",
         "category": "Spring Initializr"
       }
     ],
@@ -57,14 +57,14 @@
       "editor/context": [
         {
           "when": "resourceFilename == pom.xml",
-          "command": "spring.initializr.editStarters",
+          "command": "spring.initializr.addStarters",
           "group": "SpringInitializr"
         }
       ],
       "explorer/context": [
         {
           "when": "resourceFilename == pom.xml",
-          "command": "spring.initializr.editStarters",
+          "command": "spring.initializr.addStarters",
           "group": "SpringInitializr"
         }
       ]
