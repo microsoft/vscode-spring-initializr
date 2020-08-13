@@ -28,22 +28,22 @@
     "commands": [
       {
         "command": "spring.initializr.createProject",
-        "title": "Create a Spring Boot Project",
+        "title": "Create a Spring Boot Project...",
         "category": "Spring Initializr"
       },
       {
         "command": "spring.initializr.maven-project",
-        "title": "Generate a Maven Project",
+        "title": "Create a Maven Project...",
         "category": "Spring Initializr"
       },
       {
         "command": "spring.initializr.gradle-project",
-        "title": "Generate a Gradle Project",
+        "title": "Create a Gradle Project...",
         "category": "Spring Initializr"
       },
       {
         "command": "spring.initializr.addStarters",
-        "title": "Add Starters",
+        "title": "Add Starters...",
         "category": "Spring Initializr"
       }
     ],
@@ -160,11 +160,13 @@
     "webpack-cli": "^3.3.11"
   },
   "dependencies": {
+    "@types/xml-zero-lexer": "^2.1.0",
     "extract-zip": "^1.7.0",
     "fs-extra": "^5.0.0",
     "lodash": "^4.17.19",
     "md5": "^2.2.1",
     "vscode-extension-telemetry-wrapper": "^0.8.0",
+    "xml-zero-lexer": "^2.1.0",
     "xml2js": "^0.4.19"
   }
 }

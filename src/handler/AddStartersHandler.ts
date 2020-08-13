@@ -7,24 +7,16 @@ import * as vscode from "vscode";
 import { setUserError } from "vscode-extension-telemetry-wrapper";
 import { DependencyManager, IDependenciesItem } from "../DependencyManager";
 import {
-    addBomNode,
-    addDependencyNode,
-    addRepositoryNode,
-    BomNode,
-    DependencyNode,
     getBootVersion,
     getDependencyNodes,
     getParentReletivePath,
-    IBom,
     IMavenId,
-    IRepository,
     IStarters,
-    removeDependencyNode,
-    RepositoryNode,
     serviceManager,
-    XmlNode,
+    XmlNode
 } from "../model";
-import { buildXmlContent, readXmlContent } from "../Utils";
+import { readXmlContent } from "../Utils";
+import { updatePom } from "../Utils/xml";
 import { BaseHandler } from "./BaseHandler";
 import { specifyServiceUrl } from "./utils";
 
@@ -45,8 +37,8 @@ export class AddStartersHandler extends BaseHandler {
 
         const deps: string[] = []; // gid:aid
         // Read pom.xml for $dependencies(gid, aid)
-        const content: Buffer = await fse.readFile(entry.fsPath);
-        const xml: { project: XmlNode } = await readXmlContent(content.toString());
+        const content: string = vscode.window.activeTextEditor.document.getText();
+        const xml: { project: XmlNode } = await readXmlContent(content);
 
         getDependencyNodes(xml.project).forEach(elem => {
             deps.push(`${elem.groupId[0]}:${elem.artifactId[0]}`);
@@ -109,51 +101,15 @@ export class AddStartersHandler extends BaseHandler {
             return;
         }
 
-        // add spring-boot-starter if no selected starters
-        if (dependencyManager.selectedIds.length === 0) {
-            toAdd.push("spring-boot-starter");
-            starters.dependencies["spring-boot-starter"] = {
-                artifactId: "spring-boot-starter",
-                groupId: "org.springframework.boot",
-            };
-        }
-        // modify xml object
-        const newXml: { project: XmlNode } = getUpdatedPomXml(xml, starters, [], toAdd);
+        const artifacts = toAdd.map(id => starters.dependencies[id]);
+        const bomIds = toAdd.map(id => starters.dependencies[id].bom).filter(Boolean);
+        const boms = bomIds.map(id => starters.boms[id]);
 
-        // re-generate a pom.xml
-        const output: string = buildXmlContent(newXml);
-        await fse.writeFile(entry.fsPath, output);
+        updatePom(entry.fsPath, artifacts, boms);
         vscode.window.showInformationMessage("Pom file successfully updated.");
         return;
     }
 
-}
-
-function getUpdatedPomXml(xml: any, starters: IStarters, toRemove: string[], toAdd: string[]): { project: XmlNode } {
-    const ret: { project: XmlNode } = Object.assign({}, xml);
-    toRemove.forEach(elem => {
-        removeDependencyNode(ret.project, starters.dependencies[elem].groupId, starters.dependencies[elem].artifactId);
-    });
-    toAdd.forEach(elem => {
-        const dep: IMavenId = starters.dependencies[elem];
-        const newDepNode: DependencyNode = new DependencyNode(dep.groupId, dep.artifactId, dep.version, dep.scope);
-
-        addDependencyNode(ret.project, newDepNode.node);
-
-        if (dep.bom) {
-            const bom: IBom = starters.boms[dep.bom];
-            const newBomNode: BomNode = new BomNode(bom.groupId, bom.artifactId, bom.version);
-            addBomNode(ret.project, newBomNode.node);
-        }
-
-        if (dep.repository) {
-            const repo: IRepository = starters.repositories[dep.repository];
-            const newRepoNode: RepositoryNode = new RepositoryNode(dep.repository, repo.name, repo.url, repo.snapshotEnabled);
-            addRepositoryNode(ret.project, newRepoNode.node);
-        }
-
-    });
-    return ret;
 }
 
 async function searchForBootVersion(pomPath: string): Promise<string> {

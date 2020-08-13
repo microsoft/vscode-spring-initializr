@@ -52,8 +52,14 @@ class ServiceManager {
      * Should be removed in future refactoring.
      */
     public async getStarters(serviceUrl: string, bootVersion: string): Promise<IStarters> {
-        const rawJSONString: string = await downloadFile(`${serviceUrl}dependencies?bootVersion=${bootVersion}`, true, METADATA_HEADERS);
-        return JSON.parse(rawJSONString);
+        const url = `${serviceUrl}dependencies?bootVersion=${bootVersion}`;
+        const rawJSONString: string = await downloadFile(url, true, METADATA_HEADERS);
+        try {
+            const ret = JSON.parse(rawJSONString);
+            return ret;
+        } catch (error) {
+            throw new Error(`failed to parse response from ${url}`);
+        }
     }
 
     private async fetch(serviceUrl: string): Promise<void> {

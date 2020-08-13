@@ -11,6 +11,7 @@
         "interface-name": false,
         "object-literal-sort-keys": false,
         "trailing-comma": false,
+        "max-classes-per-file": false,
         "no-console": [
             true,
             "log"
