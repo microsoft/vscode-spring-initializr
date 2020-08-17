@@ -149,6 +149,7 @@
     "@types/mocha": "^5.2.7",
     "@types/node": "^10.14.13",
     "@types/vscode": "1.30.0",
+    "@types/xml-zero-lexer": "^2.1.0",
     "@types/xml2js": "^0.4.4",
     "glob": "^7.1.4",
     "mocha": "^7.1.1",
@@ -160,7 +161,6 @@
     "webpack-cli": "^3.3.11"
   },
   "dependencies": {
-    "@types/xml-zero-lexer": "^2.1.0",
     "extract-zip": "^1.7.0",
     "fs-extra": "^5.0.0",
     "lodash": "^4.17.19",
