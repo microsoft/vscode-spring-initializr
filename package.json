@@ -20,7 +20,7 @@
   "activationEvents": [
     "onCommand:spring.initializr.maven-project",
     "onCommand:spring.initializr.gradle-project",
-    "onCommand:spring.initializr.editStarters",
+    "onCommand:spring.initializr.addStarters",
     "onCommand:spring.initializr.createProject"
   ],
   "main": "./dist/extension",
@@ -28,22 +28,22 @@
     "commands": [
       {
         "command": "spring.initializr.createProject",
-        "title": "Create a Spring Boot Project",
+        "title": "Create a Spring Boot Project...",
         "category": "Spring Initializr"
       },
       {
         "command": "spring.initializr.maven-project",
-        "title": "Generate a Maven Project",
+        "title": "Create a Maven Project...",
         "category": "Spring Initializr"
       },
       {
         "command": "spring.initializr.gradle-project",
-        "title": "Generate a Gradle Project",
+        "title": "Create a Gradle Project...",
         "category": "Spring Initializr"
       },
       {
-        "command": "spring.initializr.editStarters",
-        "title": "Edit starters",
+        "command": "spring.initializr.addStarters",
+        "title": "Add Starters...",
         "category": "Spring Initializr"
       }
     ],
@@ -57,14 +57,14 @@
       "editor/context": [
         {
           "when": "resourceFilename == pom.xml",
-          "command": "spring.initializr.editStarters",
+          "command": "spring.initializr.addStarters",
           "group": "SpringInitializr"
         }
       ],
       "explorer/context": [
         {
           "when": "resourceFilename == pom.xml",
-          "command": "spring.initializr.editStarters",
+          "command": "spring.initializr.addStarters",
           "group": "SpringInitializr"
         }
       ]
@@ -149,6 +149,7 @@
     "@types/mocha": "^5.2.7",
     "@types/node": "^10.14.13",
     "@types/vscode": "1.30.0",
+    "@types/xml-zero-lexer": "^2.1.0",
     "@types/xml2js": "^0.4.4",
     "glob": "^7.1.4",
     "mocha": "^7.1.1",
@@ -165,6 +166,7 @@
     "lodash": "^4.17.19",
     "md5": "^2.2.1",
     "vscode-extension-telemetry-wrapper": "^0.8.0",
+    "xml-zero-lexer": "^2.1.0",
     "xml2js": "^0.4.19"
   }
 }

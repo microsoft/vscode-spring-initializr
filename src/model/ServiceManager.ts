@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 
-import { IDependency } from ".";
+import { IDependency, IStarters } from ".";
 import { downloadFile } from "../Utils";
 import { matchRange } from "../Utils/VersionHelper";
 import { DependencyGroup, Metadata } from "./Metadata";
@@ -44,6 +44,22 @@ class ServiceManager {
             }
         }
         return ret;
+    }
+
+    /**
+     * @deprecated `dependencies` endpoint will be removed from metadata v3
+     * This function returns information needed for current implementation of "add starters", e.g. gid/aid/repository/bom etc.
+     * Should be removed in future refactoring.
+     */
+    public async getStarters(serviceUrl: string, bootVersion: string): Promise<IStarters> {
+        const url = `${serviceUrl}dependencies?bootVersion=${bootVersion}`;
+        const rawJSONString: string = await downloadFile(url, true, METADATA_HEADERS);
+        try {
+            const ret = JSON.parse(rawJSONString);
+            return ret;
+        } catch (error) {
+            throw new Error(`failed to parse response from ${url}`);
+        }
     }
 
     private async fetch(serviceUrl: string): Promise<void> {
