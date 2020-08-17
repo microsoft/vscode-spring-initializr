@@ -8,8 +8,7 @@ import {
     initializeFromJsonFile,
     instrumentOperation
 } from "vscode-extension-telemetry-wrapper";
-import { GenerateProjectHandler } from "./handler";
-import { AddStartersHandler } from "./handler/AddStartersHandler";
+import { AddStartersHandler, GenerateProjectHandler } from "./handler";
 import { getTargetPomXml, loadPackageInfo } from "./Utils";
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
