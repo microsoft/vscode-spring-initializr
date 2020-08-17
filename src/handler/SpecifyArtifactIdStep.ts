@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 
-import { Disposable, InputBox, QuickInputButtons, window, workspace } from "vscode";
+import { Disposable, workspace } from "vscode";
 import { instrumentOperationStep } from "vscode-extension-telemetry-wrapper";
 import { OperationCanceledError } from "../Errors";
-import { artifactIdValidation } from "../Utils";
 import { ProjectMetadata } from "./GenerateProjectHandler";
 import { IStep } from "./IStep";
 import { SpecifyPackagingStep } from "./SpecifyPackagingStep";
+import { createInputBox, IInputMetaData } from "./utils";
 
 export class SpecifyArtifactIdStep implements IStep {
 
@@ -19,6 +19,18 @@ export class SpecifyArtifactIdStep implements IStep {
 
     private lastInput: string;
 
+    public getLastInput(): string {
+        return this.lastInput;
+    }
+
+    public setLastInput(lastInput: string): void {
+        this.lastInput = lastInput;
+    }
+
+    public getNextStep(): IStep | undefined {
+        return SpecifyPackagingStep.getInstance();
+    }
+
     public async execute(operationId: string, projectMetadata: ProjectMetadata): Promise<IStep | undefined> {
         if (!await instrumentOperationStep(operationId, "ArtifactId", this.specifyArtifactId)(projectMetadata)) {
             return projectMetadata.pickSteps.pop();
@@ -26,58 +38,23 @@ export class SpecifyArtifactIdStep implements IStep {
         if (projectMetadata.artifactId === undefined) {
             throw new OperationCanceledError("ArtifactId not specified.");
         }
-        return SpecifyPackagingStep.getInstance();
+        return this.getNextStep();
     }
 
-    public async specifyArtifactId(projectMetadata: ProjectMetadata): Promise<boolean> {
+    private async specifyArtifactId(projectMetadata: ProjectMetadata): Promise<boolean> {
         const defaultArtifactId: string = workspace.getConfiguration("spring.initializr").get<string>("defaultArtifactId");
         let result: boolean = false;
         const disposables: Disposable[] = [];
         try {
-            result = await new Promise<boolean>((resolve, reject) => {
-                const inputBox: InputBox = window.createInputBox();
-                inputBox.placeholder = "e.g. demo";
-                inputBox.prompt = "Input Artifact Id for your project.";
-                inputBox.value = (SpecifyArtifactIdStep.getInstance().lastInput === undefined) ? defaultArtifactId : SpecifyArtifactIdStep.getInstance().lastInput;
-                inputBox.ignoreFocusOut = true;
-                // TODO: validateInput: artifactIdValidation
-                if (projectMetadata.pickSteps.length > 0) {
-                    inputBox.buttons = [(QuickInputButtons.Back)];
-                    disposables.push(
-                        inputBox.onDidTriggerButton((item) => {
-                            if (item === QuickInputButtons.Back) {
-                                resolve(false);
-                            }
-                        })
-                    );
-                }
-                disposables.push(
-                    inputBox.onDidChangeValue(() => {
-                        const validCheck: string | null = artifactIdValidation(inputBox.value);
-                        if (validCheck !== null) {
-                            inputBox.enabled = false;
-                            inputBox.validationMessage = validCheck;
-                        } else {
-                            inputBox.enabled = true;
-                            inputBox.validationMessage = undefined;
-                        }
-                    }),
-                    inputBox.onDidAccept(() => {
-                        if (!inputBox.enabled) {
-                            return;
-                        }
-                        projectMetadata.artifactId = inputBox.value;
-                        SpecifyArtifactIdStep.getInstance().lastInput = inputBox.value;
-                        projectMetadata.pickSteps.push(SpecifyArtifactIdStep.getInstance());
-                        resolve(true);
-                    }),
-                    inputBox.onDidHide(() => {
-                        reject();
-                    })
-                );
-                disposables.push(inputBox);
-                inputBox.show();
-            });
+            const inputMetaData: IInputMetaData = {
+                metadata: projectMetadata,
+                disposableItems: disposables,
+                pickStep: SpecifyArtifactIdStep.getInstance(),
+                placeholder: "e.g. demo",
+                prompt: "Input Artifact Id for your project.",
+                defaultValue: defaultArtifactId
+            };
+            result = await createInputBox(inputMetaData);
         } finally {
             for (const d of disposables) {
                 d.dispose();

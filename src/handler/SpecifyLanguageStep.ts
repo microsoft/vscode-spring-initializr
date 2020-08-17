@@ -1,12 +1,13 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 
-import { Disposable, QuickInputButtons, QuickPick, QuickPickItem, window, workspace } from "vscode";
+import { Disposable, workspace } from "vscode";
 import { instrumentOperationStep } from "vscode-extension-telemetry-wrapper";
 import { OperationCanceledError } from "../Errors";
 import { ProjectMetadata } from "./GenerateProjectHandler";
 import { IStep } from "./IStep";
 import { SpecifyJavaVersionStep } from "./SpecifyJavaVersionStep";
+import { createPickBox, IPickMetadata } from "./utils";
 
 export class SpecifyLanguageStep implements IStep {
 
@@ -16,6 +17,10 @@ export class SpecifyLanguageStep implements IStep {
 
     private static specifyLanguageStep: SpecifyLanguageStep = new SpecifyLanguageStep();
 
+    public getNextStep(): IStep | undefined {
+        return SpecifyJavaVersionStep.getInstance();
+    }
+
     public async execute(operationId: string, projectMetadata: ProjectMetadata): Promise<IStep | undefined> {
         if (!await instrumentOperationStep(operationId, "Language", this.specifyLanguage)(projectMetadata)) {
             return projectMetadata.pickSteps.pop();
@@ -23,51 +28,30 @@ export class SpecifyLanguageStep implements IStep {
         if (projectMetadata.language === undefined) {
             throw new OperationCanceledError("Language not specified.");
         }
-        return SpecifyJavaVersionStep.getInstance();
+        return this.getNextStep();
     }
 
     private async specifyLanguage(projectMetadata: ProjectMetadata): Promise<boolean> {
         const language: string = workspace.getConfiguration("spring.initializr").get<string>("defaultLanguage");
-        let result: boolean = false;
-        if (!language) {
-            const disposables: Disposable[] = [];
-            try {
-                result = await new Promise<boolean>((resolve, reject) => {
-                    const pickBox: QuickPick<QuickPickItem> = window.createQuickPick<QuickPickItem>();
-                    pickBox.placeholder = "Specify project language.";
-                    pickBox.items = [{label: "Java"}, {label: "Kotlin"}, {label: "Groovy"}];
-                    pickBox.ignoreFocusOut = true;
-                    if (projectMetadata.pickSteps.length > 0) {
-                        pickBox.buttons = [(QuickInputButtons.Back)];
-                        disposables.push(
-                            pickBox.onDidTriggerButton((item) => {
-                                if (item === QuickInputButtons.Back) {
-                                    resolve(false);
-                                }
-                            })
-                        );
-                    }
-                    disposables.push(
-                        pickBox.onDidAccept(() => {
-                            projectMetadata.language = pickBox.selectedItems[0].label && pickBox.selectedItems[0].label.toLowerCase();
-                            projectMetadata.pickSteps.push(SpecifyLanguageStep.getInstance());
-                            resolve(true);
-                        }),
-                        pickBox.onDidHide(() => {
-                            reject();
-                        })
-                    );
-                    disposables.push(pickBox);
-                    pickBox.show();
-                });
-            } finally {
-                for (const d of disposables) {
-                    d.dispose();
-                }
-            }
-        } else {
+        if (language) {
             projectMetadata.language = language && language.toLowerCase();
-            result = true;
+            return true;
+        }
+        let result: boolean = false;
+        const disposables: Disposable[] = [];
+        try {
+            const pickMetaData: IPickMetadata = {
+                metadata: projectMetadata,
+                disposableItems: disposables,
+                pickStep: SpecifyLanguageStep.getInstance(),
+                placeholder: "Specify project language.",
+                items: [{ label: "Java" }, { label: "Kotlin" }, { label: "Groovy" }]
+            };
+            result = await createPickBox(pickMetaData);
+        } finally {
+            for (const d of disposables) {
+                d.dispose();
+            }
         }
         return result;
     }

@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 
-import { Disposable, InputBox, QuickInputButtons, window, workspace } from "vscode";
+import { Disposable, workspace } from "vscode";
 import { instrumentOperationStep } from "vscode-extension-telemetry-wrapper";
 import { OperationCanceledError } from "../Errors";
-import { groupIdValidation } from "../Utils";
 import { ProjectMetadata } from "./GenerateProjectHandler";
 import { IStep } from "./IStep";
 import { SpecifyArtifactIdStep } from "./SpecifyArtifactIdStep";
+import { createInputBox, IInputMetaData } from "./utils";
 
 export class SpecifyGroupIdStep implements IStep {
 
@@ -19,6 +19,18 @@ export class SpecifyGroupIdStep implements IStep {
 
     private lastInput: string;
 
+    public getNextStep(): IStep | undefined {
+        return SpecifyArtifactIdStep.getInstance();
+    }
+
+    public getLastInput(): string {
+        return this.lastInput;
+    }
+
+    public setLastInput(lastInput: string): void {
+        this.lastInput = lastInput;
+    }
+
     public async execute(operationId: string, projectMetadata: ProjectMetadata): Promise<IStep | undefined> {
         if (!await instrumentOperationStep(operationId, "GroupId", this.specifyGroupId)(projectMetadata)) {
             return projectMetadata.pickSteps.pop();
@@ -26,7 +38,7 @@ export class SpecifyGroupIdStep implements IStep {
         if (projectMetadata.groupId === undefined) {
             throw new OperationCanceledError("GroupId not specified.");
         }
-        return SpecifyArtifactIdStep.getInstance();
+        return this.getNextStep();
     }
 
     private async specifyGroupId(projectMetadata: ProjectMetadata): Promise<boolean> {
@@ -34,50 +46,15 @@ export class SpecifyGroupIdStep implements IStep {
         let result: boolean = false;
         const disposables: Disposable[] = [];
         try {
-            result = await new Promise<boolean>((resolve, reject) => {
-                const inputBox: InputBox = window.createInputBox();
-                inputBox.placeholder = "e.g. com.example";
-                inputBox.prompt = "Input Group Id for your project.";
-                inputBox.value = (SpecifyGroupIdStep.getInstance().lastInput === undefined) ? defaultGroupId : SpecifyGroupIdStep.getInstance().lastInput;
-                inputBox.ignoreFocusOut = true;
-                // TODO: validateInput: groupIdValidation
-                if (projectMetadata.pickSteps.length > 0) {
-                    inputBox.buttons = [(QuickInputButtons.Back)];
-                    disposables.push(
-                        inputBox.onDidTriggerButton((item) => {
-                            if (item === QuickInputButtons.Back) {
-                                resolve(false);
-                            }
-                        })
-                    );
-                }
-                disposables.push(
-                    inputBox.onDidChangeValue(() => {
-                        const validCheck: string | null = groupIdValidation(inputBox.value);
-                        if (validCheck !== null) {
-                            inputBox.enabled = false;
-                            inputBox.validationMessage = validCheck;
-                        } else {
-                            inputBox.enabled = true;
-                            inputBox.validationMessage = undefined;
-                        }
-                    }),
-                    inputBox.onDidAccept(() => {
-                        if (!inputBox.enabled) {
-                            return;
-                        }
-                        projectMetadata.groupId = inputBox.value;
-                        SpecifyGroupIdStep.getInstance().lastInput = inputBox.value;
-                        projectMetadata.pickSteps.push(SpecifyGroupIdStep.getInstance());
-                        resolve(true);
-                    }),
-                    inputBox.onDidHide(() => {
-                        reject();
-                    })
-                );
-                disposables.push(inputBox);
-                inputBox.show();
-            });
+            const inputMetaData: IInputMetaData = {
+                metadata: projectMetadata,
+                disposableItems: disposables,
+                pickStep: SpecifyGroupIdStep.getInstance(),
+                placeholder: "e.g. com.example",
+                prompt: "Input Group Id for your project.",
+                defaultValue: defaultGroupId
+            };
+            result = await createInputBox(inputMetaData);
         } finally {
             for (const d of disposables) {
                 d.dispose();

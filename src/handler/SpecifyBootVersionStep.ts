@@ -17,6 +17,10 @@ export class SpecifyBootVersionStep implements IStep {
 
     private static specifyBootVersionStep: SpecifyBootVersionStep = new SpecifyBootVersionStep();
 
+    public getNextStep(): IStep | undefined {
+        return SpecifyDependenciesStep.getInstance();
+    }
+
     public async execute(operationId: string, projectMetadata: ProjectMetadata): Promise<IStep | undefined> {
         if (!await instrumentOperationStep(operationId, "BootVersion", this.specifyBootVersion)(projectMetadata)) {
             return projectMetadata.pickSteps.pop();
@@ -25,7 +29,7 @@ export class SpecifyBootVersionStep implements IStep {
             throw new OperationCanceledError("BootVersion not specified.");
         }
         sendInfo(operationId, { bootVersion: projectMetadata.bootVersion });
-        return SpecifyDependenciesStep.getInstance();
+        return this.getNextStep();
     }
 
     private async specifyBootVersion(projectMetadata: ProjectMetadata): Promise<boolean> {

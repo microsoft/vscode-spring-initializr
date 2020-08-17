@@ -16,12 +16,16 @@ export class SpecifyDependenciesStep implements IStep {
 
     private static specifyDependenciesStep: SpecifyDependenciesStep = new SpecifyDependenciesStep();
 
+    public getNextStep(): IStep | undefined {
+        return undefined;
+    }
+
     public async execute(operationId: string, projectMetadata: ProjectMetadata): Promise<IStep | undefined> {
         if (!await instrumentOperationStep(operationId, "Dependencies", this.specifyDependencies)(projectMetadata)) {
             return projectMetadata.pickSteps.pop();
         }
         sendInfo(operationId, { depsType: projectMetadata.dependencies.itemType, dependencies: projectMetadata.dependencies.id });
-        return undefined;
+        return this.getNextStep();
     }
 
     private async specifyDependencies(projectMetadata: ProjectMetadata): Promise<boolean> {

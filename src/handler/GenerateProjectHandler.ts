@@ -16,16 +16,9 @@ import { SpecifyServiceUrlStep } from "./SpecifyServiceUrlStep";
 
 export class GenerateProjectHandler extends BaseHandler {
 
-    private serviceUrl: string;
-    private artifactId: string;
-    private groupId: string;
-    private language: string;
-    private javaVersion: string;
     private projectType: "maven-project" | "gradle-project";
-    private packaging: string;
-    private bootVersion: string;
-    private dependencies: IDependenciesItem;
     private outputUri: vscode.Uri;
+    private metadata: ProjectMetadata;
 
     constructor(projectType: "maven-project" | "gradle-project") {
         super();
@@ -46,17 +39,10 @@ export class GenerateProjectHandler extends BaseHandler {
             step = await step.execute(operationId, projectMetadata);
         }
 
-        this.serviceUrl = projectMetadata.serviceUrl;
-        this.language = projectMetadata.language;
-        this.javaVersion = projectMetadata.javaVersion;
-        this.groupId = projectMetadata.groupId;
-        this.artifactId = projectMetadata.artifactId;
-        this.packaging = projectMetadata.packaging;
-        this.bootVersion = projectMetadata.bootVersion;
-        this.dependencies = projectMetadata.dependencies;
+        this.metadata = projectMetadata;
 
         // Step: Choose target folder
-        this.outputUri = await instrumentOperationStep(operationId, "TargetFolder", specifyTargetFolder)(this.artifactId);
+        this.outputUri = await instrumentOperationStep(operationId, "TargetFolder", specifyTargetFolder)(this.metadata.artifactId);
         if (this.outputUri === undefined) { throw new OperationCanceledError("Target folder not specified."); }
 
         // Step: Download & Unzip
@@ -70,26 +56,26 @@ export class GenerateProjectHandler extends BaseHandler {
         ].filter(Boolean);
         const choice: string = await vscode.window.showInformationMessage(`Successfully generated. Location: ${this.outputUri.fsPath}`, ...candidates);
         if (choice === "Open") {
-            vscode.commands.executeCommand("vscode.openFolder", vscode.Uri.file(path.join(this.outputUri.fsPath, this.artifactId)), hasOpenFolder);
+            vscode.commands.executeCommand("vscode.openFolder", vscode.Uri.file(path.join(this.outputUri.fsPath, this.metadata.artifactId)), hasOpenFolder);
         } else if (choice === "Add to Workspace") {
-            vscode.workspace.updateWorkspaceFolders(vscode.workspace.workspaceFolders.length, null, { uri: vscode.Uri.file(path.join(this.outputUri.fsPath, this.artifactId)) });
+            vscode.workspace.updateWorkspaceFolders(vscode.workspace.workspaceFolders.length, null, { uri: vscode.Uri.file(path.join(this.outputUri.fsPath, this.metadata.artifactId)) });
         }
     }
 
     private get downloadUrl(): string {
         const params: string[] = [
             `type=${this.projectType}`,
-            `language=${this.language}`,
-            `javaVersion=${this.javaVersion}`,
-            `groupId=${this.groupId}`,
-            `artifactId=${this.artifactId}`,
-            `name=${this.artifactId}`,
-            `packaging=${this.packaging}`,
-            `bootVersion=${this.bootVersion}`,
-            `baseDir=${this.artifactId}`,
-            `dependencies=${this.dependencies.id}`,
+            `language=${this.metadata.language}`,
+            `javaVersion=${this.metadata.javaVersion}`,
+            `groupId=${this.metadata.groupId}`,
+            `artifactId=${this.metadata.artifactId}`,
+            `name=${this.metadata.artifactId}`,
+            `packaging=${this.metadata.packaging}`,
+            `bootVersion=${this.metadata.bootVersion}`,
+            `baseDir=${this.metadata.artifactId}`,
+            `dependencies=${this.metadata.dependencies.id}`,
         ];
-        return `${this.serviceUrl}/starter.zip?${params.join("&")}`;
+        return `${this.metadata.serviceUrl}/starter.zip?${params.join("&")}`;
     }
 }
 
