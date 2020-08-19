@@ -5,7 +5,7 @@ import { Disposable, QuickInputButtons, QuickPick, QuickPickItem, window } from 
 import { instrumentOperationStep, sendInfo } from "vscode-extension-telemetry-wrapper";
 import { DependencyManager, IDependenciesItem } from "../DependencyManager";
 import { OperationCanceledError } from "../Errors";
-import { ProjectMetadata } from "./GenerateProjectHandler";
+import { IProjectMetadata } from "./IProjectMetadata";
 import { IStep } from "./IStep";
 
 export class SpecifyDependenciesStep implements IStep {
@@ -20,7 +20,7 @@ export class SpecifyDependenciesStep implements IStep {
         return undefined;
     }
 
-    public async execute(operationId: string, projectMetadata: ProjectMetadata): Promise<IStep | undefined> {
+    public async execute(operationId: string, projectMetadata: IProjectMetadata): Promise<IStep | undefined> {
         if (!await instrumentOperationStep(operationId, "Dependencies", this.specifyDependencies)(projectMetadata)) {
             return projectMetadata.pickSteps.pop();
         }
@@ -28,7 +28,7 @@ export class SpecifyDependenciesStep implements IStep {
         return this.getNextStep();
     }
 
-    private async specifyDependencies(projectMetadata: ProjectMetadata): Promise<boolean> {
+    private async specifyDependencies(projectMetadata: IProjectMetadata): Promise<boolean> {
         const dependencyManager = new DependencyManager();
         let current: IDependenciesItem = null;
         let result: boolean = false;

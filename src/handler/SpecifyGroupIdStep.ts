@@ -4,7 +4,7 @@
 import { workspace } from "vscode";
 import { instrumentOperationStep } from "vscode-extension-telemetry-wrapper";
 import { OperationCanceledError } from "../Errors";
-import { ProjectMetadata } from "./GenerateProjectHandler";
+import { IProjectMetadata } from "./IProjectMetadata";
 import { IStep } from "./IStep";
 import { SpecifyArtifactIdStep } from "./SpecifyArtifactIdStep";
 import { createInputBox, IInputMetaData } from "./utils";
@@ -31,7 +31,7 @@ export class SpecifyGroupIdStep implements IStep {
         this.lastInput = lastInput;
     }
 
-    public async execute(operationId: string, projectMetadata: ProjectMetadata): Promise<IStep | undefined> {
+    public async execute(operationId: string, projectMetadata: IProjectMetadata): Promise<IStep | undefined> {
         if (!await instrumentOperationStep(operationId, "GroupId", this.specifyGroupId)(projectMetadata)) {
             return projectMetadata.pickSteps.pop();
         }
@@ -41,7 +41,7 @@ export class SpecifyGroupIdStep implements IStep {
         return this.getNextStep();
     }
 
-    private async specifyGroupId(projectMetadata: ProjectMetadata): Promise<boolean> {
+    private async specifyGroupId(projectMetadata: IProjectMetadata): Promise<boolean> {
         const defaultGroupId: string = workspace.getConfiguration("spring.initializr").get<string>("defaultGroupId");
         const inputMetaData: IInputMetaData = {
             metadata: projectMetadata,

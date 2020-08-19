@@ -4,7 +4,7 @@
 import { workspace } from "vscode";
 import { instrumentOperationStep } from "vscode-extension-telemetry-wrapper";
 import { OperationCanceledError } from "../Errors";
-import { ProjectMetadata } from "./GenerateProjectHandler";
+import { IProjectMetadata } from "./IProjectMetadata";
 import { IStep } from "./IStep";
 import { SpecifyPackagingStep } from "./SpecifyPackagingStep";
 import { createInputBox, IInputMetaData } from "./utils";
@@ -31,7 +31,7 @@ export class SpecifyArtifactIdStep implements IStep {
         return SpecifyPackagingStep.getInstance();
     }
 
-    public async execute(operationId: string, projectMetadata: ProjectMetadata): Promise<IStep | undefined> {
+    public async execute(operationId: string, projectMetadata: IProjectMetadata): Promise<IStep | undefined> {
         if (!await instrumentOperationStep(operationId, "ArtifactId", this.specifyArtifactId)(projectMetadata)) {
             return projectMetadata.pickSteps.pop();
         }
@@ -41,7 +41,7 @@ export class SpecifyArtifactIdStep implements IStep {
         return this.getNextStep();
     }
 
-    private async specifyArtifactId(projectMetadata: ProjectMetadata): Promise<boolean> {
+    private async specifyArtifactId(projectMetadata: IProjectMetadata): Promise<boolean> {
         const defaultArtifactId: string = workspace.getConfiguration("spring.initializr").get<string>("defaultArtifactId");
         const inputMetaData: IInputMetaData = {
             metadata: projectMetadata,

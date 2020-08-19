@@ -4,7 +4,7 @@
 import { workspace } from "vscode";
 import { instrumentOperationStep } from "vscode-extension-telemetry-wrapper";
 import { OperationCanceledError } from "../Errors";
-import { ProjectMetadata } from "./GenerateProjectHandler";
+import { IProjectMetadata } from "./IProjectMetadata";
 import { IStep } from "./IStep";
 import { SpecifyJavaVersionStep } from "./SpecifyJavaVersionStep";
 import { createPickBox, IPickMetadata } from "./utils";
@@ -21,7 +21,7 @@ export class SpecifyLanguageStep implements IStep {
         return SpecifyJavaVersionStep.getInstance();
     }
 
-    public async execute(operationId: string, projectMetadata: ProjectMetadata): Promise<IStep | undefined> {
+    public async execute(operationId: string, projectMetadata: IProjectMetadata): Promise<IStep | undefined> {
         if (!await instrumentOperationStep(operationId, "Language", this.specifyLanguage)(projectMetadata)) {
             return projectMetadata.pickSteps.pop();
         }
@@ -31,7 +31,7 @@ export class SpecifyLanguageStep implements IStep {
         return this.getNextStep();
     }
 
-    private async specifyLanguage(projectMetadata: ProjectMetadata): Promise<boolean> {
+    private async specifyLanguage(projectMetadata: IProjectMetadata): Promise<boolean> {
         const language: string = workspace.getConfiguration("spring.initializr").get<string>("defaultLanguage");
         if (language) {
             projectMetadata.language = language && language.toLowerCase();

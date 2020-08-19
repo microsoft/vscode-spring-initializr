@@ -5,7 +5,7 @@ import { Disposable, QuickInputButtons, QuickPick, window } from "vscode";
 import { instrumentOperationStep, sendInfo } from "vscode-extension-telemetry-wrapper";
 import { OperationCanceledError } from "../Errors";
 import { IValue, serviceManager } from "../model";
-import { ProjectMetadata } from "./GenerateProjectHandler";
+import { IProjectMetadata } from "./IProjectMetadata";
 import { IStep } from "./IStep";
 import { SpecifyDependenciesStep } from "./SpecifyDependenciesStep";
 
@@ -21,7 +21,7 @@ export class SpecifyBootVersionStep implements IStep {
         return SpecifyDependenciesStep.getInstance();
     }
 
-    public async execute(operationId: string, projectMetadata: ProjectMetadata): Promise<IStep | undefined> {
+    public async execute(operationId: string, projectMetadata: IProjectMetadata): Promise<IStep | undefined> {
         if (!await instrumentOperationStep(operationId, "BootVersion", this.specifyBootVersion)(projectMetadata)) {
             return projectMetadata.pickSteps.pop();
         }
@@ -32,7 +32,7 @@ export class SpecifyBootVersionStep implements IStep {
         return this.getNextStep();
     }
 
-    private async specifyBootVersion(projectMetadata: ProjectMetadata): Promise<boolean> {
+    private async specifyBootVersion(projectMetadata: IProjectMetadata): Promise<boolean> {
         let result: boolean = false;
         const disposables: Disposable[] = [];
         try {

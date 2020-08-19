@@ -6,11 +6,11 @@ import * as fse from "fs-extra";
 import * as path from "path";
 import * as vscode from "vscode";
 import { instrumentOperationStep } from "vscode-extension-telemetry-wrapper";
-import { IDependenciesItem } from "../DependencyManager";
 import { OperationCanceledError } from "../Errors";
 import { downloadFile } from "../Utils";
 import { openDialogForFolder } from "../Utils/VSCodeUI";
 import { BaseHandler } from "./BaseHandler";
+import { IProjectMetadata } from "./IProjectMetadata";
 import { IStep } from "./IStep";
 import { SpecifyServiceUrlStep } from "./SpecifyServiceUrlStep";
 
@@ -18,7 +18,7 @@ export class GenerateProjectHandler extends BaseHandler {
 
     private projectType: "maven-project" | "gradle-project";
     private outputUri: vscode.Uri;
-    private metadata: ProjectMetadata;
+    private metadata: IProjectMetadata;
 
     constructor(projectType: "maven-project" | "gradle-project") {
         super();
@@ -32,7 +32,7 @@ export class GenerateProjectHandler extends BaseHandler {
     public async runSteps(operationId?: string): Promise<void> {
 
         let step: IStep | undefined = SpecifyServiceUrlStep.getInstance();
-        const projectMetadata: ProjectMetadata = {
+        const projectMetadata: IProjectMetadata = {
             pickSteps: []
         };
         while (step !== undefined) {
@@ -77,18 +77,6 @@ export class GenerateProjectHandler extends BaseHandler {
         ];
         return `${this.metadata.serviceUrl}/starter.zip?${params.join("&")}`;
     }
-}
-
-export interface ProjectMetadata {
-    serviceUrl?: string;
-    language?: string;
-    javaVersion?: string;
-    groupId?: string;
-    artifactId?: string;
-    packaging?: string;
-    bootVersion?: string;
-    dependencies?: IDependenciesItem;
-    pickSteps: IStep[];
 }
 
 async function specifyTargetFolder(projectName: string): Promise<vscode.Uri> {

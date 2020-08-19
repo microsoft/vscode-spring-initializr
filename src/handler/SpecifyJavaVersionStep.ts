@@ -4,7 +4,7 @@
 import { workspace } from "vscode";
 import { instrumentOperationStep } from "vscode-extension-telemetry-wrapper";
 import { OperationCanceledError } from "../Errors";
-import { ProjectMetadata } from "./GenerateProjectHandler";
+import { IProjectMetadata } from "./IProjectMetadata";
 import { IStep } from "./IStep";
 import { SpecifyGroupIdStep } from "./SpecifyGroupIdStep";
 import { createPickBox, IPickMetadata } from "./utils";
@@ -21,7 +21,7 @@ export class SpecifyJavaVersionStep implements IStep {
         return SpecifyGroupIdStep.getInstance();
     }
 
-    public async execute(operationId: string, projectMetadata: ProjectMetadata): Promise<IStep | undefined> {
+    public async execute(operationId: string, projectMetadata: IProjectMetadata): Promise<IStep | undefined> {
         if (!await instrumentOperationStep(operationId, "JavaVersion", this.specifyJavaVersion)(projectMetadata)) {
             return projectMetadata.pickSteps.pop();
         }
@@ -31,7 +31,7 @@ export class SpecifyJavaVersionStep implements IStep {
         return this.getNextStep();
     }
 
-    private async specifyJavaVersion(projectMetadata: ProjectMetadata): Promise<boolean> {
+    private async specifyJavaVersion(projectMetadata: IProjectMetadata): Promise<boolean> {
         const javaVersion: string = workspace.getConfiguration("spring.initializr").get<string>("defaultJavaVersion");
         if (javaVersion) {
             projectMetadata.javaVersion = javaVersion;

@@ -3,7 +3,7 @@
 
 import { instrumentOperationStep } from "vscode-extension-telemetry-wrapper";
 import { OperationCanceledError } from "../Errors";
-import { ProjectMetadata } from "./GenerateProjectHandler";
+import { IProjectMetadata } from "./IProjectMetadata";
 import { IStep } from "./IStep";
 import { SpecifyLanguageStep } from "./SpecifyLanguageStep";
 import { specifyServiceUrl } from "./utils";
@@ -20,7 +20,7 @@ export class SpecifyServiceUrlStep implements IStep {
         return SpecifyLanguageStep.getInstance();
     }
 
-    public async execute(operationId: string, projectMetadata: ProjectMetadata): Promise<IStep | undefined> {
+    public async execute(operationId: string, projectMetadata: IProjectMetadata): Promise<IStep | undefined> {
         projectMetadata.serviceUrl = await instrumentOperationStep(operationId, "serviceUrl", specifyServiceUrl)(projectMetadata);
         if (projectMetadata.serviceUrl === undefined) {
             throw new OperationCanceledError("Service URL not specified.");

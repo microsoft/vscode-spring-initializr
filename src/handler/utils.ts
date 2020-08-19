@@ -4,7 +4,7 @@
 import * as vscode from "vscode";
 import { Disposable, InputBox, QuickInputButtons, QuickPick, QuickPickItem, window } from "vscode";
 import { artifactIdValidation, groupIdValidation } from "../Utils";
-import { ProjectMetadata } from "./GenerateProjectHandler";
+import { IProjectMetadata } from "./IProjectMetadata";
 import { IStep } from "./IStep";
 import { SpecifyArtifactIdStep } from "./SpecifyArtifactIdStep";
 import { SpecifyGroupIdStep } from "./SpecifyGroupIdStep";
@@ -15,7 +15,7 @@ import { SpecifyServiceUrlStep } from "./SpecifyServiceUrlStep";
 
 const DEFAULT_SERVICE_URL: string = "https://start.spring.io/";
 
-export async function specifyServiceUrl(projectMetadata?: ProjectMetadata): Promise<string> {
+export async function specifyServiceUrl(projectMetadata?: IProjectMetadata): Promise<string> {
     const configValue = vscode.workspace.getConfiguration("spring.initializr").get<string | string[]>("serviceUrl");
     if (typeof configValue === "string") {
         return configValue;
@@ -141,14 +141,14 @@ export async function createInputBox(inputMetaData: IInputMetaData): Promise<boo
 }
 
 export interface IPickMetadata {
-    metadata: ProjectMetadata;
+    metadata: IProjectMetadata;
     pickStep: IStep;
     placeholder: string;
     items: QuickPickItem[];
 }
 
 export interface IInputMetaData {
-    metadata: ProjectMetadata;
+    metadata: IProjectMetadata;
     pickStep: IStep;
     placeholder: string;
     prompt: string;

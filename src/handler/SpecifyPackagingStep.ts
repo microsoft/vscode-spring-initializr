@@ -4,7 +4,7 @@
 import { workspace } from "vscode";
 import { instrumentOperationStep } from "vscode-extension-telemetry-wrapper";
 import { OperationCanceledError } from "../Errors";
-import { ProjectMetadata } from "./GenerateProjectHandler";
+import { IProjectMetadata } from "./IProjectMetadata";
 import { IStep } from "./IStep";
 import { SpecifyBootVersionStep } from "./SpecifyBootVersionStep";
 import { createPickBox, IPickMetadata } from "./utils";
@@ -21,7 +21,7 @@ export class SpecifyPackagingStep implements IStep {
         return SpecifyBootVersionStep.getInstance();
     }
 
-    public async execute(operationId: string, projectMetadata: ProjectMetadata): Promise<IStep | undefined> {
+    public async execute(operationId: string, projectMetadata: IProjectMetadata): Promise<IStep | undefined> {
         if (!await instrumentOperationStep(operationId, "Packaging", this.specifyPackaging)(projectMetadata)) {
             return projectMetadata.pickSteps.pop();
         }
@@ -31,7 +31,7 @@ export class SpecifyPackagingStep implements IStep {
         return this.getNextStep();
     }
 
-    private async specifyPackaging(projectMetadata: ProjectMetadata): Promise<boolean> {
+    private async specifyPackaging(projectMetadata: IProjectMetadata): Promise<boolean> {
         const packaging: string = workspace.getConfiguration("spring.initializr").get<string>("defaultPackaging");
         if (packaging) {
             projectMetadata.packaging = packaging && packaging.toLowerCase();
