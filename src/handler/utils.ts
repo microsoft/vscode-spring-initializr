@@ -33,14 +33,15 @@ export async function specifyServiceUrl(projectMetadata?: ProjectMetadata): Prom
 }
 
 export async function createPickBox(pickMetadata: IPickMetadata): Promise<boolean> {
-    return new Promise<boolean>((resolve, reject) => {
+    const disposables: Disposable[] = [];
+    const result: boolean = await new Promise<boolean>((resolve, reject) => {
         const pickBox: QuickPick<QuickPickItem> = window.createQuickPick<QuickPickItem>();
         pickBox.placeholder = pickMetadata.placeholder;
         pickBox.items = pickMetadata.items;
         pickBox.ignoreFocusOut = true;
         if (pickMetadata.metadata.pickSteps.length > 0) {
             pickBox.buttons = [(QuickInputButtons.Back)];
-            pickMetadata.disposableItems.push(
+            disposables.push(
                 pickBox.onDidTriggerButton((item) => {
                     if (item === QuickInputButtons.Back) {
                         resolve(false);
@@ -48,7 +49,7 @@ export async function createPickBox(pickMetadata: IPickMetadata): Promise<boolea
                 })
             );
         }
-        pickMetadata.disposableItems.push(
+        disposables.push(
             pickBox.onDidAccept(() => {
                 if (pickMetadata.pickStep instanceof SpecifyLanguageStep) {
                     pickMetadata.metadata.language = pickBox.selectedItems[0].label && pickBox.selectedItems[0].label.toLowerCase();
@@ -64,13 +65,18 @@ export async function createPickBox(pickMetadata: IPickMetadata): Promise<boolea
                 reject();
             })
         );
-        pickMetadata.disposableItems.push(pickBox);
+        disposables.push(pickBox);
         pickBox.show();
     });
+    for (const d of disposables) {
+        d.dispose();
+    }
+    return result;
 }
 
 export async function createInputBox(inputMetaData: IInputMetaData): Promise<boolean> {
-    return new Promise<boolean>((resolve, reject) => {
+    const disposables: Disposable[] = [];
+    const result: boolean = await new Promise<boolean>((resolve, reject) => {
         const inputBox: InputBox = window.createInputBox();
         inputBox.placeholder = inputMetaData.placeholder;
         inputBox.prompt = inputMetaData.prompt;
@@ -82,7 +88,7 @@ export async function createInputBox(inputMetaData: IInputMetaData): Promise<boo
         inputBox.ignoreFocusOut = true;
         if (inputMetaData.metadata.pickSteps.length > 0) {
             inputBox.buttons = [(QuickInputButtons.Back)];
-            inputMetaData.disposableItems.push(
+            disposables.push(
                 inputBox.onDidTriggerButton((item) => {
                     if (item === QuickInputButtons.Back) {
                         resolve(false);
@@ -90,7 +96,7 @@ export async function createInputBox(inputMetaData: IInputMetaData): Promise<boo
                 })
             );
         }
-        inputMetaData.disposableItems.push(
+        disposables.push(
             inputBox.onDidChangeValue(() => {
                 let validCheck: string | null;
                 if (inputMetaData.pickStep instanceof SpecifyGroupIdStep) {
@@ -125,14 +131,17 @@ export async function createInputBox(inputMetaData: IInputMetaData): Promise<boo
                 reject();
             })
         );
-        inputMetaData.disposableItems.push(inputBox);
+        disposables.push(inputBox);
         inputBox.show();
     });
+    for (const d of disposables) {
+        d.dispose();
+    }
+    return result;
 }
 
 export interface IPickMetadata {
     metadata: ProjectMetadata;
-    disposableItems: Disposable[];
     pickStep: IStep;
     placeholder: string;
     items: QuickPickItem[];
@@ -140,7 +149,6 @@ export interface IPickMetadata {
 
 export interface IInputMetaData {
     metadata: ProjectMetadata;
-    disposableItems: Disposable[];
     pickStep: IStep;
     placeholder: string;
     prompt: string;

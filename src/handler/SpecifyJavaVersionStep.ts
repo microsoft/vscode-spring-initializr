@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 
-import { Disposable, workspace } from "vscode";
+import { workspace } from "vscode";
 import { instrumentOperationStep } from "vscode-extension-telemetry-wrapper";
 import { OperationCanceledError } from "../Errors";
 import { ProjectMetadata } from "./GenerateProjectHandler";
@@ -37,22 +37,12 @@ export class SpecifyJavaVersionStep implements IStep {
             projectMetadata.javaVersion = javaVersion;
             return true;
         }
-        let result: boolean = false;
-        const disposables: Disposable[] = [];
-        try {
-            const pickMetaData: IPickMetadata = {
-                metadata: projectMetadata,
-                disposableItems: disposables,
-                pickStep: SpecifyJavaVersionStep.getInstance(),
-                placeholder: "Specify Java version.",
-                items: [{ label: "11" }, { label: "1.8" }, { label: "14" }]
-            };
-            result = await createPickBox(pickMetaData);
-        } finally {
-            for (const d of disposables) {
-                d.dispose();
-            }
-        }
-        return result;
+        const pickMetaData: IPickMetadata = {
+            metadata: projectMetadata,
+            pickStep: SpecifyJavaVersionStep.getInstance(),
+            placeholder: "Specify Java version.",
+            items: [{ label: "11" }, { label: "1.8" }, { label: "14" }]
+        };
+        return await createPickBox(pickMetaData);
     }
 }
