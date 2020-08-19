@@ -121,7 +121,7 @@
           "description": "Default value for Artifact Id."
         },
         "spring.initializr.defaultPackaging": {
-          "default": "JAR",
+          "default": "",
           "type": "string",
           "enum": [
             "",
