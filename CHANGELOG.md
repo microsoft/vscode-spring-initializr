@@ -1,6 +1,19 @@
 # Change Log
 All notable changes to the "vscode-spring-initializr" extension will be documented in this file.
 
+## 0.5.0
+### Added
+- Can specify Java vesrion. [#146](https://github.com/microsoft/vscode-spring-initializr/pull/146)
+- Can specify packaging type. [#150](https://github.com/microsoft/vscode-spring-initializr/pull/150)
+- Added back buttons. It's able to switch back to previous steps when creating projects. [#148](https://github.com/microsoft/vscode-spring-initializr/pull/148)
+- Spring Initialzr API v2.2 is supported. [#143](https://github.com/microsoft/vscode-spring-initializr/pull/143) [#145](https://github.com/microsoft/vscode-spring-initializr/pull/145)
+
+### Changed
+- "Edit Starters" is changed to "Add Starters", i.e. removing starters from current project is not supported by this command. [#149](https://github.com/microsoft/vscode-spring-initializr/pull/149)
+
+### Fixed
+- Use current workspace as default target folder. [#140](https://github.com/microsoft/vscode-spring-initializr/pull/140)
+
 ## 0.4.8
 - Update dependencies to fix issue in telemetry.
 
