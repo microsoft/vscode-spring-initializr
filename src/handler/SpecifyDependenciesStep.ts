@@ -34,55 +34,46 @@ export class SpecifyDependenciesStep implements IStep {
         let result: boolean = false;
         const disposables: Disposable[] = [];
         do {
-            try {
-                const quickPickItems: Array<QuickPickItem & IDependenciesItem> = await dependencyManager.getQuickPickItems(projectMetadata.serviceUrl, projectMetadata.bootVersion, { hasLastSelected: true });
-                result = await new Promise<boolean>(async (resolve, reject) => {
-                    const pickBox: QuickPick<QuickPickItem & IDependenciesItem> = window.createQuickPick<QuickPickItem & IDependenciesItem>();
-                    pickBox.placeholder = "Search for dependencies.";
-                    pickBox.items = quickPickItems;
-                    pickBox.ignoreFocusOut = true;
-                    pickBox.matchOnDetail = true;
-                    pickBox.matchOnDescription = true;
-                    if (projectMetadata.pickSteps.length > 0) {
-                        pickBox.buttons = [(QuickInputButtons.Back)];
-                        disposables.push(
-                            pickBox.onDidTriggerButton((item) => {
-                                if (item === QuickInputButtons.Back) {
-                                    resolve(false);
-                                }
-                            })
-                        );
-                    }
+            const quickPickItems: Array<QuickPickItem & IDependenciesItem> = await dependencyManager.getQuickPickItems(projectMetadata.serviceUrl, projectMetadata.bootVersion, { hasLastSelected: true });
+            result = await new Promise<boolean>(async (resolve, reject) => {
+                const pickBox: QuickPick<QuickPickItem & IDependenciesItem> = window.createQuickPick<QuickPickItem & IDependenciesItem>();
+                pickBox.placeholder = "Search for dependencies.";
+                pickBox.items = quickPickItems;
+                pickBox.ignoreFocusOut = true;
+                pickBox.matchOnDetail = true;
+                pickBox.matchOnDescription = true;
+                if (projectMetadata.pickSteps.length > 0) {
+                    pickBox.buttons = [(QuickInputButtons.Back)];
                     disposables.push(
-                        pickBox.onDidAccept(() => {
-                            current = pickBox.selectedItems[0];
-                            resolve(true);
-                        }),
-                        pickBox.onDidHide(() => {
-                            reject();
+                        pickBox.onDidTriggerButton((item) => {
+                            if (item === QuickInputButtons.Back) {
+                                resolve(false);
+                            }
                         })
                     );
-                    disposables.push(pickBox);
-                    pickBox.show();
-                });
-            } finally {
-                for (const d of disposables) {
-                    d.dispose();
                 }
+                disposables.push(
+                    pickBox.onDidAccept(() => {
+                        current = pickBox.selectedItems[0];
+                        resolve(true);
+                    }),
+                    pickBox.onDidHide(() => {
+                        reject(new OperationCanceledError("Canceled on dependency seletion."));
+                    })
+                );
+                disposables.push(pickBox);
+                pickBox.show();
+            });
+            for (const d of disposables) {
+                d.dispose();
             }
             if (!result) {
-                break;
+                return result;
             }
             if (current && current.itemType === "dependency") {
                 dependencyManager.toggleDependency(current.id);
             }
         } while (current && current.itemType === "dependency");
-        if (!result) {
-            return result;
-        }
-        if (!current) {
-            throw new OperationCanceledError("Canceled on dependency seletion.");
-        }
         projectMetadata.dependencies = current;
         dependencyManager.updateLastUsedDependencies(projectMetadata.dependencies);
         return result;

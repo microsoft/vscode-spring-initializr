@@ -3,7 +3,6 @@
 
 import { workspace } from "vscode";
 import { instrumentOperationStep } from "vscode-extension-telemetry-wrapper";
-import { OperationCanceledError } from "../Errors";
 import { IProjectMetadata } from "./IProjectMetadata";
 import { IStep } from "./IStep";
 import { SpecifyJavaVersionStep } from "./SpecifyJavaVersionStep";
@@ -24,9 +23,6 @@ export class SpecifyLanguageStep implements IStep {
     public async execute(operationId: string, projectMetadata: IProjectMetadata): Promise<IStep | undefined> {
         if (!await instrumentOperationStep(operationId, "Language", this.specifyLanguage)(projectMetadata)) {
             return projectMetadata.pickSteps.pop();
-        }
-        if (projectMetadata.language === undefined) {
-            throw new OperationCanceledError("Language not specified.");
         }
         return this.getNextStep();
     }

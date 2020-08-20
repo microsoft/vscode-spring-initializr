@@ -3,7 +3,6 @@
 
 import { workspace } from "vscode";
 import { instrumentOperationStep } from "vscode-extension-telemetry-wrapper";
-import { OperationCanceledError } from "../Errors";
 import { IProjectMetadata } from "./IProjectMetadata";
 import { IStep } from "./IStep";
 import { SpecifyPackagingStep } from "./SpecifyPackagingStep";
@@ -34,9 +33,6 @@ export class SpecifyArtifactIdStep implements IStep {
     public async execute(operationId: string, projectMetadata: IProjectMetadata): Promise<IStep | undefined> {
         if (!await instrumentOperationStep(operationId, "ArtifactId", this.specifyArtifactId)(projectMetadata)) {
             return projectMetadata.pickSteps.pop();
-        }
-        if (projectMetadata.artifactId === undefined) {
-            throw new OperationCanceledError("ArtifactId not specified.");
         }
         return this.getNextStep();
     }
