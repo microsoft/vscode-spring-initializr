@@ -70,7 +70,7 @@ export async function createPickBox(pickMetadata: IPickMetadata): Promise<boolea
                 } else if (pickMetadata.pickStep instanceof SpecifyPackagingStep) {
                     return reject(new OperationCanceledError("Packaging not specified."));
                 }
-                return reject();
+                return reject(new Error("Unknown picking step"));
             })
         );
         disposables.push(pickBox);
@@ -141,7 +141,7 @@ export async function createInputBox(inputMetaData: IInputMetaData): Promise<boo
                 } else if (inputMetaData.pickStep instanceof SpecifyArtifactIdStep) {
                     return reject(new OperationCanceledError("ArtifactId not specified."));
                 }
-                return reject();
+                return reject(new Error("Unknown inputting step"));
             })
         );
         disposables.push(inputBox);
