@@ -3,7 +3,6 @@
 
 import { workspace } from "vscode";
 import { instrumentOperationStep } from "vscode-extension-telemetry-wrapper";
-import { OperationCanceledError } from "../Errors";
 import { IProjectMetadata } from "./IProjectMetadata";
 import { IStep } from "./IStep";
 import { SpecifyBootVersionStep } from "./SpecifyBootVersionStep";
@@ -24,9 +23,6 @@ export class SpecifyPackagingStep implements IStep {
     public async execute(operationId: string, projectMetadata: IProjectMetadata): Promise<IStep | undefined> {
         if (!await instrumentOperationStep(operationId, "Packaging", this.specifyPackaging)(projectMetadata)) {
             return projectMetadata.pickSteps.pop();
-        }
-        if (projectMetadata.packaging === undefined) {
-            throw new OperationCanceledError("Packaging not specified.");
         }
         return this.getNextStep();
     }

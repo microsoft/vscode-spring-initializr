@@ -3,6 +3,7 @@
 
 import * as vscode from "vscode";
 import { Disposable, InputBox, QuickInputButtons, QuickPick, QuickPickItem, window } from "vscode";
+import { OperationCanceledError } from "../Errors";
 import { artifactIdValidation, groupIdValidation } from "../Utils";
 import { IProjectMetadata } from "./IProjectMetadata";
 import { IStep } from "./IStep";
@@ -44,7 +45,7 @@ export async function createPickBox(pickMetadata: IPickMetadata): Promise<boolea
             disposables.push(
                 pickBox.onDidTriggerButton((item) => {
                     if (item === QuickInputButtons.Back) {
-                        resolve(false);
+                        return resolve(false);
                     }
                 })
             );
@@ -59,10 +60,17 @@ export async function createPickBox(pickMetadata: IPickMetadata): Promise<boolea
                     pickMetadata.metadata.packaging = pickBox.selectedItems[0].label && pickBox.selectedItems[0].label.toLowerCase();
                 }
                 pickMetadata.metadata.pickSteps.push(pickMetadata.pickStep);
-                resolve(true);
+                return resolve(true);
             }),
             pickBox.onDidHide(() => {
-                reject();
+                if (pickMetadata.pickStep instanceof SpecifyLanguageStep) {
+                    return reject(new OperationCanceledError("Language not specified."));
+                } else if (pickMetadata.pickStep instanceof SpecifyJavaVersionStep) {
+                    return reject(new OperationCanceledError("Java version not specified."));
+                } else if (pickMetadata.pickStep instanceof SpecifyPackagingStep) {
+                    return reject(new OperationCanceledError("Packaging not specified."));
+                }
+                return reject(new Error("Unknown picking step"));
             })
         );
         disposables.push(pickBox);
@@ -91,7 +99,7 @@ export async function createInputBox(inputMetaData: IInputMetaData): Promise<boo
             disposables.push(
                 inputBox.onDidTriggerButton((item) => {
                     if (item === QuickInputButtons.Back) {
-                        resolve(false);
+                        return resolve(false);
                     }
                 })
             );
@@ -125,10 +133,15 @@ export async function createInputBox(inputMetaData: IInputMetaData): Promise<boo
                     SpecifyArtifactIdStep.getInstance().setLastInput(inputBox.value);
                     inputMetaData.metadata.pickSteps.push(SpecifyArtifactIdStep.getInstance());
                 }
-                resolve(true);
+                return resolve(true);
             }),
             inputBox.onDidHide(() => {
-                reject();
+                if (inputMetaData.pickStep instanceof SpecifyGroupIdStep) {
+                    return reject(new OperationCanceledError("GroupId not specified."));
+                } else if (inputMetaData.pickStep instanceof SpecifyArtifactIdStep) {
+                    return reject(new OperationCanceledError("ArtifactId not specified."));
+                }
+                return reject(new Error("Unknown inputting step"));
             })
         );
         disposables.push(inputBox);

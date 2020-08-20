@@ -25,49 +25,46 @@ export class SpecifyBootVersionStep implements IStep {
         if (!await instrumentOperationStep(operationId, "BootVersion", this.specifyBootVersion)(projectMetadata)) {
             return projectMetadata.pickSteps.pop();
         }
-        if (projectMetadata.bootVersion === undefined) {
-            throw new OperationCanceledError("BootVersion not specified.");
-        }
         sendInfo(operationId, { bootVersion: projectMetadata.bootVersion });
         return this.getNextStep();
     }
 
     private async specifyBootVersion(projectMetadata: IProjectMetadata): Promise<boolean> {
-        let result: boolean = false;
         const disposables: Disposable[] = [];
-        try {
-            result = await new Promise<boolean>(async (resolve, reject) => {
-                const pickBox: QuickPick<{ value: IValue, label: string }> = window.createQuickPick<{ value: IValue, label: string }>();
-                pickBox.placeholder = "Specify Spring Boot version.";
+        const result: boolean = await new Promise<boolean>(async (resolve, reject) => {
+            const pickBox: QuickPick<{ value: IValue, label: string }> = window.createQuickPick<{ value: IValue, label: string }>();
+            pickBox.placeholder = "Specify Spring Boot version.";
+            try {
                 pickBox.items = await serviceManager.getBootVersions(projectMetadata.serviceUrl).then(versions => versions.map(v => ({ value: v, label: v.name })));
-                pickBox.ignoreFocusOut = true;
-                if (projectMetadata.pickSteps.length > 0) {
-                    pickBox.buttons = [(QuickInputButtons.Back)];
-                    disposables.push(
-                        pickBox.onDidTriggerButton((item) => {
-                            if (item === QuickInputButtons.Back) {
-                                resolve(false);
-                            }
-                        })
-                    );
-                }
+            } catch (error) {
+                return reject(error);
+            }
+            pickBox.ignoreFocusOut = true;
+            if (projectMetadata.pickSteps.length > 0) {
+                pickBox.buttons = [(QuickInputButtons.Back)];
                 disposables.push(
-                    pickBox.onDidAccept(() => {
-                        projectMetadata.bootVersion = pickBox.selectedItems[0] && pickBox.selectedItems[0].value && pickBox.selectedItems[0].value.id;
-                        projectMetadata.pickSteps.push(SpecifyBootVersionStep.getInstance());
-                        resolve(true);
-                    }),
-                    pickBox.onDidHide(() => {
-                        reject();
+                    pickBox.onDidTriggerButton((item) => {
+                        if (item === QuickInputButtons.Back) {
+                            return resolve(false);
+                        }
                     })
                 );
-                disposables.push(pickBox);
-                pickBox.show();
-            });
-        } finally {
-            for (const d of disposables) {
-                d.dispose();
             }
+            disposables.push(
+                pickBox.onDidAccept(() => {
+                    projectMetadata.bootVersion = pickBox.selectedItems[0] && pickBox.selectedItems[0].value && pickBox.selectedItems[0].value.id;
+                    projectMetadata.pickSteps.push(SpecifyBootVersionStep.getInstance());
+                    return resolve(true);
+                }),
+                pickBox.onDidHide(() => {
+                    return reject(new OperationCanceledError("BootVersion not specified."));
+                })
+            );
+            disposables.push(pickBox);
+            pickBox.show();
+        });
+        for (const d of disposables) {
+            d.dispose();
         }
         return result;
     }
