@@ -18,16 +18,16 @@ export class SpecifyGroupIdStep implements IStep {
 
     private lastInput: string;
 
-    public getNextStep(): IStep | undefined {
-        return SpecifyArtifactIdStep.getInstance();
-    }
-
     public getLastInput(): string {
         return this.lastInput;
     }
 
     public setLastInput(lastInput: string): void {
         this.lastInput = lastInput;
+    }
+
+    public getNextStep(): IStep | undefined {
+        return SpecifyArtifactIdStep.getInstance();
     }
 
     public async execute(operationId: string, projectMetadata: IProjectMetadata): Promise<IStep | undefined> {

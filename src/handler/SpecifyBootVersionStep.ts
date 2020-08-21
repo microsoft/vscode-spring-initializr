@@ -7,7 +7,7 @@ import { OperationCanceledError } from "../Errors";
 import { IValue, serviceManager } from "../model";
 import { IProjectMetadata } from "./IProjectMetadata";
 import { IStep } from "./IStep";
-import { SpecifyDependenciesStep } from "./SpecifyDependenciesStep";
+import { SpecifyLanguageStep } from "./SpecifyLanguageStep";
 
 export class SpecifyBootVersionStep implements IStep {
 
@@ -18,7 +18,7 @@ export class SpecifyBootVersionStep implements IStep {
     private static specifyBootVersionStep: SpecifyBootVersionStep = new SpecifyBootVersionStep();
 
     public getNextStep(): IStep | undefined {
-        return SpecifyDependenciesStep.getInstance();
+        return SpecifyLanguageStep.getInstance();
     }
 
     public async execute(operationId: string, projectMetadata: IProjectMetadata): Promise<IStep | undefined> {
