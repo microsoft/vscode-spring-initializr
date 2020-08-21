@@ -5,7 +5,7 @@ import { workspace } from "vscode";
 import { instrumentOperationStep } from "vscode-extension-telemetry-wrapper";
 import { IProjectMetadata } from "./IProjectMetadata";
 import { IStep } from "./IStep";
-import { SpecifyBootVersionStep } from "./SpecifyBootVersionStep";
+import { SpecifyJavaVersionStep } from "./SpecifyJavaVersionStep";
 import { createPickBox, IPickMetadata } from "./utils";
 
 export class SpecifyPackagingStep implements IStep {
@@ -17,7 +17,7 @@ export class SpecifyPackagingStep implements IStep {
     private static specifyPackagingStep: SpecifyPackagingStep = new SpecifyPackagingStep();
 
     public getNextStep(): IStep | undefined {
-        return SpecifyBootVersionStep.getInstance();
+        return SpecifyJavaVersionStep.getInstance();
     }
 
     public async execute(operationId: string, projectMetadata: IProjectMetadata): Promise<IStep | undefined> {

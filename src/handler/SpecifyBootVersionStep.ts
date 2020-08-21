@@ -4,10 +4,10 @@
 import { Disposable, QuickInputButtons, QuickPick, window } from "vscode";
 import { instrumentOperationStep, sendInfo } from "vscode-extension-telemetry-wrapper";
 import { OperationCanceledError } from "../Errors";
-import { IValue, serviceManager } from "../model";
+import { IValue } from "../model";
 import { IProjectMetadata } from "./IProjectMetadata";
 import { IStep } from "./IStep";
-import { SpecifyDependenciesStep } from "./SpecifyDependenciesStep";
+import { SpecifyGroupIdStep } from "./SpecifyGroupIdStep";
 
 export class SpecifyBootVersionStep implements IStep {
 
@@ -18,7 +18,7 @@ export class SpecifyBootVersionStep implements IStep {
     private static specifyBootVersionStep: SpecifyBootVersionStep = new SpecifyBootVersionStep();
 
     public getNextStep(): IStep | undefined {
-        return SpecifyDependenciesStep.getInstance();
+        return SpecifyGroupIdStep.getInstance();
     }
 
     public async execute(operationId: string, projectMetadata: IProjectMetadata): Promise<IStep | undefined> {
@@ -34,11 +34,7 @@ export class SpecifyBootVersionStep implements IStep {
         const result: boolean = await new Promise<boolean>(async (resolve, reject) => {
             const pickBox: QuickPick<{ value: IValue, label: string }> = window.createQuickPick<{ value: IValue, label: string }>();
             pickBox.placeholder = "Specify Spring Boot version.";
-            try {
-                pickBox.items = await serviceManager.getBootVersions(projectMetadata.serviceUrl).then(versions => versions.map(v => ({ value: v, label: v.name })));
-            } catch (error) {
-                return reject(error);
-            }
+            pickBox.items = projectMetadata.bootVersions.map(v => ({ value: v, label: v.name }));
             pickBox.ignoreFocusOut = true;
             if (projectMetadata.pickSteps.length > 0) {
                 pickBox.buttons = [(QuickInputButtons.Back)];
