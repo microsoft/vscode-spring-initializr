@@ -3,10 +3,9 @@
 
 import { instrumentOperationStep } from "vscode-extension-telemetry-wrapper";
 import { OperationCanceledError } from "../Errors";
-import { serviceManager } from "../model";
 import { IProjectMetadata } from "./IProjectMetadata";
 import { IStep } from "./IStep";
-import { SpecifyLanguageStep } from "./SpecifyLanguageStep";
+import { SpecifyBootVersionStep } from "./SpecifyBootVersionStep";
 import { specifyServiceUrl } from "./utils";
 
 export class SpecifyServiceUrlStep implements IStep {
@@ -18,7 +17,7 @@ export class SpecifyServiceUrlStep implements IStep {
     private static specifyServiceUrlStep: SpecifyServiceUrlStep = new SpecifyServiceUrlStep();
 
     public getNextStep(): IStep | undefined {
-        return SpecifyLanguageStep.getInstance();
+        return SpecifyBootVersionStep.getInstance();
     }
 
     public async execute(operationId: string, projectMetadata: IProjectMetadata): Promise<IStep | undefined> {
@@ -26,7 +25,6 @@ export class SpecifyServiceUrlStep implements IStep {
         if (projectMetadata.serviceUrl === undefined) {
             throw new OperationCanceledError("Service URL not specified.");
         }
-        projectMetadata.bootVersions = await serviceManager.getBootVersions(projectMetadata.serviceUrl);
         return this.getNextStep();
     }
 }

@@ -18,7 +18,7 @@ class ServiceManager {
     public async getBootVersions(serviceUrl: string): Promise<any[]> {
         const metadata = await this.ensureMetadata(serviceUrl);
         if (!metadata) {
-            throw new Error("Failed to fetch metadata from the specified URL.");
+            throw new Error("Failed to fetch metadata.");
         }
 
         const defaultVersion: string = metadata.bootVersion.default;
@@ -29,7 +29,7 @@ class ServiceManager {
     public async getAvailableDependencies(serviceUrl: string, bootVersion: string): Promise<IDependency[]> {
         const metadata = await this.ensureMetadata(serviceUrl);
         if (!metadata) {
-            throw new Error("Failed to fetch metadata from the specified URL.");
+            throw new Error("Failed to fetch metadata.");
         }
 
         const groups: DependencyGroup[] = metadata.dependencies.values;

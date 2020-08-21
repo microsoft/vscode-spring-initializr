@@ -12,7 +12,6 @@ export interface IProjectMetadata {
     artifactId?: string;
     packaging?: string;
     bootVersion?: string;
-    bootVersions?: any;
     dependencies?: IDependenciesItem;
     pickSteps: IStep[];
 }
