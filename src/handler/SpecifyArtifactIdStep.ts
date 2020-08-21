@@ -26,10 +26,6 @@ export class SpecifyArtifactIdStep implements IStep {
         this.lastInput = lastInput;
     }
 
-    public resetLastInput(): void {
-        this.lastInput = workspace.getConfiguration("spring.initializr").get<string>("defaultArtifactId");
-    }
-
     public getNextStep(): IStep | undefined {
         return SpecifyPackagingStep.getInstance();
     }

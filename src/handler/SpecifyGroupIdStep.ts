@@ -26,10 +26,6 @@ export class SpecifyGroupIdStep implements IStep {
         this.lastInput = lastInput;
     }
 
-    public resetLastInput(): void {
-        this.lastInput = workspace.getConfiguration("spring.initializr").get<string>("defaultGroupId");
-    }
-
     public getNextStep(): IStep | undefined {
         return SpecifyArtifactIdStep.getInstance();
     }

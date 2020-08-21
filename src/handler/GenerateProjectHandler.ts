@@ -12,8 +12,6 @@ import { openDialogForFolder } from "../Utils/VSCodeUI";
 import { BaseHandler } from "./BaseHandler";
 import { IProjectMetadata } from "./IProjectMetadata";
 import { IStep } from "./IStep";
-import { SpecifyArtifactIdStep } from "./SpecifyArtifactIdStep";
-import { SpecifyGroupIdStep } from "./SpecifyGroupIdStep";
 import { SpecifyServiceUrlStep } from "./SpecifyServiceUrlStep";
 
 export class GenerateProjectHandler extends BaseHandler {
@@ -37,8 +35,6 @@ export class GenerateProjectHandler extends BaseHandler {
         const projectMetadata: IProjectMetadata = {
             pickSteps: []
         };
-        SpecifyArtifactIdStep.getInstance().resetLastInput();
-        SpecifyGroupIdStep.getInstance().resetLastInput();
         while (step !== undefined) {
             step = await step.execute(operationId, projectMetadata);
         }
