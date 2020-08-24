@@ -37,8 +37,8 @@ export class GenerateProjectHandler extends BaseHandler {
         const projectMetadata: IProjectMetadata = {
             pickSteps: []
         };
-        SpecifyArtifactIdStep.getInstance().resetLastInput();
-        SpecifyGroupIdStep.getInstance().resetLastInput();
+        SpecifyArtifactIdStep.getInstance().resetDefaultInput();
+        SpecifyGroupIdStep.getInstance().resetDefaultInput();
         while (step !== undefined) {
             step = await step.execute(operationId, projectMetadata);
         }
