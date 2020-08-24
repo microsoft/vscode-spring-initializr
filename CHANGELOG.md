@@ -10,6 +10,7 @@ All notable changes to the "vscode-spring-initializr" extension will be document
 
 ### Changed
 - "Edit Starters" is changed to "Add Starters", i.e. removing starters from current project is not supported by this command. [#149](https://github.com/microsoft/vscode-spring-initializr/pull/149)
+- Change order of steps when creating a project.
 
 ### Fixed
 - Use current workspace as default target folder. [#140](https://github.com/microsoft/vscode-spring-initializr/pull/140)
