@@ -88,11 +88,7 @@ export async function createInputBox(inputMetaData: IInputMetaData): Promise<boo
         const inputBox: InputBox = window.createInputBox();
         inputBox.placeholder = inputMetaData.placeholder;
         inputBox.prompt = inputMetaData.prompt;
-        if (inputMetaData.pickStep instanceof SpecifyGroupIdStep) {
-            inputBox.value = (SpecifyGroupIdStep.getInstance().getLastInput() === undefined) ? inputMetaData.defaultValue : SpecifyGroupIdStep.getInstance().getLastInput();
-        } else if (inputMetaData.pickStep instanceof SpecifyArtifactIdStep) {
-            inputBox.value = (SpecifyArtifactIdStep.getInstance().getLastInput() === undefined) ? inputMetaData.defaultValue : SpecifyArtifactIdStep.getInstance().getLastInput();
-        }
+        inputBox.value = inputMetaData.defaultValue;
         inputBox.ignoreFocusOut = true;
         if (inputMetaData.metadata.pickSteps.length > 0) {
             inputBox.buttons = [(QuickInputButtons.Back)];
@@ -126,11 +122,11 @@ export async function createInputBox(inputMetaData: IInputMetaData): Promise<boo
                 }
                 if (inputMetaData.pickStep instanceof SpecifyGroupIdStep) {
                     inputMetaData.metadata.groupId = inputBox.value;
-                    SpecifyGroupIdStep.getInstance().setLastInput(inputBox.value);
+                    SpecifyGroupIdStep.getInstance().setDefaultInput(inputBox.value);
                     inputMetaData.metadata.pickSteps.push(SpecifyGroupIdStep.getInstance());
                 } else if (inputMetaData.pickStep instanceof SpecifyArtifactIdStep) {
                     inputMetaData.metadata.artifactId = inputBox.value;
-                    SpecifyArtifactIdStep.getInstance().setLastInput(inputBox.value);
+                    SpecifyArtifactIdStep.getInstance().setDefaultInput(inputBox.value);
                     inputMetaData.metadata.pickSteps.push(SpecifyArtifactIdStep.getInstance());
                 }
                 return resolve(true);

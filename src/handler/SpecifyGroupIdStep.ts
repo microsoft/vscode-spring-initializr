@@ -16,14 +16,22 @@ export class SpecifyGroupIdStep implements IStep {
 
     private static specifyGroupIdStep: SpecifyGroupIdStep = new SpecifyGroupIdStep();
 
-    private lastInput: string;
+    private defaultInput: string;
 
-    public getLastInput(): string {
-        return this.lastInput;
+    constructor() {
+        this.resetDefaultInput();
     }
 
-    public setLastInput(lastInput: string): void {
-        this.lastInput = lastInput;
+    public getDefaultInput(): string {
+        return this.defaultInput;
+    }
+
+    public setDefaultInput(defaultInput: string): void {
+        this.defaultInput = defaultInput;
+    }
+
+    public resetDefaultInput(): void {
+        this.defaultInput = workspace.getConfiguration("spring.initializr").get<string>("defaultGroupId");
     }
 
     public getNextStep(): IStep | undefined {
@@ -38,13 +46,12 @@ export class SpecifyGroupIdStep implements IStep {
     }
 
     private async specifyGroupId(projectMetadata: IProjectMetadata): Promise<boolean> {
-        const defaultGroupId: string = workspace.getConfiguration("spring.initializr").get<string>("defaultGroupId");
         const inputMetaData: IInputMetaData = {
             metadata: projectMetadata,
             pickStep: SpecifyGroupIdStep.getInstance(),
             placeholder: "e.g. com.example",
             prompt: "Input Group Id for your project.",
-            defaultValue: defaultGroupId
+            defaultValue: SpecifyGroupIdStep.getInstance().defaultInput
         };
         return await createInputBox(inputMetaData);
     }

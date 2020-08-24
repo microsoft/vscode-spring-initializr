@@ -16,14 +16,22 @@ export class SpecifyArtifactIdStep implements IStep {
 
     private static specifyArtifactIdStep: SpecifyArtifactIdStep = new SpecifyArtifactIdStep();
 
-    private lastInput: string;
+    private defaultInput: string;
 
-    public getLastInput(): string {
-        return this.lastInput;
+    constructor() {
+        this.resetDefaultInput();
     }
 
-    public setLastInput(lastInput: string): void {
-        this.lastInput = lastInput;
+    public getDefaultInput(): string {
+        return this.defaultInput;
+    }
+
+    public setDefaultInput(defaultInput: string): void {
+        this.defaultInput = defaultInput;
+    }
+
+    public resetDefaultInput(): void {
+        this.defaultInput = workspace.getConfiguration("spring.initializr").get<string>("defaultArtifactId");
     }
 
     public getNextStep(): IStep | undefined {
@@ -38,13 +46,12 @@ export class SpecifyArtifactIdStep implements IStep {
     }
 
     private async specifyArtifactId(projectMetadata: IProjectMetadata): Promise<boolean> {
-        const defaultArtifactId: string = workspace.getConfiguration("spring.initializr").get<string>("defaultArtifactId");
         const inputMetaData: IInputMetaData = {
             metadata: projectMetadata,
             pickStep: SpecifyArtifactIdStep.getInstance(),
             placeholder: "e.g. demo",
             prompt: "Input Artifact Id for your project.",
-            defaultValue: defaultArtifactId
+            defaultValue: SpecifyArtifactIdStep.getInstance().defaultInput
         };
         return await createInputBox(inputMetaData);
     }
