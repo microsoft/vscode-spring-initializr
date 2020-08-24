@@ -10,7 +10,7 @@ import { OperationCanceledError } from "../Errors";
 import { downloadFile } from "../Utils";
 import { openDialogForFolder } from "../Utils/VSCodeUI";
 import { BaseHandler } from "./BaseHandler";
-import { IProjectMetadata } from "./IProjectMetadata";
+import { IProjectMetadata, IDefaultProjectData } from "./IProjectMetadata";
 import { IStep } from "./IStep";
 import { SpecifyArtifactIdStep } from "./SpecifyArtifactIdStep";
 import { SpecifyGroupIdStep } from "./SpecifyGroupIdStep";
@@ -25,9 +25,13 @@ export class GenerateProjectHandler extends BaseHandler {
     private outputUri: vscode.Uri;
     private metadata: IProjectMetadata;
 
-    constructor(projectType: "maven-project" | "gradle-project") {
+    constructor(projectType: "maven-project" | "gradle-project", defaults?: IDefaultProjectData) {
         super();
         this.projectType = projectType;
+        this.metadata = {
+            pickSteps: [],
+            defaults: defaults || {}
+        };
     }
 
     protected get failureMessage(): string {
@@ -37,19 +41,15 @@ export class GenerateProjectHandler extends BaseHandler {
     public async runSteps(operationId?: string): Promise<void> {
 
         let step: IStep | undefined = SpecifyServiceUrlStep.getInstance();
-        const projectMetadata: IProjectMetadata = {
-            pickSteps: []
-        };
+
         SpecifyArtifactIdStep.getInstance().resetDefaultInput();
         SpecifyGroupIdStep.getInstance().resetDefaultInput();
         while (step !== undefined) {
-            step = await step.execute(operationId, projectMetadata);
+            step = await step.execute(operationId, this.metadata);
         }
 
-        this.metadata = projectMetadata;
-
         // Step: Choose target folder
-        this.outputUri = await instrumentOperationStep(operationId, "TargetFolder", specifyTargetFolder)(this.metadata.artifactId);
+        this.outputUri = await instrumentOperationStep(operationId, "TargetFolder", specifyTargetFolder)(this.metadata);
         if (this.outputUri === undefined) { throw new OperationCanceledError("Target folder not specified."); }
 
         // Step: Download & Unzip
@@ -87,14 +87,14 @@ export class GenerateProjectHandler extends BaseHandler {
     }
 }
 
-async function specifyTargetFolder(projectName: string): Promise<vscode.Uri> {
+async function specifyTargetFolder(metadata: IProjectMetadata): Promise<vscode.Uri> {
     const OPTION_CONTINUE: string = "Continue";
     const OPTION_CHOOSE_ANOTHER_FOLDER: string = "Choose another folder";
     const LABEL_CHOOSE_FOLDER: string = "Generate into this folder";
-    const MESSAGE_EXISTING_FOLDER: string = `A folder [${projectName}] already exists in the selected folder. Continue to overwrite or Choose another folder?`;
+    const MESSAGE_EXISTING_FOLDER: string = `A folder [${metadata.artifactId}] already exists in the selected folder. Continue to overwrite or Choose another folder?`;
 
-    let outputUri: vscode.Uri = await openDialogForFolder({ openLabel: LABEL_CHOOSE_FOLDER });
-    while (outputUri && await fse.pathExists(path.join(outputUri.fsPath, projectName))) {
+    let outputUri: vscode.Uri = metadata.defaults.targetFolder ? vscode.Uri.file(metadata.defaults.targetFolder) : await openDialogForFolder({ openLabel: LABEL_CHOOSE_FOLDER });
+    while (outputUri && await fse.pathExists(path.join(outputUri.fsPath, metadata.artifactId))) {
         const overrideChoice: string = await vscode.window.showWarningMessage(MESSAGE_EXISTING_FOLDER, OPTION_CONTINUE, OPTION_CHOOSE_ANOTHER_FOLDER);
         if (overrideChoice === OPTION_CHOOSE_ANOTHER_FOLDER) {
             outputUri = await openDialogForFolder({ openLabel: LABEL_CHOOSE_FOLDER });

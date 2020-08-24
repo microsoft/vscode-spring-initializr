@@ -33,6 +33,7 @@ export class SpecifyDependenciesStep implements IStep {
         let current: IDependenciesItem = null;
         let result: boolean = false;
         const disposables: Disposable[] = [];
+        dependencyManager.selectedIds = projectMetadata.defaults.dependencies || [];
         do {
             const quickPickItems: Array<QuickPickItem & IDependenciesItem> = await dependencyManager.getQuickPickItems(projectMetadata.serviceUrl, projectMetadata.bootVersion, { hasLastSelected: true });
             result = await new Promise<boolean>(async (resolve, reject) => {
@@ -75,7 +76,7 @@ export class SpecifyDependenciesStep implements IStep {
             }
         } while (current && current.itemType === "dependency");
         projectMetadata.dependencies = current;
-        dependencyManager.updateLastUsedDependencies(projectMetadata.dependencies);
+        dependencyManager.updateLastUsedDependencies(current);
         return result;
     }
 }

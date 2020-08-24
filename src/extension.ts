@@ -24,8 +24,8 @@ async function initializeExtension(_operationId: string, context: vscode.Extensi
     await loadPackageInfo(context);
 
     context.subscriptions.push(
-        instrumentAndRegisterCommand("spring.initializr.maven-project", async (operationId) => await new GenerateProjectHandler("maven-project").run(operationId), true),
-        instrumentAndRegisterCommand("spring.initializr.gradle-project", async (operationId) => await new GenerateProjectHandler("gradle-project").run(operationId), true),
+        instrumentAndRegisterCommand("spring.initializr.maven-project", async (operationId, defaults) => await new GenerateProjectHandler("maven-project", defaults).run(operationId), true),
+        instrumentAndRegisterCommand("spring.initializr.gradle-project", async (operationId, defaults) => await new GenerateProjectHandler("gradle-project", defaults).run(operationId), true),
     );
 
     context.subscriptions.push(instrumentAndRegisterCommand("spring.initializr.createProject", async () => {
