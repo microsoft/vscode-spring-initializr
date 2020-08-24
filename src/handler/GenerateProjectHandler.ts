@@ -16,6 +16,9 @@ import { SpecifyArtifactIdStep } from "./SpecifyArtifactIdStep";
 import { SpecifyGroupIdStep } from "./SpecifyGroupIdStep";
 import { SpecifyServiceUrlStep } from "./SpecifyServiceUrlStep";
 
+const OPEN_IN_NEW_WORKSPACE = "Open";
+const OPEN_IN_CURRENT_WORKSPACE = "Add to Workspace";
+
 export class GenerateProjectHandler extends BaseHandler {
 
     private projectType: "maven-project" | "gradle-project";
@@ -52,17 +55,18 @@ export class GenerateProjectHandler extends BaseHandler {
         // Step: Download & Unzip
         await instrumentOperationStep(operationId, "DownloadUnzip", downloadAndUnzip)(this.downloadUrl, this.outputUri.fsPath);
 
-        // Open in new window
-        const hasOpenFolder: boolean = (vscode.workspace.workspaceFolders !== undefined);
-        const candidates: string[] = [
-            "Open",
-            hasOpenFolder ? "Add to Workspace" : undefined,
-        ].filter(Boolean);
-        const choice: string = await vscode.window.showInformationMessage(`Successfully generated. Location: ${this.outputUri.fsPath}`, ...candidates);
-        if (choice === "Open") {
-            vscode.commands.executeCommand("vscode.openFolder", vscode.Uri.file(path.join(this.outputUri.fsPath, this.metadata.artifactId)), hasOpenFolder);
-        } else if (choice === "Add to Workspace") {
-            vscode.workspace.updateWorkspaceFolders(vscode.workspace.workspaceFolders.length, null, { uri: vscode.Uri.file(path.join(this.outputUri.fsPath, this.metadata.artifactId)) });
+        // Open project either is the same workspace or new workspace
+        const hasOpenFolder = vscode.workspace.workspaceFolders !== undefined || vscode.workspace.rootPath !== undefined;
+        const projectLocation = this.outputUri.fsPath;
+        const choice = await specifyOpenMethod(hasOpenFolder, this.outputUri.fsPath);
+        if (choice === OPEN_IN_NEW_WORKSPACE) {
+            vscode.commands.executeCommand("vscode.openFolder", vscode.Uri.file(path.join(projectLocation, this.metadata.artifactId)), hasOpenFolder);
+        } else if (choice === OPEN_IN_CURRENT_WORKSPACE) {
+            if (!vscode.workspace.rootPath || !this.outputUri.fsPath.startsWith(vscode.workspace.rootPath)) {
+                if (!vscode.workspace.workspaceFolders.find((workspaceFolder) => workspaceFolder.uri && this.outputUri.fsPath.startsWith(workspaceFolder.uri.fsPath))) {
+                    vscode.workspace.updateWorkspaceFolders(vscode.workspace.workspaceFolders.length, null, { uri: vscode.Uri.file(path.join(projectLocation, this.metadata.artifactId)) });
+                }
+            }
         }
     }
 
@@ -121,4 +125,16 @@ async function downloadAndUnzip(targetUrl: string, targetFolder: string): Promis
             });
         },
     ));
+}
+
+async function specifyOpenMethod(hasOpenFolder: boolean, projectLocation: string): Promise<string> {
+    let openMethod = vscode.workspace.getConfiguration("spring.initializr").get<string>("defaultOpenProjectMethod");
+    if (openMethod !== OPEN_IN_CURRENT_WORKSPACE && openMethod !== OPEN_IN_NEW_WORKSPACE) {
+        const candidates: string[] = [
+            OPEN_IN_NEW_WORKSPACE,
+            hasOpenFolder ? OPEN_IN_CURRENT_WORKSPACE : undefined,
+        ].filter(Boolean);
+        openMethod = await vscode.window.showInformationMessage(`Successfully generated. Location: ${projectLocation}`, ...candidates);
+    }
+    return openMethod;
 }
