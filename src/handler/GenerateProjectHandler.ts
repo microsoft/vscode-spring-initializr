@@ -62,10 +62,8 @@ export class GenerateProjectHandler extends BaseHandler {
         if (choice === OPEN_IN_NEW_WORKSPACE) {
             vscode.commands.executeCommand("vscode.openFolder", vscode.Uri.file(path.join(projectLocation, this.metadata.artifactId)), hasOpenFolder);
         } else if (choice === OPEN_IN_CURRENT_WORKSPACE) {
-            if (!vscode.workspace.rootPath || !this.outputUri.fsPath.startsWith(vscode.workspace.rootPath)) {
-                if (!vscode.workspace.workspaceFolders.find((workspaceFolder) => workspaceFolder.uri && this.outputUri.fsPath.startsWith(workspaceFolder.uri.fsPath))) {
-                    vscode.workspace.updateWorkspaceFolders(vscode.workspace.workspaceFolders.length, null, { uri: vscode.Uri.file(path.join(projectLocation, this.metadata.artifactId)) });
-                }
+            if (!vscode.workspace.workspaceFolders.find((workspaceFolder) => workspaceFolder.uri && this.outputUri.fsPath.startsWith(workspaceFolder.uri.fsPath))) {
+                vscode.workspace.updateWorkspaceFolders(vscode.workspace.workspaceFolders.length, null, { uri: vscode.Uri.file(path.join(projectLocation, this.metadata.artifactId)) });
             }
         }
     }
