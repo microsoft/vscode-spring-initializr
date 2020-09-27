@@ -28,7 +28,7 @@ export class SpecifyLanguageStep implements IStep {
     }
 
     private async specifyLanguage(projectMetadata: IProjectMetadata): Promise<boolean> {
-        const language: string = workspace.getConfiguration("spring.initializr").get<string>("defaultLanguage");
+        const language: string = projectMetadata.defaults.language || workspace.getConfiguration("spring.initializr").get<string>("defaultLanguage");
         if (language) {
             projectMetadata.language = language && language.toLowerCase();
             return true;

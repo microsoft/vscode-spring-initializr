@@ -51,7 +51,7 @@ export class SpecifyGroupIdStep implements IStep {
             pickStep: SpecifyGroupIdStep.getInstance(),
             placeholder: "e.g. com.example",
             prompt: "Input Group Id for your project.",
-            defaultValue: SpecifyGroupIdStep.getInstance().defaultInput
+            defaultValue: projectMetadata.defaults.groupId || SpecifyGroupIdStep.getInstance().defaultInput
         };
         return await createInputBox(inputMetaData);
     }

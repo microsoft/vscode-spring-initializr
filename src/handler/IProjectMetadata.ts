@@ -14,4 +14,15 @@ export interface IProjectMetadata {
     bootVersion?: string;
     dependencies?: IDependenciesItem;
     pickSteps: IStep[];
+    defaults: IDefaultProjectData;
+}
+
+export interface IDefaultProjectData {
+    language?: string;
+    javaVersion?: string;
+    groupId?: string;
+    artifactId?: string;
+    packaging?: string;
+    dependencies?: string[];
+    targetFolder?: string;
 }

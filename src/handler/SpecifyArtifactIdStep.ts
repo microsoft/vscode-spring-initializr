@@ -51,7 +51,7 @@ export class SpecifyArtifactIdStep implements IStep {
             pickStep: SpecifyArtifactIdStep.getInstance(),
             placeholder: "e.g. demo",
             prompt: "Input Artifact Id for your project.",
-            defaultValue: SpecifyArtifactIdStep.getInstance().defaultInput
+            defaultValue: projectMetadata.defaults.artifactId || SpecifyArtifactIdStep.getInstance().defaultInput
         };
         return await createInputBox(inputMetaData);
     }

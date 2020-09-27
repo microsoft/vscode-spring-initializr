@@ -28,7 +28,7 @@ export class SpecifyJavaVersionStep implements IStep {
     }
 
     private async specifyJavaVersion(projectMetadata: IProjectMetadata): Promise<boolean> {
-        const javaVersion: string = workspace.getConfiguration("spring.initializr").get<string>("defaultJavaVersion");
+        const javaVersion: string = projectMetadata.defaults.javaVersion || workspace.getConfiguration("spring.initializr").get<string>("defaultJavaVersion");
         if (javaVersion) {
             projectMetadata.javaVersion = javaVersion;
             return true;

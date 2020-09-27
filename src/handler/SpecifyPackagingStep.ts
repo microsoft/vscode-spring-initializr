@@ -28,7 +28,7 @@ export class SpecifyPackagingStep implements IStep {
     }
 
     private async specifyPackaging(projectMetadata: IProjectMetadata): Promise<boolean> {
-        const packaging: string = workspace.getConfiguration("spring.initializr").get<string>("defaultPackaging");
+        const packaging: string = projectMetadata.defaults.packaging || workspace.getConfiguration("spring.initializr").get<string>("defaultPackaging");
         if (packaging) {
             projectMetadata.packaging = packaging && packaging.toLowerCase();
             return true;

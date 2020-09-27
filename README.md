@@ -58,7 +58,9 @@ ext install vscode-spring-initializr
 
   // Default value for Packaging. Supported values are "JAR" and "WAR".
   "spring.initializr.defaultPackaging": "JAR",
-  
+
+  // Default value for the method of openining the newly generated project. Supported values are "", "Open" and "Add to Workspace".
+  "spring.initializr.defaultOpenProjectMethod": "Add to Workspace",
 ```
 
 ## Feedback and Questions

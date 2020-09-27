@@ -130,6 +130,17 @@
           ],
           "scope": "window",
           "description": "Default packaging."
+        },
+        "spring.initializr.defaultOpenProjectMethod": {
+          "default": "",
+          "type": "string",
+          "scope": "window",
+          "description": "Default method of opening newly generated project",
+          "enum": [
+            "",
+            "Open",
+            "Add to Workspace"
+          ]
         }
       }
     }

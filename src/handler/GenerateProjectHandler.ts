@@ -10,11 +10,14 @@ import { OperationCanceledError } from "../Errors";
 import { downloadFile } from "../Utils";
 import { openDialogForFolder } from "../Utils/VSCodeUI";
 import { BaseHandler } from "./BaseHandler";
-import { IProjectMetadata } from "./IProjectMetadata";
+import { IProjectMetadata, IDefaultProjectData } from "./IProjectMetadata";
 import { IStep } from "./IStep";
 import { SpecifyArtifactIdStep } from "./SpecifyArtifactIdStep";
 import { SpecifyGroupIdStep } from "./SpecifyGroupIdStep";
 import { SpecifyServiceUrlStep } from "./SpecifyServiceUrlStep";
+
+const OPEN_IN_NEW_WORKSPACE = "Open";
+const OPEN_IN_CURRENT_WORKSPACE = "Add to Workspace";
 
 export class GenerateProjectHandler extends BaseHandler {
 
@@ -22,9 +25,13 @@ export class GenerateProjectHandler extends BaseHandler {
     private outputUri: vscode.Uri;
     private metadata: IProjectMetadata;
 
-    constructor(projectType: "maven-project" | "gradle-project") {
+    constructor(projectType: "maven-project" | "gradle-project", defaults?: IDefaultProjectData) {
         super();
         this.projectType = projectType;
+        this.metadata = {
+            pickSteps: [],
+            defaults: defaults || {}
+        };
     }
 
     protected get failureMessage(): string {
@@ -34,35 +41,30 @@ export class GenerateProjectHandler extends BaseHandler {
     public async runSteps(operationId?: string): Promise<void> {
 
         let step: IStep | undefined = SpecifyServiceUrlStep.getInstance();
-        const projectMetadata: IProjectMetadata = {
-            pickSteps: []
-        };
+
         SpecifyArtifactIdStep.getInstance().resetDefaultInput();
         SpecifyGroupIdStep.getInstance().resetDefaultInput();
         while (step !== undefined) {
-            step = await step.execute(operationId, projectMetadata);
+            step = await step.execute(operationId, this.metadata);
         }
 
-        this.metadata = projectMetadata;
-
         // Step: Choose target folder
-        this.outputUri = await instrumentOperationStep(operationId, "TargetFolder", specifyTargetFolder)(this.metadata.artifactId);
+        this.outputUri = await instrumentOperationStep(operationId, "TargetFolder", specifyTargetFolder)(this.metadata);
         if (this.outputUri === undefined) { throw new OperationCanceledError("Target folder not specified."); }
 
         // Step: Download & Unzip
         await instrumentOperationStep(operationId, "DownloadUnzip", downloadAndUnzip)(this.downloadUrl, this.outputUri.fsPath);
 
-        // Open in new window
-        const hasOpenFolder: boolean = (vscode.workspace.workspaceFolders !== undefined);
-        const candidates: string[] = [
-            "Open",
-            hasOpenFolder ? "Add to Workspace" : undefined,
-        ].filter(Boolean);
-        const choice: string = await vscode.window.showInformationMessage(`Successfully generated. Location: ${this.outputUri.fsPath}`, ...candidates);
-        if (choice === "Open") {
-            vscode.commands.executeCommand("vscode.openFolder", vscode.Uri.file(path.join(this.outputUri.fsPath, this.metadata.artifactId)), hasOpenFolder);
-        } else if (choice === "Add to Workspace") {
-            vscode.workspace.updateWorkspaceFolders(vscode.workspace.workspaceFolders.length, null, { uri: vscode.Uri.file(path.join(this.outputUri.fsPath, this.metadata.artifactId)) });
+        // Open project either is the same workspace or new workspace
+        const hasOpenFolder = vscode.workspace.workspaceFolders !== undefined || vscode.workspace.rootPath !== undefined;
+        const projectLocation = this.outputUri.fsPath;
+        const choice = await specifyOpenMethod(hasOpenFolder, this.outputUri.fsPath);
+        if (choice === OPEN_IN_NEW_WORKSPACE) {
+            vscode.commands.executeCommand("vscode.openFolder", vscode.Uri.file(path.join(projectLocation, this.metadata.artifactId)), hasOpenFolder);
+        } else if (choice === OPEN_IN_CURRENT_WORKSPACE) {
+            if (!vscode.workspace.workspaceFolders.find((workspaceFolder) => workspaceFolder.uri && this.outputUri.fsPath.startsWith(workspaceFolder.uri.fsPath))) {
+                vscode.workspace.updateWorkspaceFolders(vscode.workspace.workspaceFolders.length, null, { uri: vscode.Uri.file(path.join(projectLocation, this.metadata.artifactId)) });
+            }
         }
     }
 
@@ -83,14 +85,14 @@ export class GenerateProjectHandler extends BaseHandler {
     }
 }
 
-async function specifyTargetFolder(projectName: string): Promise<vscode.Uri> {
+async function specifyTargetFolder(metadata: IProjectMetadata): Promise<vscode.Uri> {
     const OPTION_CONTINUE: string = "Continue";
     const OPTION_CHOOSE_ANOTHER_FOLDER: string = "Choose another folder";
     const LABEL_CHOOSE_FOLDER: string = "Generate into this folder";
-    const MESSAGE_EXISTING_FOLDER: string = `A folder [${projectName}] already exists in the selected folder. Continue to overwrite or Choose another folder?`;
+    const MESSAGE_EXISTING_FOLDER: string = `A folder [${metadata.artifactId}] already exists in the selected folder. Continue to overwrite or Choose another folder?`;
 
-    let outputUri: vscode.Uri = await openDialogForFolder({ openLabel: LABEL_CHOOSE_FOLDER });
-    while (outputUri && await fse.pathExists(path.join(outputUri.fsPath, projectName))) {
+    let outputUri: vscode.Uri = metadata.defaults.targetFolder ? vscode.Uri.file(metadata.defaults.targetFolder) : await openDialogForFolder({ openLabel: LABEL_CHOOSE_FOLDER });
+    while (outputUri && await fse.pathExists(path.join(outputUri.fsPath, metadata.artifactId))) {
         const overrideChoice: string = await vscode.window.showWarningMessage(MESSAGE_EXISTING_FOLDER, OPTION_CONTINUE, OPTION_CHOOSE_ANOTHER_FOLDER);
         if (overrideChoice === OPTION_CHOOSE_ANOTHER_FOLDER) {
             outputUri = await openDialogForFolder({ openLabel: LABEL_CHOOSE_FOLDER });
@@ -121,4 +123,16 @@ async function downloadAndUnzip(targetUrl: string, targetFolder: string): Promis
             });
         },
     ));
+}
+
+async function specifyOpenMethod(hasOpenFolder: boolean, projectLocation: string): Promise<string> {
+    let openMethod = vscode.workspace.getConfiguration("spring.initializr").get<string>("defaultOpenProjectMethod");
+    if (openMethod !== OPEN_IN_CURRENT_WORKSPACE && openMethod !== OPEN_IN_NEW_WORKSPACE) {
+        const candidates: string[] = [
+            OPEN_IN_NEW_WORKSPACE,
+            hasOpenFolder ? OPEN_IN_CURRENT_WORKSPACE : undefined,
+        ].filter(Boolean);
+        openMethod = await vscode.window.showInformationMessage(`Successfully generated. Location: ${projectLocation}`, ...candidates);
+    }
+    return openMethod;
 }
