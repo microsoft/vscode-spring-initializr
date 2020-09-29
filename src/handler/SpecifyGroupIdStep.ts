@@ -48,6 +48,7 @@ export class SpecifyGroupIdStep implements IStep {
     private async specifyGroupId(projectMetadata: IProjectMetadata): Promise<boolean> {
         const inputMetaData: IInputMetaData = {
             metadata: projectMetadata,
+            title: "Spring Initializr: Input Group Id",
             pickStep: SpecifyGroupIdStep.getInstance(),
             placeholder: "e.g. com.example",
             prompt: "Input Group Id for your project.",

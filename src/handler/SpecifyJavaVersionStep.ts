@@ -35,6 +35,7 @@ export class SpecifyJavaVersionStep implements IStep {
         }
         const pickMetaData: IPickMetadata = {
             metadata: projectMetadata,
+            title: "Spring Initializr: Specify Java version",
             pickStep: SpecifyJavaVersionStep.getInstance(),
             placeholder: "Specify Java version.",
             items: [{ label: "11" }, { label: "1.8" }, { label: "14" }]

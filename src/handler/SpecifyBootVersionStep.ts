@@ -33,6 +33,7 @@ export class SpecifyBootVersionStep implements IStep {
         const disposables: Disposable[] = [];
         const result: boolean = await new Promise<boolean>(async (resolve, reject) => {
             const pickBox: QuickPick<{ value: IValue, label: string }> = window.createQuickPick<{ value: IValue, label: string }>();
+            pickBox.title = "Spring Initializr: Specify Spring Boot version",
             pickBox.placeholder = "Specify Spring Boot version.";
             try {
                 pickBox.items = await serviceManager.getBootVersions(projectMetadata.serviceUrl).then(versions => versions.map(v => ({ value: v, label: v.name })));

@@ -35,6 +35,7 @@ export class SpecifyPackagingStep implements IStep {
         }
         const pickMetaData: IPickMetadata = {
             metadata: projectMetadata,
+            title: "Spring Initializr: Specify packging type",
             pickStep: SpecifyPackagingStep.getInstance(),
             placeholder: "Specify packaging type.",
             items: [{ label: "JAR" }, { label: "WAR" }]

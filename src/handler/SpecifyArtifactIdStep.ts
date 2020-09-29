@@ -48,6 +48,7 @@ export class SpecifyArtifactIdStep implements IStep {
     private async specifyArtifactId(projectMetadata: IProjectMetadata): Promise<boolean> {
         const inputMetaData: IInputMetaData = {
             metadata: projectMetadata,
+            title: "Spring Initializr: Input Artifact Id",
             pickStep: SpecifyArtifactIdStep.getInstance(),
             placeholder: "e.g. demo",
             prompt: "Input Artifact Id for your project.",
