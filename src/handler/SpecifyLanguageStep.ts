@@ -35,6 +35,7 @@ export class SpecifyLanguageStep implements IStep {
         }
         const pickMetaData: IPickMetadata = {
             metadata: projectMetadata,
+            title: "Spring Initializr: Specify project language",
             pickStep: SpecifyLanguageStep.getInstance(),
             placeholder: "Specify project language.",
             items: [{ label: "Java" }, { label: "Kotlin" }, { label: "Groovy" }]

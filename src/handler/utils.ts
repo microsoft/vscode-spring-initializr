@@ -37,6 +37,7 @@ export async function createPickBox(pickMetadata: IPickMetadata): Promise<boolea
     const disposables: Disposable[] = [];
     const result: boolean = await new Promise<boolean>((resolve, reject) => {
         const pickBox: QuickPick<QuickPickItem> = window.createQuickPick<QuickPickItem>();
+        pickBox.title = pickMetadata.title;
         pickBox.placeholder = pickMetadata.placeholder;
         pickBox.items = pickMetadata.items;
         pickBox.ignoreFocusOut = true;
@@ -86,6 +87,7 @@ export async function createInputBox(inputMetaData: IInputMetaData): Promise<boo
     const disposables: Disposable[] = [];
     const result: boolean = await new Promise<boolean>((resolve, reject) => {
         const inputBox: InputBox = window.createInputBox();
+        inputBox.title = inputMetaData.title;
         inputBox.placeholder = inputMetaData.placeholder;
         inputBox.prompt = inputMetaData.prompt;
         inputBox.value = inputMetaData.defaultValue;
@@ -151,6 +153,7 @@ export async function createInputBox(inputMetaData: IInputMetaData): Promise<boo
 
 export interface IPickMetadata {
     metadata: IProjectMetadata;
+    title: string;
     pickStep: IStep;
     placeholder: string;
     items: QuickPickItem[];
@@ -158,6 +161,7 @@ export interface IPickMetadata {
 
 export interface IInputMetaData {
     metadata: IProjectMetadata;
+    title: string;
     pickStep: IStep;
     placeholder: string;
     prompt: string;

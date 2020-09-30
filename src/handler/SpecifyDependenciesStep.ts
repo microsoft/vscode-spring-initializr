@@ -38,6 +38,7 @@ export class SpecifyDependenciesStep implements IStep {
             const quickPickItems: Array<QuickPickItem & IDependenciesItem> = await dependencyManager.getQuickPickItems(projectMetadata.serviceUrl, projectMetadata.bootVersion, { hasLastSelected: true });
             result = await new Promise<boolean>(async (resolve, reject) => {
                 const pickBox: QuickPick<QuickPickItem & IDependenciesItem> = window.createQuickPick<QuickPickItem & IDependenciesItem>();
+                pickBox.title = "Spring Initializr: Choose dependencies",
                 pickBox.placeholder = "Search for dependencies.";
                 pickBox.items = quickPickItems;
                 pickBox.ignoreFocusOut = true;
