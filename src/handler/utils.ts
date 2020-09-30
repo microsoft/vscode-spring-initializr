@@ -53,6 +53,9 @@ export async function createPickBox(pickMetadata: IPickMetadata): Promise<boolea
         }
         disposables.push(
             pickBox.onDidAccept(() => {
+                if (!pickBox.selectedItems[0]) {
+                    return;
+                }
                 if (pickMetadata.pickStep instanceof SpecifyLanguageStep) {
                     pickMetadata.metadata.language = pickBox.selectedItems[0].label && pickBox.selectedItems[0].label.toLowerCase();
                 } else if (pickMetadata.pickStep instanceof SpecifyJavaVersionStep) {

@@ -56,6 +56,9 @@ export class SpecifyDependenciesStep implements IStep {
                 }
                 disposables.push(
                     pickBox.onDidAccept(() => {
+                        if (!pickBox.selectedItems[0]) {
+                            return;
+                        }
                         current = pickBox.selectedItems[0];
                         resolve(true);
                     }),
