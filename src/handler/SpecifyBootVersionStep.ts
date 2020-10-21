@@ -53,6 +53,9 @@ export class SpecifyBootVersionStep implements IStep {
             }
             disposables.push(
                 pickBox.onDidAccept(() => {
+                    if (!pickBox.selectedItems[0]) {
+                        return;
+                    }
                     projectMetadata.bootVersion = pickBox.selectedItems[0] && pickBox.selectedItems[0].value && pickBox.selectedItems[0].value.id;
                     projectMetadata.pickSteps.push(SpecifyBootVersionStep.getInstance());
                     return resolve(true);
