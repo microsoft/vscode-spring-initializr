@@ -56,13 +56,16 @@ export function compareVersions(a: string, b: string): number {
             return result;
         }
     }
-    const aqual: string = parseQualifier(versionA[3]);
-    const bqual: string = parseQualifier(versionB[3]);
+    // version[3] can be undefined
+    const aqualRaw: string = versionA[3] || "RELEASE";
+    const bqualRaw: string = versionB[3] || "RELEASE";
+    const aqual: string = parseQualifier(aqualRaw);
+    const bqual: string = parseQualifier(bqualRaw);
     result = qualifiers.indexOf(aqual) - qualifiers.indexOf(bqual);
     if (result !== 0) {
         return result;
     }
-    return versionA[3].localeCompare(versionB[3]);
+    return aqualRaw.localeCompare(bqualRaw);
 }
 
 function parseQualifier(version: string): string {

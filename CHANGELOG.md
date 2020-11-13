@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to the "vscode-spring-initializr" extension will be documented in this file.
 
+## 0.6.1
+- Fix Error: Cannot read property 'split' of undefined. [#162](https://github.com/microsoft/vscode-spring-initializr/issues/162#issuecomment-726832226)
+
 ## 0.6.0
 - Allow commands to start initializr wizard with default selections.
 - Add a new setting `spring.initializr.defaultOpenProjectMethod` for default project opening method.
