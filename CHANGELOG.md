@@ -1,6 +1,13 @@
 # Change Log
 All notable changes to the "vscode-spring-initializr" extension will be documented in this file.
 
+## 0.6.0
+- Allow commands to start initializr wizard with default selections.
+- Add a new setting `spring.initializr.defaultOpenProjectMethod` for default project opening method.
+- Optimize UX of the multi-step wizard for creating a project. [#156](https://github.com/microsoft/vscode-spring-initializr/pull/156)
+- Fix Error: Cannot read property 'split' of undefined. [#159](https://github.com/microsoft/vscode-spring-initializr/issues/159)
+- Remov extra chars in title bar. [#158](https://github.com/microsoft/vscode-spring-initializr/issues/158)
+
 ## 0.5.0
 ### Added
 - Can specify Java vesrion. [#146](https://github.com/microsoft/vscode-spring-initializr/pull/146)
