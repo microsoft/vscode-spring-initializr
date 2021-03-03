@@ -63,7 +63,7 @@ export class SpecifyDependenciesStep implements IStep {
                         resolve(true);
                     }),
                     pickBox.onDidHide(() => {
-                        reject(new OperationCanceledError("Canceled on dependency seletion."));
+                        reject(new OperationCanceledError("Canceled on dependency selection."));
                     })
                 );
                 disposables.push(pickBox);

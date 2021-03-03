@@ -10,7 +10,7 @@ import { OperationCanceledError } from "../Errors";
 import { downloadFile } from "../Utils";
 import { openDialogForFolder } from "../Utils/VSCodeUI";
 import { BaseHandler } from "./BaseHandler";
-import { IProjectMetadata, IDefaultProjectData } from "./IProjectMetadata";
+import { IDefaultProjectData, IProjectMetadata } from "./IProjectMetadata";
 import { IStep } from "./IStep";
 import { SpecifyArtifactIdStep } from "./SpecifyArtifactIdStep";
 import { SpecifyGroupIdStep } from "./SpecifyGroupIdStep";

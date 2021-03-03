@@ -9,7 +9,7 @@ import { DependencyManager, IDependenciesItem } from "../DependencyManager";
 import {
     getBootVersion,
     getDependencyNodes,
-    getParentReletivePath,
+    getParentRelativePath,
     IMavenId,
     IStarters,
     serviceManager,
@@ -121,7 +121,7 @@ async function searchForBootVersion(pomPath: string): Promise<string> {
     }
 
     // search recursively in parent pom
-    const relativePath = getParentReletivePath(projectNode);
+    const relativePath = getParentRelativePath(projectNode);
     if (relativePath) {
         let absolutePath = path.join(path.dirname(pomPath), relativePath);
         if ((await fse.stat(absolutePath)).isDirectory()) {

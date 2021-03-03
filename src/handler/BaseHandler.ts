@@ -19,5 +19,5 @@ export abstract class BaseHandler {
         }
     }
 
-    protected abstract async runSteps(operationId?: string, ...args: any[]): Promise<void>;
+    protected abstract runSteps(operationId?: string, ...args: any[]): Promise<void>;
 }
