@@ -3,10 +3,9 @@
 
 import { workspace } from "vscode";
 import { instrumentOperationStep } from "vscode-extension-telemetry-wrapper";
-import { IProjectMetadata } from "./IProjectMetadata";
-import { IStep } from "./IStep";
+import { IInputMetaData, IProjectMetadata, IStep } from "./HandlerInterfaces";
 import { SpecifyPackagingStep } from "./SpecifyPackagingStep";
-import { createInputBox, IInputMetaData } from "./utils";
+import { createInputBox } from "./utils";
 
 export class SpecifyArtifactIdStep implements IStep {
 

@@ -5,8 +5,7 @@ import * as vscode from "vscode";
 import { Disposable, InputBox, QuickInputButtons, QuickPick, QuickPickItem, window } from "vscode";
 import { OperationCanceledError } from "../Errors";
 import { artifactIdValidation, groupIdValidation } from "../Utils";
-import { IProjectMetadata } from "./IProjectMetadata";
-import { IStep } from "./IStep";
+import { IInputMetaData, IPickMetadata, IProjectMetadata } from "./HandlerInterfaces";
 import { SpecifyArtifactIdStep } from "./SpecifyArtifactIdStep";
 import { SpecifyGroupIdStep } from "./SpecifyGroupIdStep";
 import { SpecifyJavaVersionStep } from "./SpecifyJavaVersionStep";
@@ -152,21 +151,4 @@ export async function createInputBox(inputMetaData: IInputMetaData): Promise<boo
         d.dispose();
     }
     return result;
-}
-
-export interface IPickMetadata {
-    metadata: IProjectMetadata;
-    title: string;
-    pickStep: IStep;
-    placeholder: string;
-    items: QuickPickItem[];
-}
-
-export interface IInputMetaData {
-    metadata: IProjectMetadata;
-    title: string;
-    pickStep: IStep;
-    placeholder: string;
-    prompt: string;
-    defaultValue: string;
 }

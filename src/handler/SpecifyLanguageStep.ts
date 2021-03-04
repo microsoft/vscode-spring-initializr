@@ -3,10 +3,9 @@
 
 import { workspace } from "vscode";
 import { instrumentOperationStep } from "vscode-extension-telemetry-wrapper";
-import { IProjectMetadata } from "./IProjectMetadata";
-import { IStep } from "./IStep";
+import { IPickMetadata, IProjectMetadata, IStep } from "./HandlerInterfaces";
 import { SpecifyGroupIdStep } from "./SpecifyGroupIdStep";
-import { createPickBox, IPickMetadata } from "./utils";
+import { createPickBox } from "./utils";
 
 export class SpecifyLanguageStep implements IStep {
 
