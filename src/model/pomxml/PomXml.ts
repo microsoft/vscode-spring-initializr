@@ -85,7 +85,7 @@ export function getBootVersion(projectNode: XmlNode): string {
     return bootVersion;
 }
 
-export function getParentReletivePath(projectNode: XmlNode): string {
+export function getParentRelativePath(projectNode: XmlNode): string {
     const parentNode: XmlNode = getNode(projectNode, "parent", {});
     return getNode(parentNode, "relativePath");
 }
