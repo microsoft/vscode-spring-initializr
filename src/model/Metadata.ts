@@ -13,11 +13,18 @@ export interface Metadata {
     type: Category<ProjectType>;
 }
 
+export enum MatadataType {
+    BOOTVERSION,
+    JAVAVERSION,
+    LANGUAGE,
+    PACKAGING,
+}
+
 interface Nameable {
     name: string;
 }
 
-interface Identifiable extends Nameable {
+export interface Identifiable extends Nameable {
     id: string;
 }
 
@@ -30,10 +37,10 @@ interface ProjectType extends Identifiable {
     action: string;
 }
 
-type BootVersion = Identifiable;
-type Packaging = Identifiable;
-type JavaVersion = Identifiable;
-type Language = Identifiable;
+export type BootVersion = Identifiable;
+export type Packaging = Identifiable;
+export type JavaVersion = Identifiable;
+export type Language = Identifiable;
 
 export interface DependencyGroup extends Category<Dependency>, Nameable {
 }

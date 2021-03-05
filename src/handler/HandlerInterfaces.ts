@@ -3,6 +3,7 @@
 
 import { QuickPickItem } from "vscode";
 import { IDependenciesItem } from "../DependencyManager";
+import { Identifiable } from "../model/Metadata";
 
 export interface IStep {
     getNextStep(): IStep | undefined;
@@ -32,12 +33,17 @@ export interface IDefaultProjectData {
     targetFolder?: string;
 }
 
-export interface IPickMetadata {
+export interface IHandlerItem<T extends Identifiable> extends QuickPickItem {
+    label: string;
+    value?: T;
+}
+
+export interface IPickMetadata<T extends Identifiable> {
     metadata: IProjectMetadata;
     title: string;
     pickStep: IStep;
     placeholder: string;
-    items: QuickPickItem[];
+    items: Array<IHandlerItem<T>>;
 }
 
 export interface IInputMetaData {

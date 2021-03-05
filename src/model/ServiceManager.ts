@@ -2,9 +2,10 @@
 // Licensed under the MIT license.
 
 import { IDependency, IStarters } from ".";
+import { IHandlerItem } from "../handler/HandlerInterfaces";
 import { downloadFile } from "../Utils";
 import { matchRange } from "../Utils/VersionHelper";
-import { DependencyGroup, Metadata } from "./Metadata";
+import { DependencyGroup, Identifiable, MatadataType, Metadata } from "./Metadata";
 
 /**
  * Prefer v2.2 and fallback to v2.1
@@ -15,15 +16,36 @@ const METADATA_HEADERS = { Accept: "application/vnd.initializr.v2.2+json,applica
 class ServiceManager {
     private metadataMap: Map<string, Metadata> = new Map();
 
-    public async getBootVersions(serviceUrl: string): Promise<any[]> {
+    public async getItems<T extends Identifiable>(serviceUrl: string, type: MatadataType): Promise<Array<IHandlerItem<T>>> {
         const metadata = await this.ensureMetadata(serviceUrl);
         if (!metadata) {
             throw new Error("Failed to fetch metadata.");
         }
+        let defaultLabel: string;
+        let values: any[];
+        switch (type) {
+            case MatadataType.BOOTVERSION:
+                defaultLabel = metadata.bootVersion.default;
+                values = metadata.bootVersion.values;
+                break;
+            case MatadataType.JAVAVERSION:
+                defaultLabel = metadata.javaVersion.default;
+                values = metadata.javaVersion.values;
+                break;
+            case MatadataType.LANGUAGE:
+                defaultLabel = metadata.language.default;
+                values = metadata.language.values;
+                break;
+            case MatadataType.PACKAGING:
+                defaultLabel = metadata.packaging.default;
+                values = metadata.packaging.values;
+                break;
+            default:
+                throw new Error("Invalid metadata type.");
+        }
 
-        const defaultVersion: string = metadata.bootVersion.default;
-        const versions = metadata.bootVersion.values;
-        return versions.filter(x => x.id === defaultVersion).concat(versions.filter(x => x.id !== defaultVersion));
+        const sortedValues = values.filter(x => x.id === defaultLabel).concat(values.filter(x => x.id !== defaultLabel));
+        return (type === MatadataType.BOOTVERSION) ? sortedValues.map(v => ({ value: v, label: v.name })) : sortedValues.map(v => ({ label: v.name }));
     }
 
     public async getAvailableDependencies(serviceUrl: string, bootVersion: string): Promise<IDependency[]> {

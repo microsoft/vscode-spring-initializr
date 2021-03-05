@@ -2,11 +2,13 @@
 // Licensed under the MIT license.
 
 import * as vscode from "vscode";
-import { Disposable, InputBox, QuickInputButtons, QuickPick, QuickPickItem, window } from "vscode";
+import { Disposable, InputBox, QuickInputButtons, QuickPick, window } from "vscode";
 import { OperationCanceledError } from "../Errors";
+import { Identifiable } from "../model/Metadata";
 import { artifactIdValidation, groupIdValidation } from "../Utils";
-import { IInputMetaData, IPickMetadata, IProjectMetadata } from "./HandlerInterfaces";
+import { IHandlerItem, IInputMetaData, IPickMetadata, IProjectMetadata } from "./HandlerInterfaces";
 import { SpecifyArtifactIdStep } from "./SpecifyArtifactIdStep";
+import { SpecifyBootVersionStep } from "./SpecifyBootVersionStep";
 import { SpecifyGroupIdStep } from "./SpecifyGroupIdStep";
 import { SpecifyJavaVersionStep } from "./SpecifyJavaVersionStep";
 import { SpecifyLanguageStep } from "./SpecifyLanguageStep";
@@ -32,10 +34,10 @@ export async function specifyServiceUrl(projectMetadata?: IProjectMetadata): Pro
     }
 }
 
-export async function createPickBox(pickMetadata: IPickMetadata): Promise<boolean> {
+export async function createPickBox<T extends Identifiable>(pickMetadata: IPickMetadata<T>): Promise<boolean> {
     const disposables: Disposable[] = [];
     const result: boolean = await new Promise<boolean>((resolve, reject) => {
-        const pickBox: QuickPick<QuickPickItem> = window.createQuickPick<QuickPickItem>();
+        const pickBox: QuickPick<IHandlerItem<T>> = window.createQuickPick<IHandlerItem<T>>();
         pickBox.title = pickMetadata.title;
         pickBox.placeholder = pickMetadata.placeholder;
         pickBox.items = pickMetadata.items;
@@ -52,15 +54,17 @@ export async function createPickBox(pickMetadata: IPickMetadata): Promise<boolea
         }
         disposables.push(
             pickBox.onDidAccept(() => {
-                if (!pickBox.selectedItems[0]) {
+                if (!pickBox.selectedItems?.[0]) {
                     return;
                 }
                 if (pickMetadata.pickStep instanceof SpecifyLanguageStep) {
-                    pickMetadata.metadata.language = pickBox.selectedItems[0].label && pickBox.selectedItems[0].label.toLowerCase();
+                    pickMetadata.metadata.language = pickBox.selectedItems[0].label?.toLowerCase();
                 } else if (pickMetadata.pickStep instanceof SpecifyJavaVersionStep) {
                     pickMetadata.metadata.javaVersion = pickBox.selectedItems[0].label;
                 } else if (pickMetadata.pickStep instanceof SpecifyPackagingStep) {
-                    pickMetadata.metadata.packaging = pickBox.selectedItems[0].label && pickBox.selectedItems[0].label.toLowerCase();
+                    pickMetadata.metadata.packaging = pickBox.selectedItems[0].label?.toLowerCase();
+                } else if (pickMetadata.pickStep instanceof SpecifyBootVersionStep) {
+                    pickMetadata.metadata.bootVersion = pickBox.selectedItems[0].value?.id;
                 }
                 pickMetadata.metadata.pickSteps.push(pickMetadata.pickStep);
                 return resolve(true);
@@ -72,6 +76,8 @@ export async function createPickBox(pickMetadata: IPickMetadata): Promise<boolea
                     return reject(new OperationCanceledError("Java version not specified."));
                 } else if (pickMetadata.pickStep instanceof SpecifyPackagingStep) {
                     return reject(new OperationCanceledError("Packaging not specified."));
+                } else if (pickMetadata.pickStep instanceof SpecifyBootVersionStep) {
+                    return reject(new OperationCanceledError("BootVersion not specified."));
                 }
                 return reject(new Error("Unknown picking step"));
             })

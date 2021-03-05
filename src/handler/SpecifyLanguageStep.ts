@@ -3,6 +3,8 @@
 
 import { workspace } from "vscode";
 import { instrumentOperationStep } from "vscode-extension-telemetry-wrapper";
+import { serviceManager } from "../model";
+import { Language, MatadataType } from "../model/Metadata";
 import { IPickMetadata, IProjectMetadata, IStep } from "./HandlerInterfaces";
 import { SpecifyGroupIdStep } from "./SpecifyGroupIdStep";
 import { createPickBox } from "./utils";
@@ -32,12 +34,12 @@ export class SpecifyLanguageStep implements IStep {
             projectMetadata.language = language && language.toLowerCase();
             return true;
         }
-        const pickMetaData: IPickMetadata = {
+        const pickMetaData: IPickMetadata<Language> = {
             metadata: projectMetadata,
             title: "Spring Initializr: Specify project language",
             pickStep: SpecifyLanguageStep.getInstance(),
             placeholder: "Specify project language.",
-            items: [{ label: "Java" }, { label: "Kotlin" }, { label: "Groovy" }]
+            items: await serviceManager.getItems(projectMetadata.serviceUrl, MatadataType.LANGUAGE),
         };
         return await createPickBox(pickMetaData);
     }
