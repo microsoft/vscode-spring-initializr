@@ -5,8 +5,7 @@ import { Disposable, QuickInputButtons, QuickPick, QuickPickItem, window } from 
 import { instrumentOperationStep, sendInfo } from "vscode-extension-telemetry-wrapper";
 import { DependencyManager, IDependenciesItem } from "../DependencyManager";
 import { OperationCanceledError } from "../Errors";
-import { IProjectMetadata } from "./IProjectMetadata";
-import { IStep } from "./IStep";
+import { IProjectMetadata, IStep } from "./HandlerInterfaces";
 
 export class SpecifyDependenciesStep implements IStep {
 

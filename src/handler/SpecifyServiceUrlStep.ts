@@ -3,8 +3,7 @@
 
 import { instrumentOperationStep } from "vscode-extension-telemetry-wrapper";
 import { OperationCanceledError } from "../Errors";
-import { IProjectMetadata } from "./IProjectMetadata";
-import { IStep } from "./IStep";
+import { IProjectMetadata, IStep } from "./HandlerInterfaces";
 import { SpecifyBootVersionStep } from "./SpecifyBootVersionStep";
 import { specifyServiceUrl } from "./utils";
 

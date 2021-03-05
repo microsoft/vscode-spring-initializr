@@ -5,8 +5,7 @@ import { Disposable, QuickInputButtons, QuickPick, window } from "vscode";
 import { instrumentOperationStep, sendInfo } from "vscode-extension-telemetry-wrapper";
 import { OperationCanceledError } from "../Errors";
 import { IValue, serviceManager } from "../model";
-import { IProjectMetadata } from "./IProjectMetadata";
-import { IStep } from "./IStep";
+import { IProjectMetadata, IStep } from "./HandlerInterfaces";
 import { SpecifyLanguageStep } from "./SpecifyLanguageStep";
 
 export class SpecifyBootVersionStep implements IStep {
