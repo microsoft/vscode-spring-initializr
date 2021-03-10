@@ -3,6 +3,8 @@
 
 import { workspace } from "vscode";
 import { instrumentOperationStep } from "vscode-extension-telemetry-wrapper";
+import { serviceManager } from "../model";
+import { MatadataType, Packaging } from "../model/Metadata";
 import { IPickMetadata, IProjectMetadata, IStep } from "./HandlerInterfaces";
 import { SpecifyJavaVersionStep } from "./SpecifyJavaVersionStep";
 import { createPickBox } from "./utils";
@@ -32,12 +34,12 @@ export class SpecifyPackagingStep implements IStep {
             projectMetadata.packaging = packaging && packaging.toLowerCase();
             return true;
         }
-        const pickMetaData: IPickMetadata = {
+        const pickMetaData: IPickMetadata<Packaging> = {
             metadata: projectMetadata,
             title: "Spring Initializr: Specify packaging type",
             pickStep: SpecifyPackagingStep.getInstance(),
             placeholder: "Specify packaging type.",
-            items: [{ label: "JAR" }, { label: "WAR" }]
+            items: await serviceManager.getItems(projectMetadata.serviceUrl, MatadataType.PACKAGING),
         };
         return await createPickBox(pickMetaData);
     }
