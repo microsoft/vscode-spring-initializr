@@ -3,6 +3,8 @@
 
 import { workspace } from "vscode";
 import { instrumentOperationStep } from "vscode-extension-telemetry-wrapper";
+import { serviceManager } from "../model";
+import { JavaVersion, MatadataType } from "../model/Metadata";
 import { IPickMetadata, IProjectMetadata, IStep } from "./HandlerInterfaces";
 import { SpecifyDependenciesStep } from "./SpecifyDependenciesStep";
 import { createPickBox } from "./utils";
@@ -32,12 +34,12 @@ export class SpecifyJavaVersionStep implements IStep {
             projectMetadata.javaVersion = javaVersion;
             return true;
         }
-        const pickMetaData: IPickMetadata = {
+        const pickMetaData: IPickMetadata<JavaVersion> = {
             metadata: projectMetadata,
             title: "Spring Initializr: Specify Java version",
             pickStep: SpecifyJavaVersionStep.getInstance(),
             placeholder: "Specify Java version.",
-            items: [{ label: "11" }, { label: "1.8" }, { label: "14" }]
+            items: await serviceManager.getItems(projectMetadata.serviceUrl, MatadataType.JAVAVERSION),
         };
         return await createPickBox(pickMetaData);
     }
