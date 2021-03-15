@@ -3,7 +3,7 @@ All notable changes to the "vscode-spring-initializr" extension will be document
 
 ## 0.7.0
 ### Fixed
-- Keep QuickPick options consistent with those from Spring Initializr service URL. [#173](https://github.com/microsoft/vscode-spring-initializr/pull/173)
+- Align options of project metadata with Spring Initializr service. [#173](https://github.com/microsoft/vscode-spring-initializr/pull/173)
 
 ## 0.6.1
 - Fix Error: Cannot read property 'split' of undefined. [#162](https://github.com/microsoft/vscode-spring-initializr/issues/162#issuecomment-726832226)
