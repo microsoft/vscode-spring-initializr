@@ -12,7 +12,10 @@
     "url": "https://github.com/Microsoft/vscode-spring-initializr.git"
   },
   "engines": {
-    "vscode": "^1.30.0"
+    "vscode": "^1.37.0"
+  },
+  "capabilities": {
+    "virtualWorkspaces": true
   },
   "categories": [
     "Other"
@@ -52,6 +55,14 @@
         {
           "command": "spring.initializr.createProject",
           "when": "never"
+        },
+        {
+          "command": "spring.initializr.maven-project",
+          "when": "!virtualWorkspace"
+        },
+        {
+          "command": "spring.initializr.gradle-project",
+          "when": "!virtualWorkspace"
         }
       ],
       "editor/context": [
@@ -159,7 +170,7 @@
     "@types/md5": "^2.1.33",
     "@types/mocha": "^5.2.7",
     "@types/node": "^10.14.13",
-    "@types/vscode": "1.30.0",
+    "@types/vscode": "1.37.0",
     "@types/xml-zero-lexer": "^2.1.0",
     "@types/xml2js": "^0.4.4",
     "glob": "^7.1.4",

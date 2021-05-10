@@ -136,9 +136,9 @@ export function buildXmlContent(obj: any, options?: {}): string {
 
 export async function getTargetPomXml(): Promise<vscode.Uri> {
     if (vscode.window.activeTextEditor) {
-        const fsPath: string = vscode.window.activeTextEditor.document.fileName;
-        if ("pom.xml" === path.basename(fsPath).toLowerCase()) {
-            return vscode.Uri.file(fsPath);
+        const activeUri = vscode.window.activeTextEditor.document.uri;
+        if ("pom.xml" === path.basename(activeUri.path).toLowerCase()) {
+            return activeUri;
         }
     }
 

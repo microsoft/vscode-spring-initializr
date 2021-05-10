@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 
-import * as fs from "fs-extra";
 import * as os from "os";
 import {
     InputBoxOptions,
@@ -90,12 +89,6 @@ export async function openDialogForFile(customOptions?: OpenDialogOptions): Prom
         return Promise.resolve(result[0]);
     } else {
         return Promise.resolve(undefined);
-    }
-}
-
-export async function openFileIfExists(filepath: string): Promise<void> {
-    if (await fs.pathExists(filepath)) {
-        window.showTextDocument(Uri.file(filepath), { preview: false });
     }
 }
 
