@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT license.
+
 import { FileType, Uri, workspace } from "vscode";
 
 export async function isDirectory(uri: Uri): Promise<boolean | undefined> {
