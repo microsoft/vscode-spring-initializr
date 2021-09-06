@@ -5,15 +5,15 @@ import * as vscode from "vscode";
 import { UserError } from "../error";
 import { ElementNode, getNodesByTag, XmlTagName } from "./lexer";
 
-export async function updatePom(pomPath: string, deps: IArtifact[], boms: IBom[]) {
+export async function updatePom(uri: vscode.Uri, deps: IArtifact[], boms: IBom[]) {
     const edit = new vscode.WorkspaceEdit();
 
     const projectNode: ElementNode = await getActiveProjectNode();
     const dependenciesNode: ElementNode | undefined = projectNode.children && projectNode.children.find(node => node.tag === XmlTagName.Dependencies);
     if (dependenciesNode !== undefined) {
-        await updateWorkspaceEdit(edit, pomPath, dependenciesNode, new DependencyNodes(deps));
+        await updateWorkspaceEdit(edit, uri, dependenciesNode, new DependencyNodes(deps));
     } else {
-        await updateWorkspaceEdit(edit, pomPath, projectNode, new DependencyNodes(deps, {initParent: true}));
+        await updateWorkspaceEdit(edit, uri, projectNode, new DependencyNodes(deps, {initParent: true}));
     }
 
     if (boms && boms.length > 0) {
@@ -21,12 +21,12 @@ export async function updatePom(pomPath: string, deps: IArtifact[], boms: IBom[]
         if (depMgmtNode !== undefined) {
             const depsNodes: ElementNode | undefined = depMgmtNode.children && depMgmtNode.children.find(node => node.tag === XmlTagName.Dependencies);
             if (depsNodes !== undefined) {
-                await updateWorkspaceEdit(edit, pomPath, depsNodes, new BOMNodes(boms));
+                await updateWorkspaceEdit(edit, uri, depsNodes, new BOMNodes(boms));
             } else {
-                await updateWorkspaceEdit(edit, pomPath, depMgmtNode, new BOMNodes(boms, {parents: ["dependencies"]}));
+                await updateWorkspaceEdit(edit, uri, depMgmtNode, new BOMNodes(boms, {parents: ["dependencies"]}));
             }
         } else {
-            await updateWorkspaceEdit(edit, pomPath, projectNode, new BOMNodes(boms, {parents: ["dependencies", "dependencyManagement"]}));
+            await updateWorkspaceEdit(edit, uri, projectNode, new BOMNodes(boms, {parents: ["dependencies", "dependencyManagement"]}));
         }
     }
 
@@ -53,11 +53,11 @@ function constructNodeText(nodeToInsert: PomNode, baseIndent: string, indent: st
     return ["", ...lines].join(`${eol}${baseIndent}${indent}`) + eol;
 }
 
-async function updateWorkspaceEdit(edit: vscode.WorkspaceEdit, pomPath: string, parentNode: ElementNode, nodeToInsert: PomNode): Promise<vscode.WorkspaceEdit> {
+async function updateWorkspaceEdit(edit: vscode.WorkspaceEdit, uri: vscode.Uri, parentNode: ElementNode, nodeToInsert: PomNode): Promise<vscode.WorkspaceEdit> {
     if (parentNode.contentStart === undefined || parentNode.contentEnd === undefined) {
         throw new UserError("Invalid target XML node to insert dependency.");
     }
-    const currentDocument: vscode.TextDocument = await vscode.workspace.openTextDocument(pomPath);
+    const currentDocument: vscode.TextDocument = await vscode.workspace.openTextDocument(uri);
     const textEditor: vscode.TextEditor = await vscode.window.showTextDocument(currentDocument);
     const baseIndent: string = getIndentation(currentDocument, parentNode.contentEnd);
     const options: vscode.TextEditorOptions = textEditor.options;

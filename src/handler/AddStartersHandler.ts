@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 
-import * as fse from "fs-extra";
 import * as path from "path";
 import * as vscode from "vscode";
 import { setUserError } from "vscode-extension-telemetry-wrapper";
@@ -16,6 +15,7 @@ import {
     XmlNode
 } from "../model";
 import { readXmlContent } from "../Utils";
+import { isDirectory, pathExists } from "../Utils/fsHelper";
 import { updatePom } from "../Utils/xml";
 import { BaseHandler } from "./BaseHandler";
 import { specifyServiceUrl } from "./utils";
@@ -28,7 +28,7 @@ export class AddStartersHandler extends BaseHandler {
     }
 
     public async runSteps(_operationId: string, entry: vscode.Uri): Promise<void> {
-        const bootVersion: string = await searchForBootVersion(entry.fsPath);
+        const bootVersion: string = await searchForBootVersion(entry);
         if (!bootVersion) {
             const ex = new Error("Not a valid Spring Boot project.");
             setUserError(ex);
@@ -105,15 +105,15 @@ export class AddStartersHandler extends BaseHandler {
         const bomIds = toAdd.map(id => starters.dependencies[id].bom).filter(Boolean);
         const boms = bomIds.map(id => starters.boms[id]);
 
-        updatePom(entry.fsPath, artifacts, boms);
+        updatePom(entry, artifacts, boms);
         vscode.window.showInformationMessage("Pom file successfully updated.");
         return;
     }
 
 }
 
-async function searchForBootVersion(pomPath: string): Promise<string> {
-    const content: Buffer = await fse.readFile(pomPath);
+async function searchForBootVersion(uri: vscode.Uri): Promise<string> {
+    const content: Uint8Array = await vscode.workspace.fs.readFile(uri);
     const { project: projectNode } = await readXmlContent(content.toString());
     const bootVersion: string = getBootVersion(projectNode);
     if (bootVersion) {
@@ -123,12 +123,14 @@ async function searchForBootVersion(pomPath: string): Promise<string> {
     // search recursively in parent pom
     const relativePath = getParentRelativePath(projectNode);
     if (relativePath) {
-        let absolutePath = path.join(path.dirname(pomPath), relativePath);
-        if ((await fse.stat(absolutePath)).isDirectory()) {
-            absolutePath = path.join(absolutePath, "pom.xml");
+        const newPath = path.join(path.dirname(uri.path), relativePath);
+        let newUri = uri.with({path: newPath});
+
+        if (await isDirectory(newUri)) {
+            newUri = uri.with({path: path.join(newPath, "pom.xml")});
         }
-        if (await fse.pathExists(absolutePath)) {
-            return await searchForBootVersion(absolutePath);
+        if (await pathExists(newUri)) {
+            return await searchForBootVersion(newUri);
         }
     }
     return undefined;
