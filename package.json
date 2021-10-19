@@ -161,7 +161,8 @@
     "compile": "webpack --mode development",
     "tslint": "tslint -t verbose src/*.ts",
     "watch": "webpack --mode development --watch",
-    "test": "npm run compile && tsc -p . && node ./out/test/runTest.js"
+    "test": "npm run compile && tsc -p . && node ./out/test/runTest.js",
+    "update-tpn": "node scripts/update-third-party-notice.js"
   },
   "devDependencies": {
     "@types/fs-extra": "^5.1.0",
