@@ -54,7 +54,7 @@ ext install vscode-spring-initializr
   "spring.initializr.defaultGroupId": "com.example",
 
   // Spring Initializr Service URL(s). If more than one url is specified, it requires you to select one every time you create a project.
-  "spring.initializr.serviceUrl": [ "https://start.spring.io/" ],
+  "spring.initializr.serviceUrl": [ "https://start.spring.io" ],
 
   // Default value for Packaging. Supported values are "JAR" and "WAR".
   "spring.initializr.defaultPackaging": "JAR",

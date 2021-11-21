@@ -85,7 +85,7 @@
       "properties": {
         "spring.initializr.serviceUrl": {
           "default": [
-            "https://start.spring.io/"
+            "https://start.spring.io"
           ],
           "type": [
             "string",

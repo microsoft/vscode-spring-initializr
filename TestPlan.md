@@ -47,10 +47,10 @@ After that, verify `build.gradle` instead of `pom.xml`.
 
 ## Customized Spring Initializr Service URL
 1. Open `User settings` in VS Code.
-2. Change value of entry `spring.initializr.serviceUrl`, e.g. "https://start.cfapps.io/", or [run the service locally](https://github.com/spring-io/initializr#running-the-app-locally) (if the previous one doesn't work). 
+2. Change value of entry `spring.initializr.serviceUrl`, e.g. "https://start.cfapps.io", or [run the service locally](https://github.com/spring-io/initializr#running-the-app-locally) (if the previous one doesn't work). 
 3. Verify:
     1. Can generate a project from the specified service URL.
-4. Change value of entry `spring.initializr.serviceUrl` to an array, e.g. ["https://start.cfapps.io/", "https://start.spring.io/"]
+4. Change value of entry `spring.initializr.serviceUrl` to an array, e.g. ["https://start.cfapps.io", "https://start.spring.io"]
 5. Verify:
     1. Before generating a project/editing starters, it requires users to select one from the list.
     2. Can generate a project from the selected service URL.

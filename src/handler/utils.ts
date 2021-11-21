@@ -15,7 +15,7 @@ import { SpecifyLanguageStep } from "./SpecifyLanguageStep";
 import { SpecifyPackagingStep } from "./SpecifyPackagingStep";
 import { SpecifyServiceUrlStep } from "./SpecifyServiceUrlStep";
 
-const DEFAULT_SERVICE_URL: string = "https://start.spring.io/";
+const DEFAULT_SERVICE_URL: string = "https://start.spring.io";
 
 export async function specifyServiceUrl(projectMetadata?: IProjectMetadata): Promise<string> {
     const configValue = vscode.workspace.getConfiguration("spring.initializr").get<string | string[]>("serviceUrl");
