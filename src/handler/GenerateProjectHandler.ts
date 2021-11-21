@@ -4,6 +4,7 @@
 import * as extract from "extract-zip";
 import * as fse from "fs-extra";
 import * as path from "path";
+import { URL } from "url";
 import * as vscode from "vscode";
 import { instrumentOperationStep } from "vscode-extension-telemetry-wrapper";
 import { OperationCanceledError } from "../Errors";
@@ -80,7 +81,10 @@ export class GenerateProjectHandler extends BaseHandler {
             `baseDir=${this.metadata.artifactId}`,
             `dependencies=${this.metadata.dependencies.id}`,
         ];
-        return `${this.metadata.serviceUrl}/starter.zip?${params.join("&")}`;
+        const targetUrl = new URL(this.metadata.serviceUrl);
+        targetUrl.pathname = "/starter.zip";
+        targetUrl.search = `?${params.join("&")}`;
+        return targetUrl.toString();
     }
 }
 
