@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to the "vscode-spring-initializr" extension will be documented in this file.
 
+## 0.7.1
+### Fixed
+- Error: end of central directory record signature not found. [#191](https://github.com/microsoft/vscode-spring-initializr/issues/191)
+
 ## 0.7.0
 ### Fixed
 - Align options of project metadata with Spring Initializr service. [#173](https://github.com/microsoft/vscode-spring-initializr/pull/173)
