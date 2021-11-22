@@ -1,6 +1,17 @@
 # Change Log
 All notable changes to the "vscode-spring-initializr" extension will be documented in this file.
 
+## 0.8.0
+### Added
+- Support virtual workspaces. [#185](https://github.com/microsoft/vscode-spring-initializr/issues/185)
+
+### Changed
+- Use `htmlparser2` to parse XML file. [#192](https://github.com/microsoft/vscode-spring-initializr/pull/192)
+
+### Fixed
+- Error: Fail to edit starters. [#193](https://github.com/microsoft/vscode-spring-initializr/pull/193)
+- Vulnerabilities in dependencies.
+
 ## 0.7.1
 ### Fixed
 - Error: end of central directory record signature not found. [#191](https://github.com/microsoft/vscode-spring-initializr/issues/191)
