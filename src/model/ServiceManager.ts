@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 
+import { URL } from "url";
 import { IDependency, IStarters } from ".";
 import { IHandlerItem } from "../handler/HandlerInterfaces";
 import { downloadFile } from "../Utils";
@@ -74,8 +75,10 @@ class ServiceManager {
      * Should be removed in future refactoring.
      */
     public async getStarters(serviceUrl: string, bootVersion: string): Promise<IStarters> {
-        const url = `${serviceUrl}dependencies?bootVersion=${bootVersion}`;
-        const rawJSONString: string = await downloadFile(url, true, METADATA_HEADERS);
+        const url = new URL(serviceUrl);
+        url.pathname = "/dependencies";
+        url.search = `?bootVersion=${bootVersion}`;
+        const rawJSONString: string = await downloadFile(url.toString(), true, METADATA_HEADERS);
         try {
             const ret = JSON.parse(rawJSONString);
             return ret;
