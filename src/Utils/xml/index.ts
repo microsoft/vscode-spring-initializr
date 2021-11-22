@@ -1,15 +1,15 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 
+import { Element, isTag, Node } from "domhandler";
 import * as vscode from "vscode";
 import { UserError } from "../error";
-import { ElementNode, getNodesByTag, XmlTagName } from "./lexer";
+import { getNodesByTag, XmlTagName } from "./lexer";
 
 export async function updatePom(uri: vscode.Uri, deps: IArtifact[], boms: IBom[]) {
     const edit = new vscode.WorkspaceEdit();
-
-    const projectNode: ElementNode = await getActiveProjectNode();
-    const dependenciesNode: ElementNode | undefined = projectNode.children && projectNode.children.find(node => node.tag === XmlTagName.Dependencies);
+    const projectNode: Element = await getActiveProjectNode();
+    const dependenciesNode: Element | undefined = projectNode.children && projectNode.children.find(node => isTag(node) && node.tagName === XmlTagName.Dependencies) as Element;
     if (dependenciesNode !== undefined) {
         await updateWorkspaceEdit(edit, uri, dependenciesNode, new DependencyNodes(deps));
     } else {
@@ -17,9 +17,9 @@ export async function updatePom(uri: vscode.Uri, deps: IArtifact[], boms: IBom[]
     }
 
     if (boms && boms.length > 0) {
-        const depMgmtNode: ElementNode | undefined = projectNode.children && projectNode.children.find(node => node.tag === XmlTagName.DependencyManagement);
+        const depMgmtNode: Element | undefined = projectNode.children && projectNode.children.find(node => isTag(node) && node.tagName === XmlTagName.DependencyManagement) as Element;
         if (depMgmtNode !== undefined) {
-            const depsNodes: ElementNode | undefined = depMgmtNode.children && depMgmtNode.children.find(node => node.tag === XmlTagName.Dependencies);
+            const depsNodes: Element | undefined = depMgmtNode.children && depMgmtNode.children.find(node => isTag(node) && node.tagName === XmlTagName.Dependencies) as Element;
             if (depsNodes !== undefined) {
                 await updateWorkspaceEdit(edit, uri, depsNodes, new BOMNodes(boms));
             } else {
@@ -33,19 +33,19 @@ export async function updatePom(uri: vscode.Uri, deps: IArtifact[], boms: IBom[]
     vscode.workspace.applyEdit(edit);
 }
 
-async function getActiveProjectNode() {
+async function getActiveProjectNode(): Promise<Element> {
     if (!vscode.window.activeTextEditor) {
         throw new UserError("No POM file is open.");
     }
 
     // Find out <dependencies> node and insert content.
     const content = vscode.window.activeTextEditor.document.getText();
-    const projectNodes: ElementNode[] = getNodesByTag(content, XmlTagName.Project);
+    const projectNodes: Node[] = getNodesByTag(content, XmlTagName.Project);
     if (projectNodes === undefined || projectNodes.length !== 1) {
         throw new UserError("Only support POM file with single <project> node.");
     }
 
-    return projectNodes[0];
+    return projectNodes[0] as Element;
 }
 
 function constructNodeText(nodeToInsert: PomNode, baseIndent: string, indent: string, eol: string): string {
@@ -53,38 +53,42 @@ function constructNodeText(nodeToInsert: PomNode, baseIndent: string, indent: st
     return ["", ...lines].join(`${eol}${baseIndent}${indent}`) + eol;
 }
 
-async function updateWorkspaceEdit(edit: vscode.WorkspaceEdit, uri: vscode.Uri, parentNode: ElementNode, nodeToInsert: PomNode): Promise<vscode.WorkspaceEdit> {
-    if (parentNode.contentStart === undefined || parentNode.contentEnd === undefined) {
-        throw new UserError("Invalid target XML node to insert dependency.");
-    }
+async function updateWorkspaceEdit(edit: vscode.WorkspaceEdit, uri: vscode.Uri, parentNode: Element, nodeToInsert: PomNode): Promise<vscode.WorkspaceEdit> {
     const currentDocument: vscode.TextDocument = await vscode.workspace.openTextDocument(uri);
-    const textEditor: vscode.TextEditor = await vscode.window.showTextDocument(currentDocument);
-    const baseIndent: string = getIndentation(currentDocument, parentNode.contentEnd);
-    const options: vscode.TextEditorOptions = textEditor.options;
-    const indent: string = options.insertSpaces ? " ".repeat(options.tabSize as number) : "\t";
-    const eol: string = currentDocument.eol === vscode.EndOfLine.LF ? "\n" : "\r\n";
+    const baseIndent: string = getIndentation(currentDocument, parentNode.startIndex);
 
-    let insertPos: vscode.Position = currentDocument.positionAt(parentNode.contentEnd);
+    let insertOffset = parentNode.endIndex - (parentNode.name.length + 3)/* "</parentNode>".length */ + 1;
+    let insertPos: vscode.Position = currentDocument.positionAt(insertOffset);
     // Not to mess up indentation, move cursor to line start:
     // <tab><tab>|</dependencies>  =>  |<tab><whitespace></dependencies>
     const insPosLineStart: vscode.Position = new vscode.Position(insertPos.line, 0);
     const contentBefore: string = currentDocument.getText(new vscode.Range(insPosLineStart, insertPos));
     if (contentBefore.trim() === "") {
+        insertOffset -= insertPos.character;
         insertPos = insPosLineStart;
     }
 
+    const textEditor: vscode.TextEditor = await vscode.window.showTextDocument(currentDocument);
+    const options: vscode.TextEditorOptions = textEditor.options;
+    const indent: string = options.insertSpaces ? " ".repeat(options.tabSize as number) : "\t";
+    const eol: string = currentDocument.eol === vscode.EndOfLine.LF ? "\n" : "\r\n";
     const targetText: string = constructNodeText(nodeToInsert, baseIndent, indent, eol);
-
     edit.insert(currentDocument.uri, insertPos, targetText);
     return edit;
 }
 
+/**
+ * src: \t\t<position>...
+ * returns "\t\t"
+ */
 function getIndentation(document: vscode.TextDocument, offset: number): string {
-    const closingTagPosition: vscode.Position = document.positionAt(offset);
-    return document.getText(new vscode.Range(
-        new vscode.Position(closingTagPosition.line, 0),
-        closingTagPosition
+    const pos: vscode.Position = document.positionAt(offset);
+    const lineContentToPos = document.getText(new vscode.Range(
+        new vscode.Position(pos.line, 0),
+        pos
     ));
+    const m = lineContentToPos.match(/^\s+/);
+    return m ? m[0] : "";
 }
 
 interface IArtifact {
