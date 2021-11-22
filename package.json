@@ -2,7 +2,7 @@
   "name": "vscode-spring-initializr",
   "displayName": "Spring Initializr Java Support",
   "description": "A lightweight extension based on Spring Initializr to generate quick start Spring Boot Java projects.",
-  "version": "0.7.1",
+  "version": "0.8.0",
   "icon": "resources/logo.png",
   "publisher": "vscjava",
   "aiKey": "05fb8871-fbf0-488f-8453-a74cf0ca9b93",
