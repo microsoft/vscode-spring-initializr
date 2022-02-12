@@ -30,7 +30,8 @@ export class GenerateProjectHandler extends BaseHandler {
         this.projectType = projectType;
         this.metadata = {
             pickSteps: [],
-            defaults: defaults || {}
+            defaults: defaults || {},
+            createArtifactIdFolder: vscode.workspace.getConfiguration("spring.initializr").get<boolean>("createArtifactIdFolder")
         };
     }
 
@@ -57,13 +58,20 @@ export class GenerateProjectHandler extends BaseHandler {
 
         // Open project either is the same workspace or new workspace
         const hasOpenFolder = vscode.workspace.workspaceFolders !== undefined || vscode.workspace.rootPath !== undefined;
-        const projectLocation = this.outputUri.fsPath;
+        const projectLocation = this.metadata.createArtifactIdFolder ? path.join(this.outputUri.fsPath, this.metadata.artifactId) : this.outputUri.fsPath;
+
+        // Don't prompt to open projectLocation if it's already a currently opened folder
+        if (hasOpenFolder && (vscode.workspace.workspaceFolders.some(folder => folder.uri.fsPath === projectLocation) || vscode.workspace.rootPath === projectLocation)) {
+            return;
+        }
+
         const choice = await specifyOpenMethod(hasOpenFolder, this.outputUri.fsPath);
+
         if (choice === OPEN_IN_NEW_WORKSPACE) {
-            vscode.commands.executeCommand("vscode.openFolder", vscode.Uri.file(path.join(projectLocation, this.metadata.artifactId)), hasOpenFolder);
+            vscode.commands.executeCommand("vscode.openFolder", vscode.Uri.file(projectLocation), hasOpenFolder);
         } else if (choice === OPEN_IN_CURRENT_WORKSPACE) {
             if (!vscode.workspace.workspaceFolders.find((workspaceFolder) => workspaceFolder.uri && this.outputUri.fsPath.startsWith(workspaceFolder.uri.fsPath))) {
-                vscode.workspace.updateWorkspaceFolders(vscode.workspace.workspaceFolders.length, null, { uri: vscode.Uri.file(path.join(projectLocation, this.metadata.artifactId)) });
+                vscode.workspace.updateWorkspaceFolders(vscode.workspace.workspaceFolders.length, null, { uri: vscode.Uri.file(projectLocation) });
             }
         }
     }
@@ -78,9 +86,13 @@ export class GenerateProjectHandler extends BaseHandler {
             `name=${this.metadata.artifactId}`,
             `packaging=${this.metadata.packaging}`,
             `bootVersion=${this.metadata.bootVersion}`,
-            `baseDir=${this.metadata.artifactId}`,
             `dependencies=${this.metadata.dependencies.id}`,
         ];
+
+        if (this.metadata.createArtifactIdFolder) {
+            params.push(`baseDir=${ this.metadata.artifactId}`);
+        }
+
         const targetUrl = new URL(this.metadata.serviceUrl);
         targetUrl.pathname = "/starter.zip";
         targetUrl.search = `?${params.join("&")}`;
@@ -95,7 +107,7 @@ async function specifyTargetFolder(metadata: IProjectMetadata): Promise<vscode.U
     const MESSAGE_EXISTING_FOLDER: string = `A folder [${metadata.artifactId}] already exists in the selected folder. Continue to overwrite or Choose another folder?`;
 
     let outputUri: vscode.Uri = metadata.defaults.targetFolder ? vscode.Uri.file(metadata.defaults.targetFolder) : await openDialogForFolder({ openLabel: LABEL_CHOOSE_FOLDER });
-    while (outputUri && await fse.pathExists(path.join(outputUri.fsPath, metadata.artifactId))) {
+    while (metadata.createArtifactIdFolder && outputUri && await fse.pathExists(path.join(outputUri.fsPath, metadata.artifactId))) {
         const overrideChoice: string = await vscode.window.showWarningMessage(MESSAGE_EXISTING_FOLDER, OPTION_CONTINUE, OPTION_CHOOSE_ANOTHER_FOLDER);
         if (overrideChoice === OPTION_CHOOSE_ANOTHER_FOLDER) {
             outputUri = await openDialogForFolder({ openLabel: LABEL_CHOOSE_FOLDER });
