@@ -105,10 +105,20 @@ async function specifyTargetFolder(metadata: IProjectMetadata): Promise<vscode.U
     const OPTION_CHOOSE_ANOTHER_FOLDER: string = "Choose another folder";
     const LABEL_CHOOSE_FOLDER: string = "Generate into this folder";
     const MESSAGE_EXISTING_FOLDER: string = `A folder [${metadata.artifactId}] already exists in the selected folder. Continue to overwrite or Choose another folder?`;
+    const MESSAGE_FOLDER_NOT_EMPTY: string = "The selected folder is not empty. Existing files with same names will be overwritten. Continue to overwrite or Choose another folder?"
+    
+    const MESSAGE: string = metadata.createArtifactIdFolder ? MESSAGE_EXISTING_FOLDER : MESSAGE_FOLDER_NOT_EMPTY;
 
     let outputUri: vscode.Uri = metadata.defaults.targetFolder ? vscode.Uri.file(metadata.defaults.targetFolder) : await openDialogForFolder({ openLabel: LABEL_CHOOSE_FOLDER });
-    while (metadata.createArtifactIdFolder && outputUri && await fse.pathExists(path.join(outputUri.fsPath, metadata.artifactId))) {
-        const overrideChoice: string = await vscode.window.showWarningMessage(MESSAGE_EXISTING_FOLDER, OPTION_CONTINUE, OPTION_CHOOSE_ANOTHER_FOLDER);
+    const projectLocation = metadata.createArtifactIdFolder ? path.join(outputUri.fsPath, metadata.artifactId) : outputUri.fsPath;
+
+    // If not using Artifact Id as folder name, we assume any existing files with same names will be overwritten
+    // So we check if the folder is not empty, to avoid deleting files without user's consent
+    while (
+        (!metadata.createArtifactIdFolder && outputUri && ((await fse.readdir(projectLocation)).length > 0))
+        || (metadata.createArtifactIdFolder && outputUri && await fse.pathExists(projectLocation))
+    ) {
+        const overrideChoice: string = await vscode.window.showWarningMessage(MESSAGE, OPTION_CONTINUE, OPTION_CHOOSE_ANOTHER_FOLDER);
         if (overrideChoice === OPTION_CHOOSE_ANOTHER_FOLDER) {
             outputUri = await openDialogForFolder({ openLabel: LABEL_CHOOSE_FOLDER });
         } else {
