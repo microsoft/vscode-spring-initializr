@@ -21,6 +21,7 @@ export interface IProjectMetadata {
     dependencies?: IDependenciesItem;
     pickSteps: IStep[];
     defaults: IDefaultProjectData;
+    createArtifactIdFolder?: boolean;
 }
 
 export interface IDefaultProjectData {

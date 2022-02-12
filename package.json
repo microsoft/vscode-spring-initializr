@@ -152,6 +152,12 @@
             "Open",
             "Add to Workspace"
           ]
+        },
+        "spring.initializr.createArtifactIdFolder": {
+          "default": true,
+          "type": "boolean",
+          "scope": "window",
+          "description": "Place the newly generated project inside a folder named after Artifact Id."
         }
       }
     }
