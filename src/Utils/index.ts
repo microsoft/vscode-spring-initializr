@@ -107,7 +107,7 @@ export async function readFileFromExtensionRoot(relateivePath: string): Promise<
 }
 
 export function groupIdValidation(value: string): string {
-    return (/^[a-z_][a-z0-9_]*(\.[a-z_][a-z0-9_]*)*$/.test(value)) ? null : "Invalid Group Id";
+    return (/^[a-z_][a-z0-9_]*(\.[a-z0-9_]+)*$/.test(value)) ? null : "Invalid Group Id";
 }
 
 export function artifactIdValidation(value: string): string {
