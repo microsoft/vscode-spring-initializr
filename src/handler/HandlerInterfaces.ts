@@ -21,7 +21,7 @@ export interface IProjectMetadata {
     dependencies?: IDependenciesItem;
     pickSteps: IStep[];
     defaults: IDefaultProjectData;
-    createArtifactIdFolder?: boolean;
+    parentFolder?: ParentFolder;
 }
 
 export interface IDefaultProjectData {
@@ -54,4 +54,9 @@ export interface IInputMetaData {
     placeholder: string;
     prompt: string;
     defaultValue: string;
+}
+
+export enum ParentFolder {
+    ARTIFACT_ID = "artifactId",
+    NONE = "none"
 }
