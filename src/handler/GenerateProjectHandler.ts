@@ -59,7 +59,7 @@ export class GenerateProjectHandler extends BaseHandler {
         const hasOpenFolder = vscode.workspace.workspaceFolders !== undefined || vscode.workspace.rootPath !== undefined;
 
         // Don't prompt to open projectLocation if it's already a currently opened folder
-        if (hasOpenFolder && (vscode.workspace.workspaceFolders.some(folder => folder.uri === this.outputUri) || vscode.workspace.rootPath === this.outputUri.path)) {
+        if (hasOpenFolder && (vscode.workspace.workspaceFolders.some(folder => folder.uri.fsPath === this.outputUri.fsPath) || vscode.workspace.rootPath === this.outputUri.fsPath)) {
             return;
         }
 
@@ -68,7 +68,7 @@ export class GenerateProjectHandler extends BaseHandler {
         if (choice === OPEN_IN_NEW_WORKSPACE) {
             vscode.commands.executeCommand("vscode.openFolder", this.outputUri, hasOpenFolder);
         } else if (choice === OPEN_IN_CURRENT_WORKSPACE) {
-            if (!vscode.workspace.workspaceFolders.find((workspaceFolder) => workspaceFolder.uri && this.outputUri.path.startsWith(workspaceFolder.uri.path))) {
+            if (!vscode.workspace.workspaceFolders.find((workspaceFolder) => workspaceFolder.uri && this.outputUri.fsPath.startsWith(workspaceFolder.uri.fsPath))) {
                 vscode.workspace.updateWorkspaceFolders(vscode.workspace.workspaceFolders.length, null, { uri: this.outputUri });
             }
         }
@@ -105,10 +105,10 @@ async function specifyTargetFolder(metadata: IProjectMetadata): Promise<vscode.U
 
     const MESSAGE: string = useArtifactId ? MESSAGE_EXISTING_FOLDER : MESSAGE_FOLDER_NOT_EMPTY;
 
-    let outputUri: vscode.Uri = metadata.defaults.targetFolder ? vscode.Uri.parse(metadata.defaults.targetFolder) : await openDialogForFolder({ openLabel: LABEL_CHOOSE_FOLDER });
+    let outputUri: vscode.Uri = metadata.defaults.targetFolder ? vscode.Uri.file(metadata.defaults.targetFolder) : await openDialogForFolder({ openLabel: LABEL_CHOOSE_FOLDER });
 
     if (outputUri && useArtifactId) {
-        outputUri = vscode.Uri.parse(`${outputUri.path}/${metadata.artifactId}`);
+        outputUri = vscode.Uri.file(`${outputUri.fsPath}/${metadata.artifactId}`);
     }
 
     // If not using Artifact Id as folder name, we assume any existing files with same names will be overwritten
@@ -139,7 +139,7 @@ async function downloadAndUnzip(targetUrl: string, targetFolder: vscode.Uri): Pr
             }
 
             p.report({ message: "Starting to unzip..." });
-            extract(filepath, { dir: targetFolder.path }, (err) => {
+            extract(filepath, { dir: targetFolder.fsPath }, (err) => {
                 if (err) {
                     return reject(err);
                 }
@@ -156,7 +156,7 @@ async function specifyOpenMethod(hasOpenFolder: boolean, projectLocation: vscode
             OPEN_IN_NEW_WORKSPACE,
             hasOpenFolder ? OPEN_IN_CURRENT_WORKSPACE : undefined,
         ].filter(Boolean);
-        openMethod = await vscode.window.showInformationMessage(`Successfully generated. Location: ${projectLocation.path}`, ...candidates);
+        openMethod = await vscode.window.showInformationMessage(`Successfully generated. Location: ${projectLocation.fsPath}`, ...candidates);
     }
     return openMethod;
 }
