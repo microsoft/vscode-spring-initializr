@@ -152,6 +152,20 @@
             "Open",
             "Add to Workspace"
           ]
+        },
+        "spring.initializr.parentFolder": {
+          "default": "artifactId",
+          "type": "string",
+          "enum": [
+            "artifactId",
+            "none"
+          ],
+          "enumDescriptions": [
+            "Place project in a folder named after Artifact Id",
+            "Do not create a folder for the project"
+          ],
+          "scope": "window",
+          "description": "Controls if a new sub-folder should be created for the newly generated project."
         }
       }
     }
