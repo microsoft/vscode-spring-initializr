@@ -1,6 +1,13 @@
 # Change Log
 All notable changes to the "vscode-spring-initializr" extension will be documented in this file.
 
+## 0.9.0
+### Added
+- New setting `spring.initializr.parentFolder` to control if a new sub-folder should be created for the newly generated project. [#197](https://github.com/microsoft/vscode-spring-initializr/pull/197)
+
+### Fixed
+- Fix Group Id validation. [#199](https://github.com/microsoft/vscode-spring-initializr/pull/199)
+
 ## 0.8.0
 ### Added
 - Support virtual workspaces. [#185](https://github.com/microsoft/vscode-spring-initializr/issues/185)
