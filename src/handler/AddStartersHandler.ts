@@ -123,6 +123,8 @@ async function searchForBootVersion(uri: vscode.Uri): Promise<string> {
     // search recursively in parent pom
     const relativePath = getParentRelativePath(projectNode);
     if (relativePath) {
+        // <relativePath> not empty, search filesystem first.
+        // See https://maven.apache.org/ref/3.8.5/maven-model/maven.html#parent
         const newPath = path.join(path.dirname(uri.path), relativePath);
         let newUri = uri.with({path: newPath});
 
@@ -133,5 +135,8 @@ async function searchForBootVersion(uri: vscode.Uri): Promise<string> {
             return await searchForBootVersion(newUri);
         }
     }
+
+    // TODO: continue to search repositories (local, remote)
+
     return undefined;
 }

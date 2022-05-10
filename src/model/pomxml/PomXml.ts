@@ -8,6 +8,10 @@ function isNullOrEmptyNode(node: any): boolean {
     return _.isEmpty(node) || _.isEqual(node, [""]);
 }
 
+function isNullNode(node: any) {
+    return _.isEmpty(node);
+}
+
 function ensureNode(parentNode: XmlNode, nodeName: string, defaultValue: any): any {
     if (isNullOrEmptyNode(parentNode[nodeName])) {
         parentNode[nodeName] = [defaultValue];
@@ -15,11 +19,11 @@ function ensureNode(parentNode: XmlNode, nodeName: string, defaultValue: any): a
     return parentNode[nodeName][0];
 }
 
-function getNode(parentNode: any, nodeName: string, fallbackValue?: any): any {
-    if (isNullOrEmptyNode(parentNode[nodeName])) {
-        return fallbackValue;
+function getNode(parentNode: any, nodeName: string, fallbackValue?: any, allowEmpty?: boolean): any {
+    if (allowEmpty) {
+        return isNullNode(parentNode[nodeName]) ? fallbackValue : parentNode[nodeName][0];
     } else {
-        return parentNode[nodeName][0];
+        return isNullOrEmptyNode(parentNode[nodeName]) ? fallbackValue : parentNode[nodeName][0];
     }
 }
 
@@ -85,7 +89,12 @@ export function getBootVersion(projectNode: XmlNode): string {
     return bootVersion;
 }
 
+/**
+ * Get value of <relativePath> under <parent> node.
+ * @param projectNode xml object of <project> node.
+ * @returns value of <relativePath> node. Defaults to "../pom.xml" if unspecified.
+ */
 export function getParentRelativePath(projectNode: XmlNode): string {
     const parentNode: XmlNode = getNode(projectNode, "parent", {});
-    return getNode(parentNode, "relativePath");
+    return getNode(parentNode, "relativePath", "../pom.xml", true);
 }
