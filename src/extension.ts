@@ -2,6 +2,8 @@
 // Licensed under the MIT license.
 
 "use strict";
+import * as fs from "fs";
+import * as path from "path";
 import * as vscode from "vscode";
 import {
     dispose as disposeTelemetryWrapper,
@@ -47,6 +49,22 @@ async function initializeExtension(_operationId: string, context: vscode.Extensi
             vscode.window.showInformationMessage("No pom.xml found in the workspace.");
         }
     }, true));
+
+    // preview HELP.md for newly created project
+    if (vscode.workspace.workspaceFolders?.length === 1) {
+        const flagFile = path.join(vscode.workspace.workspaceFolders[0].uri.fsPath, ".vscode/NEWLY_CREATED_BY_SPRING_INITIALIZR");
+        try {
+            await fs.promises.access(flagFile);
+            const readmeFileUris = await vscode.workspace.findFiles(new vscode.RelativePattern(vscode.workspace.workspaceFolders[0], "{readme,README,help,HELP}.md"));
+            if (readmeFileUris.length > 0) {
+                await vscode.commands.executeCommand("markdown.showPreview", readmeFileUris[0]);
+            }
+            await fs.promises.unlink(flagFile);
+
+        } catch (error) {
+            // do nothing
+        }
+    }
 }
 
 function instrumentAndRegisterCommand(name: string, cb: (...args: any[]) => any, withOperationIdAhead?: boolean): vscode.Disposable {

@@ -2,6 +2,8 @@
 // Licensed under the MIT license.
 
 import * as extract from "extract-zip";
+import * as fse from "fs-extra";
+import * as path from "path";
 import { URL } from "url";
 import * as vscode from "vscode";
 import { instrumentOperationStep } from "vscode-extension-telemetry-wrapper";
@@ -54,6 +56,10 @@ export class GenerateProjectHandler extends BaseHandler {
 
         // Step: Download & Unzip
         await instrumentOperationStep(operationId, "DownloadUnzip", downloadAndUnzip)(this.downloadUrl, this.outputUri);
+
+        // add a flag file marking it's newly created.
+        const flagFile = path.join(this.outputUri.fsPath, ".vscode/NEWLY_CREATED_BY_SPRING_INITIALIZR");
+        await fse.createFile(flagFile);
 
         // Open project either is the same workspace or new workspace
         const hasOpenFolder = vscode.workspace.workspaceFolders !== undefined || vscode.workspace.rootPath !== undefined;

@@ -24,7 +24,8 @@
     "onCommand:spring.initializr.maven-project",
     "onCommand:spring.initializr.gradle-project",
     "onCommand:spring.initializr.addStarters",
-    "onCommand:spring.initializr.createProject"
+    "onCommand:spring.initializr.createProject",
+    "workspaceContains:.vscode/NEWLY_CREATED_BY_SPRING_INITIALIZR"
   ],
   "main": "./dist/extension",
   "contributes": {
