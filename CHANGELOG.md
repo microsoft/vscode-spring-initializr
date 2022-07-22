@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to the "vscode-spring-initializr" extension will be documented in this file.
 
+## 0.10.1
+- Open HELP.md for newly created projects. [#207](https://github.com/microsoft/vscode-spring-initializr/pull/207)
+
 ## 0.10.0
 ### Fixed
 - Fix version detection when `relativePath` is not specified. [#202](https://github.com/microsoft/vscode-spring-initializr/pull/202)
