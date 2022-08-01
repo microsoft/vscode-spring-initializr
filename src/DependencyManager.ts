@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 
-import { QuickPickItem, QuickPickItemKind } from "vscode";
-import { IDependency, serviceManager } from "./model";
+import { QuickInputButton, QuickPickItem, QuickPickItemKind, ThemeIcon } from "vscode";
+import { IDependency, ILink, ILinks, serviceManager } from "./model";
 import { readFileFromExtensionRoot, writeFileToExtensionRoot } from "./Utils";
 
 const HINT_CONFIRM: string = "Press <Enter> to continue.";
@@ -14,6 +14,8 @@ export class DependencyManager {
     public dependencies: IDependency[] = [];
     public dict: { [key: string]: IDependency } = {};
     public selectedIds: string[] = [];
+
+    constructor(public bootVersion: string) { }
 
     public updateLastUsedDependencies(v: IDependenciesItem): void {
         writeFileToExtensionRoot(DEPENDENCIES_HISTORY_FILENAME, v.id);
@@ -29,9 +31,9 @@ export class DependencyManager {
         this.lastselected = idList;
     }
 
-    public async getQuickPickItems(serviceUrl: string, bootVersion: string, options?: { hasLastSelected: boolean }): Promise<Array<QuickPickItem & IDependenciesItem>> {
+    public async getQuickPickItems(serviceUrl: string, options?: { hasLastSelected: boolean }): Promise<Array<QuickPickItem & IDependenciesItem>> {
         if (this.dependencies.length === 0) {
-            await this.initialize(await serviceManager.getAvailableDependencies(serviceUrl, bootVersion));
+            await this.initialize(await serviceManager.getAvailableDependencies(serviceUrl, this.bootVersion));
         }
         const ret: Array<QuickPickItem & IDependenciesItem> = [];
         if (this.selectedIds.length === 0) {
@@ -59,6 +61,8 @@ export class DependencyManager {
                 id: dep.id,
                 itemType: "dependency",
                 label: `$(check) ${dep.name}`,
+                // link buttons
+                buttons: getLinkButtons(dep._links),
             }));
             ret.push(...selectedItems);
         }
@@ -77,6 +81,8 @@ export class DependencyManager {
                     id: dep.id,
                     itemType: "dependency",
                     label: dep.name,
+                    // link buttons
+                    buttons: getLinkButtons(dep._links),
                 });
             }
         }
@@ -127,4 +133,33 @@ function newSeparator(name: string) {
         id: name
     };
 }
+function getLinkButtons(links?: ILinks): Array<QuickInputButton & ILink> {
+    const buttons: Array<QuickInputButton & ILink> = [];
+    if (links?.home) {
+        const homeButton = {
+            iconPath: new ThemeIcon("home"),
+            tooltip: links.home.title ?? "Homepage",
+            ...links.home
+        };
+        buttons.push(homeButton);
+    }
+    if (links?.sample) {
+        const sampleButton = {
+            iconPath: new ThemeIcon("repo"),
+            tooltip: links.sample.title ?? "Sample",
+            ...links.sample
+        };
+        buttons.push(sampleButton);
+    }
+    if (links?.reference) {
+        const referenceButton = {
+            iconPath: new ThemeIcon("link-external"),
+            tooltip: links.reference.title ?? "Reference",
+            ...links.reference
+        };
+        buttons.push(referenceButton);
+    }
+    return buttons;
+}
+
 export interface IDependenciesItem { itemType: string; id: string; }
