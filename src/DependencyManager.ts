@@ -1,11 +1,10 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 
-import { QuickPickItem } from "vscode";
+import { QuickPickItem, QuickPickItemKind } from "vscode";
 import { IDependency, serviceManager } from "./model";
 import { readFileFromExtensionRoot, writeFileToExtensionRoot } from "./Utils";
 
-const PLACEHOLDER: string = "";
 const HINT_CONFIRM: string = "Press <Enter> to continue.";
 const DEPENDENCIES_HISTORY_FILENAME: string = ".last_used_dependencies";
 
@@ -51,15 +50,38 @@ export class DependencyManager {
             label: `$(checklist) Selected ${this.selectedIds.length} dependenc${this.selectedIds.length === 1 ? "y" : "ies"}`,
         });
 
-        return ret.concat(this.getSelectedDependencies().concat(this.getUnselectedDependencies()).map((dep: IDependency) => {
-            return {
+        const selectedDeps = this.getSelectedDependencies();
+        if (selectedDeps.length > 0) {
+            ret.push(newSeparator("Selected"));
+            const selectedItems = selectedDeps.map(dep => ({
                 description: dep.group,
                 detail: dep.description,
                 id: dep.id,
                 itemType: "dependency",
-                label: `${this.selectedIds.indexOf(dep.id) >= 0 ? "$(check) " : PLACEHOLDER}${dep.name}`,
-            };
-        }));
+                label: `$(check) ${dep.name}`,
+            }));
+            ret.push(...selectedItems);
+        }
+
+        const unselectedDeps = this.getUnselectedDependencies();
+        if (unselectedDeps.length > 0) {
+            let group;
+            for (const dep of unselectedDeps) {
+                if (group !== dep.group) {
+                    group = dep.group;
+                    ret.push(newSeparator(group));
+                }
+                ret.push({
+                    description: dep.group,
+                    detail: dep.description,
+                    id: dep.id,
+                    itemType: "dependency",
+                    label: dep.name,
+                });
+            }
+        }
+
+        return ret;
     }
 
     public getSelectedDependencies(): IDependency[] {
@@ -96,4 +118,13 @@ export class DependencyManager {
     }
 }
 
+function newSeparator(name: string) {
+    return {
+        label: name,
+        kind: QuickPickItemKind.Separator,
+        // below are not effective
+        itemType: "separator",
+        id: name
+    };
+}
 export interface IDependenciesItem { itemType: string; id: string; }
