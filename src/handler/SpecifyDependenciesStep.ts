@@ -5,6 +5,7 @@ import { commands, Disposable, QuickInputButtons, QuickPick, QuickPickItem, wind
 import { instrumentOperationStep, sendInfo } from "vscode-extension-telemetry-wrapper";
 import { DependencyManager, IDependenciesItem } from "../DependencyManager";
 import { OperationCanceledError } from "../Errors";
+import { ILink } from "../model";
 import { IProjectMetadata, IStep } from "./HandlerInterfaces";
 
 export class SpecifyDependenciesStep implements IStep {
@@ -65,16 +66,15 @@ export class SpecifyDependenciesStep implements IStep {
                         reject(new OperationCanceledError("Canceled on dependency selection."));
                     }),
                     pickBox.onDidTriggerItemButton(e => {
-                        let href: string | undefined = (e.button as any).href;
-                        if (href) {
-                            const templated = (e.button as any).templated;
-                            // NOTE: so far only {bootVersion} in templates
-                            if (templated && href.includes("{bootVersion}")) {
-                                href = href.replace(/\{bootVersion\}/g, projectMetadata.bootVersion);
-                            }
-                            sendInfo("", {name: "openStarterLink", starter: e.item.label});
-                            commands.executeCommand("vscode.open", href);
+                        const starter = e.item.label;
+                        const linkItem = (e.button as any as ILink);
+                        let { href, templated } = linkItem;
+                        // NOTE: so far only {bootVersion} in templates
+                        if (templated && href.includes("{bootVersion}")) {
+                            href = href.replace(/\{bootVersion\}/g, projectMetadata.bootVersion);
                         }
+                        sendInfo("", { name: "openStarterLink", starter });
+                        commands.executeCommand("vscode.open", href);
                     }),
                 );
                 disposables.push(pickBox);

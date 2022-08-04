@@ -135,7 +135,7 @@ function newSeparator(name: string) {
 }
 function getLinkButtons(links?: ILinks): Array<QuickInputButton & ILink> {
     const buttons: Array<QuickInputButton & ILink> = [];
-    if (links?.home) {
+    if (links?.home?.href) {
         const homeButton = {
             iconPath: new ThemeIcon("home"),
             tooltip: links.home.title ?? "Homepage",
@@ -143,7 +143,7 @@ function getLinkButtons(links?: ILinks): Array<QuickInputButton & ILink> {
         };
         buttons.push(homeButton);
     }
-    if (links?.sample) {
+    if (links?.sample?.href) {
         const sampleButton = {
             iconPath: new ThemeIcon("repo"),
             tooltip: links.sample.title ?? "Sample",
@@ -151,7 +151,7 @@ function getLinkButtons(links?: ILinks): Array<QuickInputButton & ILink> {
         };
         buttons.push(sampleButton);
     }
-    if (links?.reference) {
+    if (links?.reference?.href) {
         const referenceButton = {
             iconPath: new ThemeIcon("link-external"),
             tooltip: links.reference.title ?? "Reference",
