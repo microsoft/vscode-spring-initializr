@@ -13,7 +13,7 @@ export abstract class BaseHandler {
             await this.runSteps(operationId, ...args);
         } catch (error) {
             if (!(error instanceof OperationCanceledError)) {
-                vscode.window.showErrorMessage(`${this.failureMessage} Error: ${error.message}`);
+                vscode.window.showErrorMessage(`${this.failureMessage} ${error.message}`);
                 throw error;
             }
         }

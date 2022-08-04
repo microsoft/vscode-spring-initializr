@@ -34,7 +34,7 @@ export class SpecifyBootVersionStep implements IStep {
             title: "Spring Initializr: Specify Spring Boot version",
             pickStep: SpecifyBootVersionStep.getInstance(),
             placeholder: "Specify Spring Boot version.",
-            items: await serviceManager.getItems(projectMetadata.serviceUrl, MatadataType.BOOTVERSION),
+            items: serviceManager.getItems(projectMetadata.serviceUrl, MatadataType.BOOTVERSION),
         };
         return await createPickBox(pickMetaData);
     }

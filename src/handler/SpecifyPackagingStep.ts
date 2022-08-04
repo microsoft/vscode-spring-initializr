@@ -39,7 +39,7 @@ export class SpecifyPackagingStep implements IStep {
             title: "Spring Initializr: Specify packaging type",
             pickStep: SpecifyPackagingStep.getInstance(),
             placeholder: "Specify packaging type.",
-            items: await serviceManager.getItems(projectMetadata.serviceUrl, MatadataType.PACKAGING),
+            items: serviceManager.getItems(projectMetadata.serviceUrl, MatadataType.PACKAGING),
         };
         return await createPickBox(pickMetaData);
     }
