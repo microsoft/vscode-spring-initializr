@@ -39,7 +39,7 @@ export class SpecifyJavaVersionStep implements IStep {
             title: "Spring Initializr: Specify Java version",
             pickStep: SpecifyJavaVersionStep.getInstance(),
             placeholder: "Specify Java version.",
-            items: await serviceManager.getItems(projectMetadata.serviceUrl, MatadataType.JAVAVERSION),
+            items: serviceManager.getItems(projectMetadata.serviceUrl, MatadataType.JAVAVERSION),
         };
         return await createPickBox(pickMetaData);
     }

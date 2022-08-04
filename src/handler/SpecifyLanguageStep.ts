@@ -39,7 +39,7 @@ export class SpecifyLanguageStep implements IStep {
             title: "Spring Initializr: Specify project language",
             pickStep: SpecifyLanguageStep.getInstance(),
             placeholder: "Specify project language.",
-            items: await serviceManager.getItems(projectMetadata.serviceUrl, MatadataType.LANGUAGE),
+            items: serviceManager.getItems(projectMetadata.serviceUrl, MatadataType.LANGUAGE),
         };
         return await createPickBox(pickMetaData);
     }
