@@ -5,6 +5,22 @@
 export interface IDependency extends IValue {
     group?: string;
     versionRange?: string;
+    _links?: ILinks;
+}
+
+export interface ILinks {
+    // Count of starters by link types for Spring Boot v2.7.2: {reference: 95, guide: 39, home: 1, other: 1, sample: 7}
+    reference?: ILink;
+    guide?: ILink;
+    home?: ILink;
+    other?: ILink;
+    sample?: ILink;
+}
+
+export interface ILink {
+    href: string;
+    title?: string;
+    templated?: boolean;
 }
 
 export interface ITopLevelAttribute {

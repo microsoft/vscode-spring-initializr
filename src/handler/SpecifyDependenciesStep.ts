@@ -1,10 +1,11 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 
-import { Disposable, QuickInputButtons, QuickPick, QuickPickItem, window } from "vscode";
+import { commands, Disposable, QuickInputButtons, QuickPick, QuickPickItem, window } from "vscode";
 import { instrumentOperationStep, sendInfo } from "vscode-extension-telemetry-wrapper";
 import { DependencyManager, IDependenciesItem } from "../DependencyManager";
 import { OperationCanceledError } from "../Errors";
+import { ILink } from "../model";
 import { IProjectMetadata, IStep } from "./HandlerInterfaces";
 
 export class SpecifyDependenciesStep implements IStep {
@@ -28,13 +29,13 @@ export class SpecifyDependenciesStep implements IStep {
     }
 
     private async specifyDependencies(projectMetadata: IProjectMetadata): Promise<boolean> {
-        const dependencyManager = new DependencyManager();
+        const dependencyManager = new DependencyManager(projectMetadata.bootVersion);
         let current: IDependenciesItem = null;
         let result: boolean = false;
         const disposables: Disposable[] = [];
         dependencyManager.selectedIds = projectMetadata.defaults.dependencies || [];
         do {
-            const quickPickItems: Array<QuickPickItem & IDependenciesItem> = await dependencyManager.getQuickPickItems(projectMetadata.serviceUrl, projectMetadata.bootVersion, { hasLastSelected: true });
+            const quickPickItems: Array<QuickPickItem & IDependenciesItem> = await dependencyManager.getQuickPickItems(projectMetadata.serviceUrl, { hasLastSelected: true });
             result = await new Promise<boolean>(async (resolve, reject) => {
                 const pickBox: QuickPick<QuickPickItem & IDependenciesItem> = window.createQuickPick<QuickPickItem & IDependenciesItem>();
                 pickBox.title = "Spring Initializr: Choose dependencies",
@@ -63,7 +64,18 @@ export class SpecifyDependenciesStep implements IStep {
                     }),
                     pickBox.onDidHide(() => {
                         reject(new OperationCanceledError("Canceled on dependency selection."));
-                    })
+                    }),
+                    pickBox.onDidTriggerItemButton(e => {
+                        const starter = e.item.label;
+                        const linkItem = (e.button as any as ILink);
+                        let { href, templated } = linkItem;
+                        // NOTE: so far only {bootVersion} in templates
+                        if (templated && href.includes("{bootVersion}")) {
+                            href = href.replace(/\{bootVersion\}/g, projectMetadata.bootVersion);
+                        }
+                        sendInfo("", { name: "openStarterLink", starter });
+                        commands.executeCommand("vscode.open", href);
+                    }),
                 );
                 disposables.push(pickBox);
                 pickBox.show();

@@ -69,12 +69,12 @@ export class AddStartersHandler extends BaseHandler {
                 oldStarterIds.push(key);
             }
         });
-        const dependencyManager = new DependencyManager();
+        const dependencyManager = new DependencyManager(bootVersion);
         dependencyManager.selectedIds = [].concat(oldStarterIds);
         let current: IDependenciesItem = null;
         do {
             current = await vscode.window.showQuickPick(
-                dependencyManager.getQuickPickItems(this.serviceUrl, bootVersion),
+                dependencyManager.getQuickPickItems(this.serviceUrl),
                 {
                     ignoreFocusOut: true,
                     matchOnDescription: true,
