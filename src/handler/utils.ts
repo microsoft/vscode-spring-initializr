@@ -36,12 +36,21 @@ export async function specifyServiceUrl(projectMetadata?: IProjectMetadata): Pro
 
 export async function createPickBox<T extends Identifiable>(pickMetadata: IPickMetadata<T>): Promise<boolean> {
     const disposables: Disposable[] = [];
-    const result: boolean = await new Promise<boolean>((resolve, reject) => {
+
+    const resultPromise = new Promise<boolean>(async (resolve, reject) => {
         const pickBox: QuickPick<IHandlerItem<T>> = window.createQuickPick<IHandlerItem<T>>();
         pickBox.title = pickMetadata.title;
         pickBox.placeholder = pickMetadata.placeholder;
-        pickBox.items = pickMetadata.items;
         pickBox.ignoreFocusOut = true;
+        pickBox.busy = true;
+        pickBox.show();
+        try {
+            pickBox.items = await pickMetadata.items;
+            pickBox.busy = false;
+        } catch (error) {
+            pickBox.hide();
+            return reject(error);
+        }
         if (pickMetadata.metadata.pickSteps.length > 0) {
             pickBox.buttons = [(QuickInputButtons.Back)];
             disposables.push(
@@ -85,10 +94,17 @@ export async function createPickBox<T extends Identifiable>(pickMetadata: IPickM
         disposables.push(pickBox);
         pickBox.show();
     });
-    for (const d of disposables) {
-        d.dispose();
+
+    try {
+        return await resultPromise;
+    } catch (error) {
+        throw error;
+    } finally {
+        for (const d of disposables) {
+            d.dispose();
+        }
     }
-    return result;
+
 }
 
 export async function createInputBox(inputMetaData: IInputMetaData): Promise<boolean> {

@@ -37,7 +37,7 @@ export class GenerateProjectHandler extends BaseHandler {
     }
 
     protected get failureMessage(): string {
-        return "Fail to create a project.";
+        return "Failed to create a project.";
     }
 
     public async runSteps(operationId?: string): Promise<void> {

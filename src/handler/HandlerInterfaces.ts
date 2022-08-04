@@ -44,7 +44,7 @@ export interface IPickMetadata<T extends Identifiable> {
     title: string;
     pickStep: IStep;
     placeholder: string;
-    items: Array<IHandlerItem<T>>;
+    items: Array<IHandlerItem<T>> | Promise<Array<IHandlerItem<T>>>;
 }
 
 export interface IInputMetaData {
