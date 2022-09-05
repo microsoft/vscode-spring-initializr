@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to the "vscode-spring-initializr" extension will be documented in this file.
 
+## 0.11.0
+### Added
+- Show separator between starter groups. [#210](https://github.com/microsoft/vscode-spring-initializr/pull/210)
+- Add link buttons onto starter candidates. [#211](https://github.com/microsoft/vscode-spring-initializr/pull/211)
+
+### Fixed
+- Show progress when fetching metadata. [#213](https://github.com/microsoft/vscode-spring-initializr/pull/213)
+
 ## 0.10.1
 - Open HELP.md for newly created projects. [#207](https://github.com/microsoft/vscode-spring-initializr/pull/207)
 
