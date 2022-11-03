@@ -106,12 +106,12 @@ export async function readFileFromExtensionRoot(relateivePath: string): Promise<
     }
 }
 
-export function groupIdValidation(value: string): string {
-    return (/^[a-z_][a-z0-9_]*(\.[a-z0-9_]+)*$/.test(value)) ? null : "Invalid Group Id";
+export function groupIdValidation(value: string): string | undefined {
+    return (/^[a-z_][a-z0-9_]*(\.[a-z0-9_]+)*$/.test(value)) ? undefined : "Invalid Group Id";
 }
 
-export function artifactIdValidation(value: string): string {
-    return (/^[a-z_][a-z0-9_]*(-[a-z_][a-z0-9_]*)*$/.test(value)) ? null : "Invalid Artifact Id";
+export function artifactIdValidation(value: string): string | undefined {
+    return (/^[a-z_][a-z0-9_]*(-[a-z_][a-z0-9_]*)*$/.test(value)) ? undefined : "Invalid Artifact Id";
 }
 
 export async function readXmlContent(xml: string, options?: {}): Promise<any> {

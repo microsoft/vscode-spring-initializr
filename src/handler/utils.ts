@@ -134,16 +134,10 @@ export async function createInputBox(inputMetaData: IInputMetaData): Promise<boo
                 } else if (inputMetaData.pickStep instanceof SpecifyArtifactIdStep) {
                     validCheck = artifactIdValidation(inputBox.value);
                 }
-                if (validCheck !== null) {
-                    inputBox.enabled = false;
-                    inputBox.validationMessage = validCheck;
-                } else {
-                    inputBox.enabled = true;
-                    inputBox.validationMessage = undefined;
-                }
+                inputBox.validationMessage = validCheck;
             }),
             inputBox.onDidAccept(() => {
-                if (!inputBox.enabled) {
+                if (inputBox.validationMessage) {
                     return;
                 }
                 if (inputMetaData.pickStep instanceof SpecifyGroupIdStep) {
