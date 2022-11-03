@@ -128,7 +128,7 @@ export async function createInputBox(inputMetaData: IInputMetaData): Promise<boo
         }
         disposables.push(
             inputBox.onDidChangeValue(() => {
-                let validCheck: string | null;
+                let validCheck: string | undefined;
                 if (inputMetaData.pickStep instanceof SpecifyGroupIdStep) {
                     validCheck = groupIdValidation(inputBox.value);
                 } else if (inputMetaData.pickStep instanceof SpecifyArtifactIdStep) {
