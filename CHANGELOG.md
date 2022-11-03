@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to the "vscode-spring-initializr" extension will be documented in this file.
 
+## 0.11.1
+### Fixed
+- Input boxes freeze when value is invalid, since VS Code v1.73.0. [#219](https://github.com/microsoft/vscode-spring-initializr/pull/219)
+
 ## 0.11.0
 ### Added
 - Show separator between starter groups. [#210](https://github.com/microsoft/vscode-spring-initializr/pull/210)
