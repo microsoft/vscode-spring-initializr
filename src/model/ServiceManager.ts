@@ -46,7 +46,14 @@ class ServiceManager {
         }
 
         const sortedValues = values.filter(x => x.id === defaultLabel).concat(values.filter(x => x.id !== defaultLabel));
-        return (type === MatadataType.BOOTVERSION) ? sortedValues.map(v => ({ value: v, label: v.name })) : sortedValues.map(v => ({ label: v.name }));
+        switch (type) {
+            case MatadataType.BOOTVERSION:
+                return sortedValues.map(v => ({ value: v, label: v.name }));
+            case MatadataType.JAVAVERSION:
+                return sortedValues.map(v => ({ value: v, label: v.name }));
+            default:
+                return sortedValues.map(v => ({ label: v.name }));
+        }
     }
 
     public async getAvailableDependencies(serviceUrl: string, bootVersion: string): Promise<IDependency[]> {
