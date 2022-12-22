@@ -69,7 +69,7 @@ export async function createPickBox<T extends Identifiable>(pickMetadata: IPickM
                 if (pickMetadata.pickStep instanceof SpecifyLanguageStep) {
                     pickMetadata.metadata.language = pickBox.selectedItems[0].label?.toLowerCase();
                 } else if (pickMetadata.pickStep instanceof SpecifyJavaVersionStep) {
-                    pickMetadata.metadata.javaVersion = pickBox.selectedItems[0].label;
+                    pickMetadata.metadata.javaVersion = pickBox.selectedItems[0].value?.id;
                 } else if (pickMetadata.pickStep instanceof SpecifyPackagingStep) {
                     pickMetadata.metadata.packaging = pickBox.selectedItems[0].label?.toLowerCase();
                 } else if (pickMetadata.pickStep instanceof SpecifyBootVersionStep) {
