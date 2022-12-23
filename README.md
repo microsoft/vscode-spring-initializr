@@ -1,8 +1,8 @@
 
 # Spring Initializr Java Support
-[![Marketplace Version](https://vsmarketplacebadge.apphb.com/version-short/vscjava.vscode-spring-initializr.svg)](https://marketplace.visualstudio.com/items?itemName=vscjava.vscode-spring-initializr)
-[![Installs](https://vsmarketplacebadge.apphb.com/installs-short/vscjava.vscode-spring-initializr.svg)](https://marketplace.visualstudio.com/items?itemName=vscjava.vscode-spring-initializr)
-[![Rating](https://vsmarketplacebadge.apphb.com/rating-short/vscjava.vscode-spring-initializr.svg)](https://marketplace.visualstudio.com/items?itemName=vscjava.vscode-spring-initializr)
+[![Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/vscjava.vscode-spring-initializr.svg)](https://marketplace.visualstudio.com/items?itemName=vscjava.vscode-spring-initializr)
+[![Installs](https://img.shields.io/visual-studio-marketplace/i/vscjava.vscode-spring-initializr.svg)](https://marketplace.visualstudio.com/items?itemName=vscjava.vscode-spring-initializr)
+[![Rating](https://img.shields.io/visual-studio-marketplace/r/vscjava.vscode-spring-initializr.svg)](https://marketplace.visualstudio.com/items?itemName=vscjava.vscode-spring-initializr)
 [![Gitter](https://badges.gitter.im/DevDivSpring/Lobby.svg)](https://gitter.im/DevDivSpring/Lobby)
 
 ## Overview
