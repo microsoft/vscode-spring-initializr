@@ -1,0 +1,57 @@
+trigger:
+- main
+
+jobs:
+  - job: static_analysis
+    displayName: Static Code Analysis
+    pool:
+      vmImage: 'windows-latest'
+    steps:
+    - task: JavaToolInstaller@0
+      displayName: 'Use Java 17'
+      inputs:
+        versionSpec: 17
+        jdkArchitectureOption: x64
+        jdkSourceOption: PreInstalled
+    - task: securedevelopmentteam.vss-secure-development-tools.build-task-credscan.CredScan@2
+      displayName: 'Run CredScan'
+      inputs:
+        toolMajorVersion: V2
+        verboseOutput: true
+        debugMode: false
+    - task: PostAnalysis@1
+      displayName: 'Post Analysis'
+      inputs:
+        CredScan: true
+        ToolLogsNotFoundAction: 'Standard'
+
+  - job: ci
+    displayName: VS Code Maven CI
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: Npm@1
+      displayName: 'npm install'
+      inputs:
+        verbose: false
+    - task: Npm@1
+      displayName: 'npm run tslint'
+      inputs:
+        command: custom
+        verbose: false
+        customCommand: 'run tslint'
+    - task: Npm@1
+      displayName: 'npm run compile'
+      inputs:
+        command: custom
+        verbose: false
+        customCommand: 'run compile'
+    - script: 'npx @vscode/vsce@latest package'
+      displayName: 'package vsix'
+    - task: CopyFiles@2
+      displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
+      inputs:
+        Contents: '*.vsix'
+        TargetFolder: '$(Build.ArtifactStagingDirectory)'
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact: drop'
