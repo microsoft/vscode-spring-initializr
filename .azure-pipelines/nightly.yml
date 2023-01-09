@@ -30,7 +30,11 @@ steps:
 - bash: |
     npx json@latest -I -f package.json -e "this.aiKey=\"$(AI_KEY)\""
   displayName: Replace AI Key
-- script: 'npx @vscode/vsce@latest package'
+- bash: |
+    node ./scripts/prepare-nightly-build.js
+    mv ./package.insiders.json ./package.json
+  displayName: Generate new package.json
+- script: 'npx @vscode/vsce@latest package --pre-release'
   displayName: 'package vsix'
 - task: CopyFiles@2
   displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
