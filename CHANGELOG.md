@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to the "vscode-spring-initializr" extension will be documented in this file.
 
+## 0.11.2
+### Fixed
+- Incorrect Java version was picked up. [#224](https://github.com/microsoft/vscode-spring-initializr/issues/224)
+
 ## 0.11.1
 ### Fixed
 - Input boxes freeze when value is invalid, since VS Code v1.73.0. [#219](https://github.com/microsoft/vscode-spring-initializr/pull/219)
