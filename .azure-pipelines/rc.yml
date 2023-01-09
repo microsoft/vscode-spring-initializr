@@ -1,13 +1,6 @@
 trigger: none
 pr: none
 
-schedules:
-- cron: "0 3 * * *"
-  displayName: Daily 3am build
-  branches:
-    include:
-    - main
-
 pool:
   vmImage: 'ubuntu-latest'
 steps:
