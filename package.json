@@ -128,6 +128,12 @@
           "scope": "window",
           "description": "Default value for Artifact Id."
         },
+        "spring.initializr.defaultPackageName": {
+          "default": "com.example.demo",
+          "type": "string",
+          "scope": "window",
+          "description": "Default value for Package Name. If Group Id and Artifact Id are customized, this setting will be ignored in favor of the combination of such values."
+        },
         "spring.initializr.defaultPackaging": {
           "default": "",
           "type": "string",
