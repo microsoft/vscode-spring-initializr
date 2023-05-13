@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 
-import { workspace } from "vscode";
 import { instrumentOperationStep } from "vscode-extension-telemetry-wrapper";
 import { IInputMetaData, IProjectMetadata, IStep } from "./HandlerInterfaces";
 import { SpecifyPackagingStep } from "./SpecifyPackagingStep";
@@ -30,7 +29,7 @@ export class SpecifyPackageNameStep implements IStep {
     }
 
     public resetDefaultInput(): void {
-        this.defaultInput = workspace.getConfiguration("spring.initializr").get<string>("defaultPackageName");
+        this.defaultInput = null;
     }
 
     public getNextStep(): IStep | undefined {
@@ -45,16 +44,15 @@ export class SpecifyPackageNameStep implements IStep {
     }
 
     private async specifyPackageName(projectMetadata: IProjectMetadata): Promise<boolean> {
-        const recommendedPackageName = `${projectMetadata.groupId}.${projectMetadata.artifactId}`;
-        projectMetadata.defaults.packageName = recommendedPackageName;
-
+        const recommendedPackageName = `${projectMetadata.groupId}.${projectMetadata.artifactId}`
+        
         const inputMetaData: IInputMetaData = {
             metadata: projectMetadata,
             title: "Spring Initializr: Input Package Name",
             pickStep: SpecifyPackageNameStep.getInstance(),
             placeholder: "e.g. com.example",
             prompt: "Input Package Name for your project.",
-            defaultValue: projectMetadata.defaults.packageName || SpecifyPackageNameStep.getInstance().defaultInput
+            defaultValue: recommendedPackageName || SpecifyPackageNameStep.getInstance().defaultInput
         };
         return await createInputBox(inputMetaData);
     }

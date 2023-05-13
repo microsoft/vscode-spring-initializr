@@ -30,7 +30,6 @@ export interface IDefaultProjectData {
     javaVersion?: string;
     groupId?: string;
     artifactId?: string;
-    packageName?: string;
     packaging?: string;
     dependencies?: string[];
     targetFolder?: string;
