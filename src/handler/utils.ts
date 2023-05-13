@@ -5,7 +5,7 @@ import * as vscode from "vscode";
 import { Disposable, InputBox, QuickInputButtons, QuickPick, window } from "vscode";
 import { OperationCanceledError } from "../Errors";
 import { Identifiable } from "../model/Metadata";
-import { artifactIdValidation, groupIdValidation } from "../Utils";
+import { artifactIdValidation, groupIdValidation, packageNameValidation } from "../Utils";
 import { IHandlerItem, IInputMetaData, IPickMetadata, IProjectMetadata } from "./HandlerInterfaces";
 import { SpecifyArtifactIdStep } from "./SpecifyArtifactIdStep";
 import { SpecifyBootVersionStep } from "./SpecifyBootVersionStep";
@@ -14,6 +14,7 @@ import { SpecifyJavaVersionStep } from "./SpecifyJavaVersionStep";
 import { SpecifyLanguageStep } from "./SpecifyLanguageStep";
 import { SpecifyPackagingStep } from "./SpecifyPackagingStep";
 import { SpecifyServiceUrlStep } from "./SpecifyServiceUrlStep";
+import { SpecifyPackageNameStep } from "./SpecifyPackageNameStep";
 
 const DEFAULT_SERVICE_URL: string = "https://start.spring.io";
 
@@ -133,6 +134,8 @@ export async function createInputBox(inputMetaData: IInputMetaData): Promise<boo
                     validCheck = groupIdValidation(inputBox.value);
                 } else if (inputMetaData.pickStep instanceof SpecifyArtifactIdStep) {
                     validCheck = artifactIdValidation(inputBox.value);
+                } else if (inputMetaData.pickStep instanceof SpecifyPackageNameStep) {
+                    validCheck = packageNameValidation(inputBox.value);
                 }
                 inputBox.validationMessage = validCheck;
             }),
@@ -148,6 +151,10 @@ export async function createInputBox(inputMetaData: IInputMetaData): Promise<boo
                     inputMetaData.metadata.artifactId = inputBox.value;
                     SpecifyArtifactIdStep.getInstance().setDefaultInput(inputBox.value);
                     inputMetaData.metadata.pickSteps.push(SpecifyArtifactIdStep.getInstance());
+                } else if (inputMetaData.pickStep instanceof SpecifyPackageNameStep) {
+                    inputMetaData.metadata.packageName = inputBox.value;
+                    SpecifyPackageNameStep.getInstance().setDefaultInput(inputBox.value);
+                    inputMetaData.metadata.pickSteps.push(SpecifyPackageNameStep.getInstance());
                 }
                 return resolve(true);
             }),
@@ -156,6 +163,8 @@ export async function createInputBox(inputMetaData: IInputMetaData): Promise<boo
                     return reject(new OperationCanceledError("GroupId not specified."));
                 } else if (inputMetaData.pickStep instanceof SpecifyArtifactIdStep) {
                     return reject(new OperationCanceledError("ArtifactId not specified."));
+                } else if (inputMetaData.pickStep instanceof SpecifyPackageNameStep) {
+                    return reject(new OperationCanceledError("PackageName not specified."));
                 }
                 return reject(new Error("Unknown inputting step"));
             })
