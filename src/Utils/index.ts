@@ -114,6 +114,10 @@ export function artifactIdValidation(value: string): string | undefined {
     return (/^[a-z_][a-z0-9_]*(-[a-z_][a-z0-9_]*)*$/.test(value)) ? undefined : "Invalid Artifact Id";
 }
 
+export function packageNameValidation(value: string): string {
+    return (/^[a-z_][a-z0-9_]*(\.[a-z0-9_]+)*$/.test(value)) ? null : "Invalid Package Name";
+}
+
 export async function readXmlContent(xml: string, options?: {}): Promise<any> {
     const opts: {} = Object.assign({ explicitArray: true }, options);
     return new Promise<{}>(
