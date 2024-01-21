@@ -29,10 +29,14 @@ export class GenerateProjectHandler extends BaseHandler {
     constructor(projectType: "maven-project" | "gradle-project", defaults?: IDefaultProjectData) {
         super();
         this.projectType = projectType;
+
+        const settings = vscode.workspace.getConfiguration("spring.initializr");
+
         this.metadata = {
             pickSteps: [],
             defaults: defaults || {},
-            parentFolder: vscode.workspace.getConfiguration("spring.initializr").get<ParentFolder>("parentFolder")
+            parentFolder: settings.get<ParentFolder>("parentFolder"),
+            enableSmartDefaults: settings.get("enableSmartDefaults")
         };
     }
 
