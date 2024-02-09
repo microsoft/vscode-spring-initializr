@@ -3,7 +3,7 @@
 
 import { instrumentOperationStep, sendInfo } from "vscode-extension-telemetry-wrapper";
 import { serviceManager } from "../model";
-import { BootVersion, MatadataType } from "../model/Metadata";
+import { BootVersion, MetadataType } from "../model/Metadata";
 import { IPickMetadata, IProjectMetadata, IStep } from "./HandlerInterfaces";
 import { SpecifyLanguageStep } from "./SpecifyLanguageStep";
 import { createPickBox } from "./utils";
@@ -29,13 +29,21 @@ export class SpecifyBootVersionStep implements IStep {
     }
 
     private async specifyBootVersion(projectMetadata: IProjectMetadata): Promise<boolean> {
+        const items = await serviceManager.getItems(projectMetadata.serviceUrl, MetadataType.BOOTVERSION);
+
+        if (projectMetadata.enableSmartDefaults === true) {
+            projectMetadata.bootVersion = items.find(x => x.default === true)?.value?.id;
+            return true;
+        }
+
         const pickMetaData: IPickMetadata<BootVersion> = {
             metadata: projectMetadata,
             title: "Spring Initializr: Specify Spring Boot version",
             pickStep: SpecifyBootVersionStep.getInstance(),
             placeholder: "Specify Spring Boot version.",
-            items: serviceManager.getItems(projectMetadata.serviceUrl, MatadataType.BOOTVERSION),
+            items: items,
         };
+
         return await createPickBox(pickMetaData);
     }
 }
