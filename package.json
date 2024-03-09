@@ -42,6 +42,11 @@
         "category": "Spring Initializr"
       },
       {
+        "command": "spring.initializr.gradle-project-kotlin",
+        "title": "Create a Gradle Project with Kotlin DSL...",
+        "category": "Spring Initializr"
+      },
+      {
         "command": "spring.initializr.addStarters",
         "title": "Add Starters...",
         "category": "Spring Initializr"

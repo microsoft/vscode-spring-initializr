@@ -12,6 +12,7 @@ import {
 } from "vscode-extension-telemetry-wrapper";
 import { AddStartersHandler, GenerateProjectHandler } from "./handler";
 import { getTargetPomXml, loadPackageInfo } from "./Utils";
+import { ProjectType } from "./model";
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
     await initializeFromJsonFile(context.asAbsolutePath("./package.json"), { firstParty: true });
@@ -26,14 +27,16 @@ async function initializeExtension(_operationId: string, context: vscode.Extensi
     await loadPackageInfo(context);
 
     context.subscriptions.push(
-        instrumentAndRegisterCommand("spring.initializr.maven-project", async (operationId, defaults) => await new GenerateProjectHandler("maven-project", defaults).run(operationId), true),
-        instrumentAndRegisterCommand("spring.initializr.gradle-project", async (operationId, defaults) => await new GenerateProjectHandler("gradle-project", defaults).run(operationId), true),
+        instrumentAndRegisterCommand("spring.initializr.maven-project", async (operationId, defaults) => await new GenerateProjectHandler(ProjectType.MAVEN, defaults).run(operationId), true),
+        instrumentAndRegisterCommand("spring.initializr.gradle-project", async (operationId, defaults) => await new GenerateProjectHandler(ProjectType.GRADLE, defaults).run(operationId), true),
+        instrumentAndRegisterCommand("spring.initializr.gradle-project-kotlin", async (operationId, defaults) => await new GenerateProjectHandler(ProjectType.GRADLE_KOTLIN, defaults).run(operationId), true)
     );
 
     context.subscriptions.push(instrumentAndRegisterCommand("spring.initializr.createProject", async () => {
         const projectType: { value: string, label: string } = await vscode.window.showQuickPick([
             { value: "maven-project", label: "Maven Project" },
-            { value: "gradle-project", label: "Gradle Project" }
+            { value: "gradle-project", label: "Gradle Project" },
+            { value: "gradle-project-kotlin", label: "Gradle Project - Kotlin DSL" }
         ], { placeHolder: "Select project type." });
         if (projectType) {
             await vscode.commands.executeCommand(`spring.initializr.${projectType.value}`);
