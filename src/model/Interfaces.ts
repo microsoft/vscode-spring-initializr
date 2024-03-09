@@ -109,3 +109,9 @@ export enum BooleanString {
     TRUE = "true",
     FALSE = "false",
 }
+
+export enum ProjectType {
+    MAVEN = "maven-project",
+    GRADLE = "gradle-project",
+    GRADLE_KOTLIN = "gradle-project-kotlin"
+}
