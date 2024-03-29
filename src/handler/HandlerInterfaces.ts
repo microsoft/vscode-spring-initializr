@@ -16,6 +16,7 @@ export interface IProjectMetadata {
     javaVersion?: string;
     groupId?: string;
     artifactId?: string;
+    packageName?: string;
     packaging?: string;
     bootVersion?: string;
     dependencies?: IDependenciesItem;
