@@ -163,6 +163,12 @@
           ],
           "scope": "window",
           "description": "Controls if a new sub-folder should be created for the newly generated project."
+        },
+        "spring.initializr.enableSmartDefaults": {
+          "default": false,
+          "type": "boolean",
+          "scope": "window",
+          "description": "Use default values provided by Spring Initializr API for Spring Boot version, language, Java version and packaging."
         }
       }
     }

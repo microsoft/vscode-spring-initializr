@@ -22,6 +22,7 @@ export interface IProjectMetadata {
     pickSteps: IStep[];
     defaults: IDefaultProjectData;
     parentFolder?: ParentFolder;
+    enableSmartDefaults?: boolean;
 }
 
 export interface IDefaultProjectData {
@@ -37,6 +38,7 @@ export interface IDefaultProjectData {
 export interface IHandlerItem<T extends Identifiable> extends QuickPickItem {
     label: string;
     value?: T;
+    default?: boolean;
 }
 
 export interface IPickMetadata<T extends Identifiable> {
