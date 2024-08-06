@@ -16,17 +16,18 @@ import { IDefaultProjectData, IProjectMetadata, IStep, ParentFolder } from "./Ha
 import { SpecifyArtifactIdStep } from "./SpecifyArtifactIdStep";
 import { SpecifyGroupIdStep } from "./SpecifyGroupIdStep";
 import { SpecifyServiceUrlStep } from "./SpecifyServiceUrlStep";
+import { ProjectType } from "../model";
 
 const OPEN_IN_NEW_WORKSPACE = "Open";
 const OPEN_IN_CURRENT_WORKSPACE = "Add to Workspace";
 
 export class GenerateProjectHandler extends BaseHandler {
 
-    private projectType: "maven-project" | "gradle-project";
+    private projectType: ProjectType;
     private outputUri: vscode.Uri;
     private metadata: IProjectMetadata;
 
-    constructor(projectType: "maven-project" | "gradle-project", defaults?: IDefaultProjectData) {
+    constructor(projectType: ProjectType, defaults?: IDefaultProjectData) {
         super();
         this.projectType = projectType;
         this.metadata = {
