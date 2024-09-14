@@ -15,7 +15,7 @@ import { getTargetPomXml, loadPackageInfo } from "./Utils";
 import { ProjectType } from "./model";
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
-    await initializeFromJsonFile(context.asAbsolutePath("./package.json"), { firstParty: true });
+    await initializeFromJsonFile(context.asAbsolutePath("./package.json"));
     await instrumentOperation("activation", initializeExtension)(context);
 }
 
