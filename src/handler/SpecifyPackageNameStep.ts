@@ -44,7 +44,7 @@ export class SpecifyPackageNameStep implements IStep {
     }
 
     private async specifyPackageName(projectMetadata: IProjectMetadata): Promise<boolean> {
-        const recommendedPackageName = `${projectMetadata.groupId}.${projectMetadata.artifactId}`
+        const recommendedPackageName = `${projectMetadata.groupId}.${projectMetadata.artifactId}`.replace("-", "_");
         
         const inputMetaData: IInputMetaData = {
             metadata: projectMetadata,
