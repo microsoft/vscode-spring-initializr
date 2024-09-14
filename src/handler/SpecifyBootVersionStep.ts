@@ -32,8 +32,12 @@ export class SpecifyBootVersionStep implements IStep {
         const items = await serviceManager.getItems(projectMetadata.serviceUrl, MetadataType.BOOTVERSION);
 
         if (projectMetadata.enableSmartDefaults === true) {
-            projectMetadata.bootVersion = items.find(x => x.default === true)?.value?.id;
-            return true;
+            const recommendedBootVersion: string = items.find(x => x.default === true)?.value?.id;
+
+            if (recommendedBootVersion) {
+                projectMetadata.bootVersion = recommendedBootVersion;
+                return true;
+            }
         }
 
         const pickMetaData: IPickMetadata<BootVersion> = {

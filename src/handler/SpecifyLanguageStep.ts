@@ -39,8 +39,12 @@ export class SpecifyLanguageStep implements IStep {
         const items = await serviceManager.getItems(projectMetadata.serviceUrl, MetadataType.LANGUAGE);
 
         if (projectMetadata.enableSmartDefaults === true) {
-            projectMetadata.language = items.find(x => x.default === true)?.label.toLowerCase();
-            return true;
+            const recommendedLanguage: string = items.find(x => x.default === true)?.label.toLowerCase();
+
+            if (recommendedLanguage) {
+                projectMetadata.language = recommendedLanguage;
+                return true;
+            }
         }
 
         const pickMetaData: IPickMetadata<Language> = {

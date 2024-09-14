@@ -39,8 +39,12 @@ export class SpecifyJavaVersionStep implements IStep {
         const items = await serviceManager.getItems(projectMetadata.serviceUrl, MetadataType.JAVAVERSION);
 
         if (projectMetadata.enableSmartDefaults === true) {
-            projectMetadata.javaVersion = items.find(x => x.default === true)?.value?.id;
-            return true;
+            const recommendedJavaVersion: string = items.find(x => x.default === true)?.value?.id;
+
+            if (recommendedJavaVersion) {
+                projectMetadata.javaVersion = recommendedJavaVersion;
+                return true;
+            }
         }
         
         const pickMetaData: IPickMetadata<JavaVersion> = {
