@@ -11,8 +11,8 @@ import {
     instrumentOperation
 } from "vscode-extension-telemetry-wrapper";
 import { AddStartersHandler, GenerateProjectHandler } from "./handler";
-import { getTargetPomXml, loadPackageInfo } from "./Utils";
 import { ProjectType } from "./model";
+import { getTargetPomXml, loadPackageInfo } from "./Utils";
 
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
     await initializeFromJsonFile(context.asAbsolutePath("./package.json"));
