@@ -4,7 +4,7 @@
 import { workspace } from "vscode";
 import { instrumentOperationStep } from "vscode-extension-telemetry-wrapper";
 import { IInputMetaData, IProjectMetadata, IStep } from "./HandlerInterfaces";
-import { SpecifyPackagingStep } from "./SpecifyPackagingStep";
+import { SpecifyPackageNameStep } from "./SpecifyPackageNameStep";
 import { createInputBox } from "./utils";
 
 export class SpecifyArtifactIdStep implements IStep {
@@ -34,7 +34,7 @@ export class SpecifyArtifactIdStep implements IStep {
     }
 
     public getNextStep(): IStep | undefined {
-        return SpecifyPackagingStep.getInstance();
+        return SpecifyPackageNameStep.getInstance();
     }
 
     public async execute(operationId: string, projectMetadata: IProjectMetadata): Promise<IStep | undefined> {
