@@ -13,3 +13,4 @@ node_modules/**
 out/**
 .*
 scripts
+.azure-pipelines/**
