@@ -38,7 +38,7 @@ export class SpecifyPackagingStep implements IStep {
 
         const items = await serviceManager.getItems(projectMetadata.serviceUrl, MetadataType.PACKAGING);
 
-        if (projectMetadata.enableSmartDefaults === true) {
+        if (projectMetadata.useApiDefaults === true) {
             const recommendedPackaging: string = items.find(x => x.default === true)?.label?.toLowerCase();
             
             if (recommendedPackaging) {

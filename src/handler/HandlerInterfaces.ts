@@ -22,7 +22,7 @@ export interface IProjectMetadata {
     pickSteps: IStep[];
     defaults: IDefaultProjectData;
     parentFolder?: ParentFolder;
-    enableSmartDefaults?: boolean;
+    useApiDefaults?: boolean;
 }
 
 export interface IDefaultProjectData {

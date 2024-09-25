@@ -36,7 +36,7 @@ export class GenerateProjectHandler extends BaseHandler {
             pickSteps: [],
             defaults: defaults || {},
             parentFolder: settings.get<ParentFolder>("parentFolder"),
-            enableSmartDefaults: settings.get("enableSmartDefaults")
+            useApiDefaults: settings.get("useApiDefaults")
         };
     }
 
