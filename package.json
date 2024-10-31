@@ -201,7 +201,7 @@
   "dependencies": {
     "extract-zip": "^1.7.0",
     "fs-extra": "^5.0.0",
-    "htmlparser2": "^7.2.0",
+    "htmlparser2": "^9.1.0",
     "lodash": "^4.17.21",
     "md5": "^2.3.0",
     "vscode-extension-telemetry-wrapper": "^0.14.0",

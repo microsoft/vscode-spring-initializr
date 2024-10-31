@@ -18,7 +18,8 @@ export function getNodesByTag(text: string, tag: string): Node[] {
     // const tokens: number[][] = Lexx(text);
     const document: Document = hp.parseDocument(text, {
         withEndIndices: true,
-        withStartIndices: true
+        withStartIndices: true,
+        xmlMode: true
     });
     const ret: Node[] = [];
     dfs(document, (node) => isTag(node) && node.tagName === tag, ret);
