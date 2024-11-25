@@ -17,6 +17,7 @@ export enum XmlTagName {
 export function getNodesByTag(text: string, tag: string): Node[] {
     // const tokens: number[][] = Lexx(text);
     const document: Document = hp.parseDocument(text, {
+        xmlMode: true,
         withEndIndices: true,
         withStartIndices: true
     });
