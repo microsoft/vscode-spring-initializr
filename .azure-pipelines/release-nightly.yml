@@ -1,6 +1,6 @@
-# This pipeline is used to release the VS Code Spring Initializr extension from the nightly build.
+# This pipeline is used to release the VS Code Spring Initializr extension from the nightly/stable build.
 # It contains following steps:
-#   1. Download the plugin artifact from the nightly build pipeline.
+#   1. Download the plugin artifact from the nightly/stable build pipeline.
 #   2. Publish the plugin to the marketplace.
 
 name: $(Date:yyyyMMdd).$(Rev:r) # Use the current date and a revision number for the build name.
@@ -29,7 +29,7 @@ extends:
       - stage: Release
         jobs:
           - job: Job
-            displayName: Release VS Code Spring Initializr-Nightly
+            displayName: Release VS Code Spring Initializr
             templateContext:
               type: releaseJob
               isProduction: true
