@@ -1,32 +1,29 @@
-# Extension Pack for Java
-Extension Pack for Java is a collection of popular extensions that can help write, test and debug Java applications in Visual Studio Code. By installing Extension Pack for Java, the following extensions are installed:
+# Spring Initializr Java Support
+Spring Initializr is a lightweight extension to quickly generate a Spring Boot project in Visual Studio Code (VS Code). It helps you to customize your projects with configurations and manage Spring Boot dependencies.
 
-- [📦 Language Support for Java™ by Red Hat ](https://marketplace.visualstudio.com/items?itemName=redhat.java)
-    - Code Navigation
-    - Auto Completion
-    - Refactoring
-    - Code Snippets
-- [📦 Debugger for Java](https://marketplace.visualstudio.com/items?itemName=vscjava.vscode-java-debug)
-    - Debugging
-- [📦 Test Runner for Java](https://marketplace.visualstudio.com/items?itemName=vscjava.vscode-java-test)
-    - Run & Debug JUnit/TestNG Test Cases
-- [📦 Maven for Java](https://marketplace.visualstudio.com/items?itemName=vscjava.vscode-maven)
-    - Project Scaffolding
-    - Custom Goals
-- [📦 Gradle for Java](https://marketplace.visualstudio.com/items?itemName=vscjava.vscode-gradle)
-    - View Gradle tasks and project dependencies
-    - Gradle file authoring
-    - Import Gradle projects via [Gradle Build Server](https://github.com/microsoft/build-server-for-gradle)
-- [📦 Project Manager for Java](https://marketplace.visualstudio.com/items?itemName=vscjava.vscode-java-dependency)
-    - Manage Java projects, referenced libraries, resource files, packages, classes, and class members
-- [📦 Visual Studio IntelliCode](https://marketplace.visualstudio.com/items?itemName=VisualStudioExptTeam.vscodeintellicode)
-    - AI-assisted development
-    - Completion list ranked by AI
+## Feature List
+- Generate a Maven/Gradle Spring Boot project 
+- Customize configurations for a new project (language, Java version, group id, artifact id, boot version and dependencies)
+- Search for dependencies
+- Quickstart with last settings
+- Edit Spring Boot dependencies of an existing Maven Spring Boot project
+
+## Requirements
+- VS Code (version 1.19.0 or later)
+- JDK (version 1.8.0 or later)
+
+## Configuration Options
+- Default language (Java, Kotlin, Groovy)
+- Default Java version
+- Default Artifact Id and Group Id
+- Spring Initializr Service URL(s)
+- Default packaging (JAR/WAR)
+- Default method for opening newly generated projects
 
 ## Label
 When labeling an issue, follow the rules below per label category:
 ### General Rules
-- Analyze if the issue is related with the scope of using extensions for Java development. If not, STOP labelling IMMEDIATELY.
+- Analyze if the issue is related to Spring Initializr functionality, Spring Boot project generation, dependency management, or Maven/Gradle project scaffolding. If not, STOP labelling IMMEDIATELY.
 - Assign label per category.
 - If a category is not applicable or you're unsure, you may skip it.
 - Do not assign multiple labels within the same category, unless explicitly allowed as an exception.
