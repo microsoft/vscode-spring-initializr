@@ -114,9 +114,9 @@
           "type": "string",
           "enum": [
             "",
-            "11",
-            "15",
-            "8"
+            "17",
+            "21",
+            "24"
           ],
           "scope": "window",
           "description": "Default Java version."
