@@ -98,7 +98,7 @@ export class GenerateProjectHandler extends BaseHandler {
         ];
 
         const targetUrl = new URL(this.metadata.serviceUrl);
-        targetUrl.pathname = "/starter.zip";
+        targetUrl.pathname += "/starter.zip";
         targetUrl.search = `?${params.join("&")}`;
         return targetUrl.toString();
     }
