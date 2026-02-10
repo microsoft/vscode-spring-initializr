@@ -1,6 +1,14 @@
 # Change Log
 All notable changes to the "vscode-spring-initializr" extension will be documented in this file.
 
+## 0.12.0
+### Added
+- New command for generating Gradle projects with Kotlin DSL [237](https://github.com/microsoft/vscode-spring-initializr/pull/237)
+- Allow Package Name specification [230](https://github.com/microsoft/vscode-spring-initializr/pull/230)
+
+### Fixed
+- Enable XML mode of parsing documents [249](https://github.com/microsoft/vscode-spring-initializr/pull/249)
+
 ## 0.11.2
 ### Fixed
 - Incorrect Java version was picked up. [#224](https://github.com/microsoft/vscode-spring-initializr/issues/224)
