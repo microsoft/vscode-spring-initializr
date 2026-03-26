@@ -12,7 +12,7 @@ import { downloadFile } from "../Utils";
 import { pathExists } from "../Utils/fsHelper";
 import { openDialogForFolder } from "../Utils/VSCodeUI";
 import { BaseHandler } from "./BaseHandler";
-import { IDefaultProjectData, IProjectMetadata, IStep, ParentFolder } from "./HandlerInterfaces";
+import { ConfigurationFileFormat, IDefaultProjectData, IProjectMetadata, IStep, ParentFolder } from "./HandlerInterfaces";
 import { SpecifyArtifactIdStep } from "./SpecifyArtifactIdStep";
 import { SpecifyGroupIdStep } from "./SpecifyGroupIdStep";
 import { SpecifyPackageNameStep } from "./SpecifyPackageNameStep";
@@ -34,6 +34,7 @@ export class GenerateProjectHandler extends BaseHandler {
         this.metadata = {
             pickSteps: [],
             defaults: defaults || {},
+            configurationFileFormat: ConfigurationFileFormat.YAML,
             parentFolder: vscode.workspace.getConfiguration("spring.initializr").get<ParentFolder>("parentFolder")
         };
     }
@@ -95,6 +96,7 @@ export class GenerateProjectHandler extends BaseHandler {
             `packaging=${this.metadata.packaging}`,
             `bootVersion=${this.metadata.bootVersion}`,
             `dependencies=${this.metadata.dependencies.id}`,
+            `configurationFileFormat=${this.metadata.configurationFileFormat}`,
         ];
 
         const targetUrl = new URL(this.metadata.serviceUrl);
