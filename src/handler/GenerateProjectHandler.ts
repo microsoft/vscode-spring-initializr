@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 
-import * as extract from "extract-zip";
+import AdmZip = require("adm-zip");
 import * as fse from "fs-extra";
 import * as path from "path";
 import { URL } from "url";
@@ -21,6 +21,7 @@ import { ProjectType } from "../model";
 
 const OPEN_IN_NEW_WORKSPACE = "Open";
 const OPEN_IN_CURRENT_WORKSPACE = "Add to Workspace";
+const UNZIP_TIMEOUT_IN_MS = 2 * 60 * 1000;
 
 export class GenerateProjectHandler extends BaseHandler {
 
@@ -138,25 +139,53 @@ async function specifyTargetFolder(metadata: IProjectMetadata): Promise<vscode.U
 }
 
 async function downloadAndUnzip(targetUrl: string, targetFolder: vscode.Uri): Promise<void> {
-    await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification }, (p: vscode.Progress<{ message?: string }>) => new Promise<void>(
-        async (resolve: () => void, reject: (e: Error) => void): Promise<void> => {
-            let filepath: string;
-            try {
-                p.report({ message: "Downloading zip package..." });
-                filepath = await downloadFile(targetUrl);
-            } catch (error) {
-                return reject(error);
+    await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification }, async (p: vscode.Progress<{ message?: string }>) => {
+        p.report({ message: "Downloading zip package..." });
+        const filepath = await downloadFile(targetUrl);
+
+        p.report({ message: "Starting to unzip..." });
+        await unzipWithTimeout(filepath, targetFolder.fsPath);
+    });
+}
+
+async function unzipWithTimeout(filepath: string, targetFolder: string): Promise<void> {
+    const zip = new AdmZip(filepath);
+    const unzipPromise = new Promise<void>((resolve: () => void, reject: (error: Error) => void): void => {
+        zip.extractAllToAsync(targetFolder, true, false, (error?: Error): void => error ? reject(error) : resolve());
+    });
+    await withTimeout(unzipPromise, UNZIP_TIMEOUT_IN_MS, "Timed out while unzipping the generated project.");
+}
+
+function withTimeout<T>(promise: Promise<T>, timeoutInMs: number, timeoutMessage: string): Promise<T> {
+    return new Promise<T>((resolve: (value: T) => void, reject: (e: Error) => void): void => {
+        let completed: boolean = false;
+        const timeout = setTimeout((): void => {
+            if (completed) {
+                return;
             }
 
-            p.report({ message: "Starting to unzip..." });
-            extract(filepath, { dir: targetFolder.fsPath }, (err) => {
-                if (err) {
-                    return reject(err);
-                }
-                return resolve();
-            });
-        },
-    ));
+            completed = true;
+            reject(new Error(timeoutMessage));
+        }, timeoutInMs);
+
+        promise.then((value: T): void => {
+            if (completed) {
+                return;
+            }
+
+            completed = true;
+            clearTimeout(timeout);
+            resolve(value);
+        }, (error: Error): void => {
+            if (completed) {
+                return;
+            }
+
+            completed = true;
+            clearTimeout(timeout);
+            reject(error);
+        });
+    });
 }
 
 async function specifyOpenMethod(hasOpenFolder: boolean, projectLocation: vscode.Uri): Promise<string> {
