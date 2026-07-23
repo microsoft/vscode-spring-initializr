@@ -1,12 +1,14 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 
-import AdmZip = require("adm-zip");
+import { createWriteStream } from "fs";
 import * as fse from "fs-extra";
 import * as path from "path";
+import { pipeline } from "stream/promises";
 import { URL } from "url";
 import * as vscode from "vscode";
 import { instrumentOperationStep } from "vscode-extension-telemetry-wrapper";
+import * as yauzl from "yauzl";
 import { OperationCanceledError } from "../Errors";
 import { downloadFile } from "../Utils";
 import { pathExists } from "../Utils/fsHelper";
@@ -149,11 +151,35 @@ async function downloadAndUnzip(targetUrl: string, targetFolder: vscode.Uri): Pr
 }
 
 async function unzipWithTimeout(filepath: string, targetFolder: string): Promise<void> {
-    const zip = new AdmZip(filepath);
-    const unzipPromise = new Promise<void>((resolve: () => void, reject: (error: Error) => void): void => {
-        zip.extractAllToAsync(targetFolder, true, false, (error?: Error): void => error ? reject(error) : resolve());
-    });
-    await withTimeout(unzipPromise, UNZIP_TIMEOUT_IN_MS, "Timed out while unzipping the generated project.");
+    await withTimeout(extractZip(filepath, targetFolder), UNZIP_TIMEOUT_IN_MS, "Timed out while unzipping the generated project.");
+}
+
+async function extractZip(filepath: string, targetFolder: string): Promise<void> {
+    const zip = await yauzl.openPromise(filepath, { strictFileNames: true, validateEntrySizes: true });
+    const targetRoot = path.resolve(targetFolder);
+    try {
+        for await (const entry of zip.eachEntry()) {
+            const targetPath = path.resolve(targetRoot, entry.fileName);
+            if (targetPath !== targetRoot && !targetPath.startsWith(`${targetRoot}${path.sep}`)) {
+                throw new Error(`Invalid zip entry path: ${entry.fileName}`);
+            }
+
+            if (entry.fileName.endsWith("/")) {
+                await fse.ensureDir(targetPath);
+                continue;
+            }
+
+            await fse.ensureDir(path.dirname(targetPath));
+            const readStream = await zip.openReadStreamPromise(entry);
+            await pipeline(readStream, createWriteStream(targetPath));
+            const mode = (entry.externalFileAttributes >>> 16) & 0xffff;
+            if (mode !== 0) {
+                await fse.chmod(targetPath, mode);
+            }
+        }
+    } finally {
+        zip.close();
+    }
 }
 
 function withTimeout<T>(promise: Promise<T>, timeoutInMs: number, timeoutMessage: string): Promise<T> {
