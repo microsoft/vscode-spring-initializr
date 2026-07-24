@@ -151,13 +151,25 @@ async function downloadAndUnzip(targetUrl: string, targetFolder: vscode.Uri): Pr
 }
 
 async function unzipWithTimeout(filepath: string, targetFolder: string): Promise<void> {
-    await withTimeout(extractZip(filepath, targetFolder), UNZIP_TIMEOUT_IN_MS, "Timed out while unzipping the generated project.");
+    const controller = new AbortController();
+    await withTimeout(
+        extractZip(filepath, targetFolder, controller.signal),
+        UNZIP_TIMEOUT_IN_MS,
+        "Timed out while unzipping the generated project.",
+        () => controller.abort(),
+    );
 }
 
-async function extractZip(filepath: string, targetFolder: string): Promise<void> {
+async function extractZip(filepath: string, targetFolder: string, signal: AbortSignal): Promise<void> {
     const zip = await yauzl.openPromise(filepath, { strictFileNames: true, validateEntrySizes: true });
     const targetRoot = path.resolve(targetFolder);
+    const closeZip = (): void => zip.close();
+    signal.addEventListener("abort", closeZip, { once: true });
     try {
+        if (signal.aborted) {
+            throw new Error("Zip extraction aborted.");
+        }
+
         for await (const entry of zip.eachEntry()) {
             const targetPath = path.resolve(targetRoot, entry.fileName);
             if (targetPath !== targetRoot && !targetPath.startsWith(`${targetRoot}${path.sep}`)) {
@@ -171,18 +183,19 @@ async function extractZip(filepath: string, targetFolder: string): Promise<void>
 
             await fse.ensureDir(path.dirname(targetPath));
             const readStream = await zip.openReadStreamPromise(entry);
-            await pipeline(readStream, createWriteStream(targetPath));
+            await pipeline(readStream, createWriteStream(targetPath), { signal });
             const mode = (entry.externalFileAttributes >>> 16) & 0xffff;
             if (mode !== 0) {
                 await fse.chmod(targetPath, mode);
             }
         }
     } finally {
+        signal.removeEventListener("abort", closeZip);
         zip.close();
     }
 }
 
-function withTimeout<T>(promise: Promise<T>, timeoutInMs: number, timeoutMessage: string): Promise<T> {
+function withTimeout<T>(promise: Promise<T>, timeoutInMs: number, timeoutMessage: string, onTimeout: () => void): Promise<T> {
     return new Promise<T>((resolve: (value: T) => void, reject: (e: Error) => void): void => {
         let completed: boolean = false;
         const timeout = setTimeout((): void => {
@@ -191,6 +204,7 @@ function withTimeout<T>(promise: Promise<T>, timeoutInMs: number, timeoutMessage
             }
 
             completed = true;
+            onTimeout();
             reject(new Error(timeoutMessage));
         }, timeoutInMs);
 
