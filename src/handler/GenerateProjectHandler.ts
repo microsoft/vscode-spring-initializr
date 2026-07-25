@@ -1,12 +1,14 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 
-import * as extract from "extract-zip";
+import { createWriteStream } from "fs";
 import * as fse from "fs-extra";
 import * as path from "path";
+import { pipeline } from "stream/promises";
 import { URL } from "url";
 import * as vscode from "vscode";
 import { instrumentOperationStep } from "vscode-extension-telemetry-wrapper";
+import * as yauzl from "yauzl";
 import { OperationCanceledError } from "../Errors";
 import { downloadFile } from "../Utils";
 import { pathExists } from "../Utils/fsHelper";
@@ -21,6 +23,7 @@ import { ProjectType } from "../model";
 
 const OPEN_IN_NEW_WORKSPACE = "Open";
 const OPEN_IN_CURRENT_WORKSPACE = "Add to Workspace";
+const UNZIP_TIMEOUT_IN_MS = 2 * 60 * 1000;
 
 export class GenerateProjectHandler extends BaseHandler {
 
@@ -140,25 +143,91 @@ async function specifyTargetFolder(metadata: IProjectMetadata): Promise<vscode.U
 }
 
 async function downloadAndUnzip(targetUrl: string, targetFolder: vscode.Uri): Promise<void> {
-    await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification }, (p: vscode.Progress<{ message?: string }>) => new Promise<void>(
-        async (resolve: () => void, reject: (e: Error) => void): Promise<void> => {
-            let filepath: string;
-            try {
-                p.report({ message: "Downloading zip package..." });
-                filepath = await downloadFile(targetUrl);
-            } catch (error) {
-                return reject(error);
+    await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification }, async (p: vscode.Progress<{ message?: string }>) => {
+        p.report({ message: "Downloading zip package..." });
+        const filepath = await downloadFile(targetUrl);
+
+        p.report({ message: "Starting to unzip..." });
+        await unzipWithTimeout(filepath, targetFolder.fsPath);
+    });
+}
+
+async function unzipWithTimeout(filepath: string, targetFolder: string): Promise<void> {
+    const controller = new AbortController();
+    await withTimeout(
+        extractZip(filepath, targetFolder, controller.signal),
+        UNZIP_TIMEOUT_IN_MS,
+        "Timed out while unzipping the generated project.",
+        () => controller.abort(),
+    );
+}
+
+async function extractZip(filepath: string, targetFolder: string, signal: AbortSignal): Promise<void> {
+    const zip = await yauzl.openPromise(filepath, { strictFileNames: true, validateEntrySizes: true });
+    const targetRoot = path.resolve(targetFolder);
+    const closeZip = (): void => zip.close();
+    signal.addEventListener("abort", closeZip, { once: true });
+    try {
+        if (signal.aborted) {
+            throw new Error("Zip extraction aborted.");
+        }
+
+        for await (const entry of zip.eachEntry()) {
+            const targetPath = path.resolve(targetRoot, entry.fileName);
+            if (targetPath !== targetRoot && !targetPath.startsWith(`${targetRoot}${path.sep}`)) {
+                throw new Error(`Invalid zip entry path: ${entry.fileName}`);
             }
 
-            p.report({ message: "Starting to unzip..." });
-            extract(filepath, { dir: targetFolder.fsPath }, (err) => {
-                if (err) {
-                    return reject(err);
-                }
-                return resolve();
-            });
-        },
-    ));
+            if (entry.fileName.endsWith("/")) {
+                await fse.ensureDir(targetPath);
+                continue;
+            }
+
+            await fse.ensureDir(path.dirname(targetPath));
+            const readStream = await zip.openReadStreamPromise(entry);
+            await pipeline(readStream, createWriteStream(targetPath), { signal });
+            const mode = (entry.externalFileAttributes >>> 16) & 0xffff;
+            if (mode !== 0) {
+                await fse.chmod(targetPath, mode);
+            }
+        }
+    } finally {
+        signal.removeEventListener("abort", closeZip);
+        zip.close();
+    }
+}
+
+function withTimeout<T>(promise: Promise<T>, timeoutInMs: number, timeoutMessage: string, onTimeout: () => void): Promise<T> {
+    return new Promise<T>((resolve: (value: T) => void, reject: (e: Error) => void): void => {
+        let completed: boolean = false;
+        const timeout = setTimeout((): void => {
+            if (completed) {
+                return;
+            }
+
+            completed = true;
+            onTimeout();
+            reject(new Error(timeoutMessage));
+        }, timeoutInMs);
+
+        promise.then((value: T): void => {
+            if (completed) {
+                return;
+            }
+
+            completed = true;
+            clearTimeout(timeout);
+            resolve(value);
+        }, (error: Error): void => {
+            if (completed) {
+                return;
+            }
+
+            completed = true;
+            clearTimeout(timeout);
+            reject(error);
+        });
+    });
 }
 
 async function specifyOpenMethod(hasOpenFolder: boolean, projectLocation: vscode.Uri): Promise<string> {

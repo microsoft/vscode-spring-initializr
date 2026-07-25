@@ -16,7 +16,8 @@ async function main(): Promise<void> {
         const extensionTestsPath: string = path.resolve(__dirname, "./suite/index");
 
         // Download VS Code, unzip it and run the integration test
-        await runTests({ extensionDevelopmentPath, extensionTestsPath });
+        const launchArgs: string[] | undefined = process.platform === "darwin" ? ["--user-data-dir=/tmp/vscode-spring-initializr-test"] : undefined;
+        await runTests({ extensionDevelopmentPath, extensionTestsPath, launchArgs });
     } catch (err) {
         console.error("Failed to run tests");
         process.exit(1);
