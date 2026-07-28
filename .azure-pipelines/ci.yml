@@ -45,22 +45,12 @@ extends:
               - checkout: self
                 fetchTags: true
               - template: /.azure-pipelines/npm-cfs.yml@self
-              - task: Npm@1
+              - script: npm install
                 displayName: 'npm install'
-                inputs:
-                  verbose: false
-              - task: Npm@1
+              - script: npm run tslint
                 displayName: 'npm run tslint'
-                inputs:
-                  command: custom
-                  verbose: false
-                  customCommand: 'run tslint'
-              - task: Npm@1
+              - script: npm run compile
                 displayName: 'npm run compile'
-                inputs:
-                  command: custom
-                  verbose: false
-                  customCommand: 'run compile'
               - script: 'npx @vscode/vsce@latest package'
                 displayName: 'package vsix'
               - task: CopyFiles@2
