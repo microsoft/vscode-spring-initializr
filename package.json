@@ -191,7 +191,7 @@
     "@types/xml2js": "^0.4.14",
     "@types/yauzl": "^3.4.0",
     "@vscode/test-electron": "^3.1.0",
-    "glob": "^7.2.3",
+    "glob": "^13.0.6",
     "mocha": "^11.7.5",
     "ts-loader": "^9.5.1",
     "tslint": "^5.20.1",
