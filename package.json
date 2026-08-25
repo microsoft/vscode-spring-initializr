@@ -144,6 +144,16 @@
           "scope": "window",
           "description": "Default packaging."
         },
+        "spring.initializr.defaultConfigurationFileFormat": {
+          "default": "properties",
+          "type": "string",
+          "enum": [
+            "properties",
+            "yaml"
+          ],
+          "scope": "window",
+          "description": "Default Spring Boot configuration file format."
+        },
         "spring.initializr.defaultOpenProjectMethod": {
           "default": "",
           "type": "string",

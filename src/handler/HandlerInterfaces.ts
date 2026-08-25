@@ -19,6 +19,7 @@ export interface IProjectMetadata {
     packageName?: string;
     packaging?: string;
     bootVersion?: string;
+    configurationFileFormat?: ConfigurationFileFormat;
     dependencies?: IDependenciesItem;
     pickSteps: IStep[];
     defaults: IDefaultProjectData;
@@ -31,6 +32,7 @@ export interface IDefaultProjectData {
     groupId?: string;
     artifactId?: string;
     packaging?: string;
+    configurationFileFormat?: ConfigurationFileFormat;
     dependencies?: string[];
     targetFolder?: string;
 }
@@ -60,4 +62,9 @@ export interface IInputMetaData {
 export enum ParentFolder {
     ARTIFACT_ID = "artifactId",
     NONE = "none"
+}
+
+export enum ConfigurationFileFormat {
+    PROPERTIES = "properties",
+    YAML = "yaml"
 }
