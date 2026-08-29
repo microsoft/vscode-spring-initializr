@@ -181,7 +181,7 @@
     "update-tpn": "node scripts/update-third-party-notice.js"
   },
   "devDependencies": {
-    "@types/fs-extra": "^5.1.0",
+    "@types/fs-extra": "^11.0.4",
     "@types/glob": "^7.2.0",
     "@types/lodash": "^4.17.25",
     "@types/md5": "^2.3.5",
@@ -200,7 +200,7 @@
     "webpack-cli": "^4.10.0"
   },
   "dependencies": {
-    "fs-extra": "^5.0.0",
+    "fs-extra": "^11.4.0",
     "htmlparser2": "^9.1.0",
     "lodash": "^4.18.1",
     "md5": "^2.3.0",
