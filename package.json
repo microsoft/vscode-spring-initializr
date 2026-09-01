@@ -12,7 +12,8 @@
     "url": "https://github.com/Microsoft/vscode-spring-initializr.git"
   },
   "engines": {
-    "vscode": "^1.75.0"
+    "vscode": "^1.75.0",
+    "node": ">=20"
   },
   "capabilities": {
     "virtualWorkspaces": true
