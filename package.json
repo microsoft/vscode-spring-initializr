@@ -186,7 +186,7 @@
     "@types/lodash": "^4.17.25",
     "@types/md5": "^2.3.5",
     "@types/mocha": "^9.1.1",
-    "@types/node": "^16.18.126",
+    "@types/node": "^20.19.43",
     "@types/vscode": "1.75.0",
     "@types/xml2js": "^0.4.14",
     "@types/yauzl": "^3.4.0",
