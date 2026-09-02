@@ -184,7 +184,7 @@
   "devDependencies": {
     "@types/fs-extra": "^11.0.4",
     "@types/lodash": "^4.17.25",
-    "@types/md5": "^2.3.5",
+    "@types/md5": "^2.3.6",
     "@types/mocha": "^9.1.1",
     "@types/node": "^20.19.43",
     "@types/vscode": "1.75.0",
