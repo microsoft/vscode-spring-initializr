@@ -178,8 +178,9 @@
     "compile": "webpack --mode development",
     "tslint": "tslint -t verbose src/*.ts",
     "watch": "webpack --mode development --watch",
-    "test": "npm run compile && tsc -p . && node ./out/test/runTest.js",
-    "update-tpn": "node scripts/update-third-party-notice.js"
+    "test": "npm run compile && npm run typecheck && node ./out/test/runTest.js",
+    "update-tpn": "node scripts/update-third-party-notice.js",
+    "typecheck": "node ./node_modules/@typescript/native/bin/tsc -p ."
   },
   "devDependencies": {
     "@types/fs-extra": "^11.0.4",
