@@ -9,6 +9,9 @@ updates:
     directory: "/" # Location of package manifests
     schedule:
       interval: "daily"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     # CI restores packages from the Central Feed Service, which withholds
     # upstream versions until they are roughly a week old (measured at ~6.8
     # days; both the packument entry and the tarball return 404 before then).
@@ -24,5 +27,8 @@ updates:
         patterns: ["*"]
     schedule:
       interval: "weekly"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     cooldown:
-      default-days: 7
+      default-days: 10
