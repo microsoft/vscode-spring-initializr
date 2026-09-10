@@ -27,8 +27,5 @@ updates:
         patterns: ["*"]
     schedule:
       interval: "weekly"
-    ignore:
-      - dependency-name: "*"
-        update-types: ["version-update:semver-major"]
     cooldown:
-      default-days: 10
+      default-days: 7
