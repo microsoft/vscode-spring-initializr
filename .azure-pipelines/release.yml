@@ -19,6 +19,7 @@ resources:
       name: 1ESPipelineTemplates/1ESPipelineTemplates
       ref: refs/tags/release
 trigger: none
+pr: none
 extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1esPipelines
   parameters:
