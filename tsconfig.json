@@ -1,5 +1,7 @@
 {
     "compilerOptions": {
+        "esModuleInterop": true,
+        "strict": false,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
         "noImplicitReturns": true,
