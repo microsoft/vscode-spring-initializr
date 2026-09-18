@@ -13,7 +13,7 @@ export interface Metadata {
     type: Category<ProjectType>;
 }
 
-export enum MatadataType {
+export enum MetadataType {
     BOOTVERSION,
     JAVAVERSION,
     LANGUAGE,
