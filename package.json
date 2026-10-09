@@ -12,7 +12,8 @@
     "url": "https://github.com/Microsoft/vscode-spring-initializr.git"
   },
   "engines": {
-    "vscode": "^1.75.0"
+    "vscode": "^1.75.0",
+    "node": ">=20.9.0"
   },
   "capabilities": {
     "virtualWorkspaces": true
@@ -191,31 +192,30 @@
     "update-tpn": "node scripts/update-third-party-notice.js"
   },
   "devDependencies": {
-    "@types/fs-extra": "^5.1.0",
-    "@types/glob": "^7.2.0",
-    "@types/lodash": "^4.17.7",
-    "@types/md5": "^2.3.5",
-    "@types/mocha": "^9.1.1",
-    "@types/node": "^16.18.104",
+    "@types/fs-extra": "^11.0.4",
+    "@types/lodash": "^4.17.25",
+    "@types/md5": "^2.3.6",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^26.4.0",
     "@types/vscode": "1.75.0",
     "@types/xml2js": "^0.4.14",
     "@types/yauzl": "^3.4.0",
-    "@vscode/test-electron": "^2.4.1",
-    "glob": "^7.2.3",
-    "mocha": "^11.7.5",
-    "ts-loader": "^9.5.1",
-    "tslint": "^5.20.1",
-    "typescript": "^4.8.4",
-    "webpack": "^5.105.4",
-    "webpack-cli": "^4.10.0"
+    "@vscode/test-electron": "^3.1.0",
+    "glob": "^13.0.6",
+    "mocha": "^11.8.0",
+    "ts-loader": "^9.6.2",
+    "tslint": "^6.1.3",
+    "typescript": "^5.9.3",
+    "webpack": "^5.110.2",
+    "webpack-cli": "^7.2.3"
   },
   "dependencies": {
-    "fs-extra": "^5.0.0",
-    "htmlparser2": "^9.1.0",
+    "fs-extra": "^11.4.0",
+    "htmlparser2": "^12.0.0",
     "lodash": "^4.18.1",
     "md5": "^2.3.0",
-    "vscode-extension-telemetry-wrapper": "^0.15.2",
-    "xml2js": "^0.5.0",
+    "vscode-extension-telemetry-wrapper": "^0.15.3",
+    "xml2js": "^0.6.2",
     "yauzl": "^3.4.0"
   },
   "overrides": {

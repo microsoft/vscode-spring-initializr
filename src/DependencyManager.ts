@@ -31,11 +31,11 @@ export class DependencyManager {
         this.lastselected = idList;
     }
 
-    public async getQuickPickItems(serviceUrl: string, options?: { hasLastSelected: boolean }): Promise<Array<QuickPickItem & IDependenciesItem>> {
+    public async getQuickPickItems(serviceUrl: string, options?: { hasLastSelected: boolean }): Promise<(QuickPickItem & IDependenciesItem)[]> {
         if (this.dependencies.length === 0) {
             await this.initialize(await serviceManager.getAvailableDependencies(serviceUrl, this.bootVersion));
         }
-        const ret: Array<QuickPickItem & IDependenciesItem> = [];
+        const ret: (QuickPickItem & IDependenciesItem)[] = [];
         if (this.selectedIds.length === 0) {
             if (options && options.hasLastSelected && this.lastselected) {
                 const item = this.genLastSelectedItem(this.lastselected);
@@ -133,8 +133,8 @@ function newSeparator(name: string) {
         id: name
     };
 }
-function getLinkButtons(links?: ILinks): Array<QuickInputButton & ILink> {
-    const buttons: Array<QuickInputButton & ILink> = [];
+function getLinkButtons(links?: ILinks): (QuickInputButton & ILink)[] {
+    const buttons: (QuickInputButton & ILink)[] = [];
     if (links?.home?.href) {
         const homeButton = {
             iconPath: new ThemeIcon("home"),
