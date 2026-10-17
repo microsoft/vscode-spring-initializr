@@ -37,7 +37,7 @@ export class GenerateProjectHandler extends BaseHandler {
         this.metadata = {
             pickSteps: [],
             defaults: defaults || {},
-            configurationFileFormat: ConfigurationFileFormat.YAML,
+            configurationFileFormat: ConfigurationFileFormat.PROPERTIES,
             parentFolder: vscode.workspace.getConfiguration("spring.initializr").get<ParentFolder>("parentFolder")
         };
     }

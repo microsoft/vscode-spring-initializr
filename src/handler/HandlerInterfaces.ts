@@ -42,6 +42,10 @@ export interface IHandlerItem<T extends Identifiable> extends QuickPickItem {
     value?: T;
 }
 
+export interface IConfigurationFileFormat extends Identifiable {
+    id: ConfigurationFileFormat;
+}
+
 export interface IPickMetadata<T extends Identifiable> {
     metadata: IProjectMetadata;
     title: string;

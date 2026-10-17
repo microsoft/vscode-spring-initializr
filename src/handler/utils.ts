@@ -6,9 +6,10 @@ import { Disposable, InputBox, QuickInputButtons, QuickPick, window } from "vsco
 import { OperationCanceledError } from "../Errors";
 import { Identifiable } from "../model/Metadata";
 import { artifactIdValidation, groupIdValidation, packageNameValidation } from "../Utils";
-import { IHandlerItem, IInputMetaData, IPickMetadata, IProjectMetadata } from "./HandlerInterfaces";
+import { ConfigurationFileFormat, IHandlerItem, IInputMetaData, IPickMetadata, IProjectMetadata } from "./HandlerInterfaces";
 import { SpecifyArtifactIdStep } from "./SpecifyArtifactIdStep";
 import { SpecifyBootVersionStep } from "./SpecifyBootVersionStep";
+import { SpecifyConfigurationFileFormatStep } from "./SpecifyConfigurationFileFormatStep";
 import { SpecifyGroupIdStep } from "./SpecifyGroupIdStep";
 import { SpecifyJavaVersionStep } from "./SpecifyJavaVersionStep";
 import { SpecifyLanguageStep } from "./SpecifyLanguageStep";
@@ -75,6 +76,8 @@ export async function createPickBox<T extends Identifiable>(pickMetadata: IPickM
                     pickMetadata.metadata.packaging = pickBox.selectedItems[0].label?.toLowerCase();
                 } else if (pickMetadata.pickStep instanceof SpecifyBootVersionStep) {
                     pickMetadata.metadata.bootVersion = pickBox.selectedItems[0].value?.id;
+                } else if (pickMetadata.pickStep instanceof SpecifyConfigurationFileFormatStep) {
+                    pickMetadata.metadata.configurationFileFormat = pickBox.selectedItems[0].value?.id as ConfigurationFileFormat;
                 }
                 pickMetadata.metadata.pickSteps.push(pickMetadata.pickStep);
                 return resolve(true);
@@ -88,6 +91,8 @@ export async function createPickBox<T extends Identifiable>(pickMetadata: IPickM
                     return reject(new OperationCanceledError("Packaging not specified."));
                 } else if (pickMetadata.pickStep instanceof SpecifyBootVersionStep) {
                     return reject(new OperationCanceledError("BootVersion not specified."));
+                } else if (pickMetadata.pickStep instanceof SpecifyConfigurationFileFormatStep) {
+                    return reject(new OperationCanceledError("Configuration file format not specified."));
                 }
                 return reject(new Error("Unknown picking step"));
             })

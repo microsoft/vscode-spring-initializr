@@ -1,10 +1,11 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license.
 
-import { window, workspace } from "vscode";
+import { workspace } from "vscode";
 import { instrumentOperationStep } from "vscode-extension-telemetry-wrapper";
-import { ConfigurationFileFormat, IProjectMetadata, IStep } from "./HandlerInterfaces";
+import { ConfigurationFileFormat, IConfigurationFileFormat, IHandlerItem, IProjectMetadata, IPickMetadata, IStep } from "./HandlerInterfaces";
 import { SpecifyJavaVersionStep } from "./SpecifyJavaVersionStep";
+import { createPickBox } from "./utils";
 
 export class SpecifyConfigurationFileFormatStep implements IStep {
 
@@ -27,35 +28,34 @@ export class SpecifyConfigurationFileFormatStep implements IStep {
 
     private async specifyConfigurationFileFormat(projectMetadata: IProjectMetadata): Promise<boolean> {
 
-        const defaultFormat: ConfigurationFileFormat =
-            projectMetadata.defaults.configurationFileFormat
-            ?? workspace.getConfiguration("spring.initializr")
-                .get<ConfigurationFileFormat>("defaultConfigurationFileFormat")
-            ?? ConfigurationFileFormat.PROPERTIES;
+        const defaultFormat: ConfigurationFileFormat = projectMetadata.defaults.configurationFileFormat
+            || workspace.getConfiguration("spring.initializr").get<ConfigurationFileFormat>("defaultConfigurationFileFormat");
 
+        if (defaultFormat) {
+            projectMetadata.configurationFileFormat = defaultFormat;
+            return true;
+        }
 
-        const selection = await window.showQuickPick([
+        const configurationFormats: Array<IHandlerItem<IConfigurationFileFormat>> = [
             {
                 label: "Properties",
                 detail: "application.properties",
-                value: ConfigurationFileFormat.PROPERTIES
+                value: { id: ConfigurationFileFormat.PROPERTIES, name: "Properties" }
             },
             {
                 label: "YAML",
                 detail: "application.yaml",
-                value: ConfigurationFileFormat.YAML
+                value: { id: ConfigurationFileFormat.YAML, name: "YAML" }
             }
-        ], {
+        ];
+
+        const pickMetaData: IPickMetadata<IConfigurationFileFormat> = {
+            metadata: projectMetadata,
             title: "Spring Initializr: Specify configuration file format",
-            placeHolder: "Choose configuration file format"
-        });
-
-        if (!selection) {
-            return false;
-        }
-
-        projectMetadata.configurationFileFormat = selection.value || defaultFormat;
-
-        return true;
+            pickStep: SpecifyConfigurationFileFormatStep.getInstance(),
+            placeholder: "Choose configuration file format",
+            items: configurationFormats
+        };
+        return await createPickBox(pickMetaData);
     }
 }

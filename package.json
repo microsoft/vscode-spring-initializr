@@ -146,9 +146,10 @@
           "description": "Default packaging."
         },
         "spring.initializr.defaultConfigurationFileFormat": {
-          "default": "properties",
+          "default": "",
           "type": "string",
           "enum": [
+            "",
             "properties",
             "yaml"
           ],
