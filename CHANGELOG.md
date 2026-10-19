@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to the "vscode-spring-initializr" extension will be documented in this file.
 
+## 0.12.1
+### Fixed
+- Prevent Gradle project generation from hanging during ZIP extraction and report an error if extraction times out. [#283](https://github.com/microsoft/vscode-spring-initializr/pull/283)
+
 ## 0.12.0
 ### Added
 - New command for generating Gradle projects with Kotlin DSL [237](https://github.com/microsoft/vscode-spring-initializr/pull/237)
