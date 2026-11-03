@@ -6,7 +6,7 @@ import { IDependency, IStarters } from ".";
 import { IHandlerItem } from "../handler/HandlerInterfaces";
 import { downloadFile } from "../Utils";
 import { matchRange } from "../Utils/VersionHelper";
-import { DependencyGroup, Identifiable, MatadataType, Metadata } from "./Metadata";
+import { DependencyGroup, Identifiable, MetadataType, Metadata } from "./Metadata";
 
 /**
  * Prefer v2.2 and fallback to v2.1
@@ -17,7 +17,7 @@ const METADATA_HEADERS = { Accept: "application/vnd.initializr.v2.2+json,applica
 class ServiceManager {
     private metadataMap: Map<string, Metadata> = new Map();
 
-    public async getItems<T extends Identifiable>(serviceUrl: string, type: MatadataType): Promise<Array<IHandlerItem<T>>> {
+    public async getItems<T extends Identifiable>(serviceUrl: string, type: MetadataType): Promise<Array<IHandlerItem<T>>> {
         const metadata = await this.ensureMetadata(serviceUrl);
         if (!metadata) {
             throw new Error("Failed to fetch metadata.");
@@ -25,19 +25,19 @@ class ServiceManager {
         let defaultLabel: string;
         let values: any[];
         switch (type) {
-            case MatadataType.BOOTVERSION:
+            case MetadataType.BOOTVERSION:
                 defaultLabel = metadata.bootVersion.default;
                 values = metadata.bootVersion.values;
                 break;
-            case MatadataType.JAVAVERSION:
+            case MetadataType.JAVAVERSION:
                 defaultLabel = metadata.javaVersion.default;
                 values = metadata.javaVersion.values;
                 break;
-            case MatadataType.LANGUAGE:
+            case MetadataType.LANGUAGE:
                 defaultLabel = metadata.language.default;
                 values = metadata.language.values;
                 break;
-            case MatadataType.PACKAGING:
+            case MetadataType.PACKAGING:
                 defaultLabel = metadata.packaging.default;
                 values = metadata.packaging.values;
                 break;
@@ -45,16 +45,29 @@ class ServiceManager {
                 throw new Error("Invalid metadata type.");
         }
 
-        const sortedValues = values.filter(x => x.id === defaultLabel).concat(values.filter(x => x.id !== defaultLabel));
-        switch (type) {
-            case MatadataType.BOOTVERSION:
-                return sortedValues.map(v => ({ value: v, label: v.name }));
-            case MatadataType.JAVAVERSION:
-                return sortedValues.map(v => ({ value: v, label: v.name }));
-            default:
-                return sortedValues.map(v => ({ label: v.name }));
-        }
+        const defaultValues = values.filter(x => x.id === defaultLabel);
+        const nonDefaultValues = values.filter(x => x.id !== defaultLabel);
+
+        let mappedDefault: Array<IHandlerItem<T>> = this.mapValues(defaultValues, type, true);
+        let mappedNonDefault: Array<IHandlerItem<T>> = this.mapValues(nonDefaultValues, type, false);
+
+        return mappedDefault.concat(mappedNonDefault);
     }
+
+    private mapValues<T extends Identifiable>(
+        items: any[],
+        type: MetadataType,
+        isDefault: boolean
+    ): Array<IHandlerItem<T>> {
+        switch (type) {
+            case MetadataType.BOOTVERSION:
+                return items.map(v => ({ value: v, label: v.name, default: isDefault}))
+            case MetadataType.JAVAVERSION:
+                return items.map(v => ({ value: v, label: v.name, default: isDefault }));
+            default:
+                return items.map(v => ({ label: v.name, default: isDefault }));
+        }
+    } 
 
     public async getAvailableDependencies(serviceUrl: string, bootVersion: string): Promise<IDependency[]> {
         const metadata = await this.ensureMetadata(serviceUrl);
